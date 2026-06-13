@@ -76,6 +76,10 @@
               <section class="step-one-section">
                 <p><strong>Purpose:</strong> Create a new project from a ready-to-use template.</p>
               </section>
+              <div class="guide-callout recommend">
+                <strong>Beginner recommendation</strong>
+                <p>Use <strong>Demo Project ZIP</strong> first if you want to practise safely. Use <strong>Template ZIP</strong> when you are ready to add your own FASTQ, reference genome, and annotation.</p>
+              </div>
               <section class="step-one-section">
                 <p><strong>Phoenix HPC Access Prerequisite:</strong> Before uploading or running the project, make sure you have University of Adelaide Phoenix HPC access.</p>
                 <p><a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
@@ -140,6 +144,10 @@
             <span class="context-pill local-pill">Local</span>
           </div>
           <p><strong>Purpose:</strong> Put the input files in the expected local folders, then create and validate the project metadata before uploading large data to HPC.</p>
+          <div class="guide-callout warning">
+            <strong>Watch out</strong>
+            <p>Most early failures come from FASTQ pair mismatches, duplicate sample IDs, or a samplesheet path that points to the wrong file. Fix these locally before uploading.</p>
+          </div>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What you do:</strong></p>
@@ -204,6 +212,10 @@
             <span class="context-pill local-pill">Local</span>
           </div>
           <p><strong>Purpose:</strong> Choose how nf-core/rnaseq will run.</p>
+          <div class="guide-callout recommend">
+            <strong>Beginner recommendation</strong>
+            <p>Choose <strong>STAR + Salmon</strong> when you have a genome FASTA and GFF/GTF annotation. Choose <strong>Salmon only</strong> for a faster quantification-focused run when genome alignment outputs are not needed.</p>
+          </div>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What you do:</strong></p>
@@ -266,6 +278,10 @@ walltime: 24:00:00</pre>
             <span class="context-pill local-pill">Local</span>
           </div>
           <p><strong>Purpose:</strong> Transfer the prepared project to HPC.</p>
+          <div class="guide-callout warning">
+            <strong>Storage note</strong>
+            <p>Upload raw inputs, configs, scripts, and reports. Avoid uploading old <code>work/</code>, cache folders, or previous large outputs unless you truly need them.</p>
+          </div>
           <div class="simple-path-box">
             <label for="hpcPath"><strong>HPC working folder</strong></label>
             <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
@@ -361,6 +377,10 @@ walltime: 24:00:00</pre>
           </div>
           <p class="auto-fix-note">☑ Allow automatic fixes and resume during validation</p>
           <p>Safe infrastructure and resource fixes may be applied automatically. Biological settings are never changed automatically.</p>
+          <div class="guide-callout trust">
+            <strong>Automation scope</strong>
+            <p>Automatic fixes may adjust cache paths, scratch/work directories, containers, and resource settings. They should not change reference genome, annotation, strandedness, aligner choice, sample grouping, or experimental design.</p>
+          </div>
           <h3>Scripts involved</h3>
           <div class="two-col">
             <div class="mini-block">
@@ -408,6 +428,10 @@ walltime: 24:00:00</pre>
             <span class="context-pill hpc-pill">HPC</span>
           </div>
           <p><strong>Purpose:</strong> Launch the full nf-core/rnaseq workflow after validation passes and keep the run understandable while it is executing.</p>
+          <div class="guide-callout recovery">
+            <strong>If something fails</strong>
+            <p>Do not restart from zero immediately. Check logs, fix the cause, then resume when appropriate. Memory failures often need higher resources; storage failures often need a better scratch/work directory.</p>
+          </div>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What you do:</strong></p>
@@ -482,6 +506,10 @@ walltime: 24:00:00</pre>
           </ul>
           <h3>Download by default</h3>
           <p><code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</p>
+          <div class="guide-callout output-first">
+            <strong>Open first</strong>
+            <p>Start with <code>multiqc_report.html</code> for QC, then find count/quantification tables for DESeq2, edgeR, WGCNA, Shiny, or other downstream analysis. Keep <code>pipeline_info/</code>, configs, logs, and samplesheet for reproducibility.</p>
+          </div>
           <div class="output-grid mini-output-grid full-output-grid">
             <article class="output-card">
               <h3>Analysis Data</h3>
