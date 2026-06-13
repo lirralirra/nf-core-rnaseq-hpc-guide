@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="intro-overlay" id="introOverlay" aria-hidden="true">
+    <button class="intro-skip" type="button" aria-label="Skip intro">×</button>
+    <div class="intro-scene">
+      <img class="intro-storyboard" src="assets/happy-rnaseq-intro-storyboard.png" alt="Illustrated Happy RNA-seq opening showing FASTQ, reference genome, GFF annotation, HPC processing, and count matrix output.">
+      <button class="intro-start" id="introStart" type="button">Start Brewing</button>
+    </div>
+  </div>
   <nav class="site-nav product-nav" aria-label="Site navigation">
     <div class="nav-brand">
       <div class="nav-title">RNA-seq Workflow</div>
@@ -65,15 +72,28 @@
             <span class="context-pill local-pill">Local</span>
           </div>
           <div class="step-one-grid">
-            <div>
-              <p><strong>Purpose:</strong> Create a new project from a ready-to-use template.</p>
-              <p><strong>What you do:</strong></p>
-              <ol>
-                <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
-                <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
-                <li>Unzip the project on your local computer.</li>
-                <li>Check the folder structure before moving to the next step.</li>
-              </ol>
+            <div class="step-one-copy">
+              <section class="step-one-section">
+                <p><strong>Purpose:</strong> Create a new project from a ready-to-use template.</p>
+              </section>
+              <section class="step-one-section">
+                <p><strong>Phoenix HPC Access Prerequisite:</strong> Before uploading or running the project, make sure you have University of Adelaide Phoenix HPC access.</p>
+                <p><a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
+              </section>
+              <section class="step-one-section">
+                <p><strong>What you do:</strong></p>
+                <ol>
+                  <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
+                  <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
+                  <li>Unzip the project on your local computer.</li>
+                  <li>Check the folder structure before moving to the next step.</li>
+                </ol>
+              </section>
+              <div class="simple-path-box">
+                <label for="localPath"><strong>Local working folder</strong></label>
+                <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
+                <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
+              </div>
             </div>
             <div>
               <h3>Template structure</h3>
@@ -111,34 +131,6 @@
 <span>└── README.md <b class="source-tag template">ZIP template</b></span></pre>
             </div>
           </div>
-          <section class="prereq-panel">
-            <h3>Prerequisites</h3>
-            <div class="prereq-grid">
-              <div class="mini-block">
-                <h3>Phoenix HPC Access</h3>
-                <p>Before uploading or running the project, make sure you have University of Adelaide Phoenix HPC access.</p>
-                <p><a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
-              </div>
-              <div class="mini-block">
-                <h3>Windows Login / Transfer</h3>
-                <p>Install one file-transfer client: WinSCP, Bitvise, or FileZilla.</p>
-                <p>WinSCP guide: <a href="https://wiki.adelaide.edu.au/hpc/Step_by_step_WinSCP_guide" target="_blank" rel="noopener">Step-by-step WinSCP guide</a></p>
-              </div>
-              <div class="mini-block">
-                <h3>Linux / macOS Login</h3>
-                <p>Open Terminal and log in to a Phoenix head node:</p>
-                <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
-                <p>Regular logon nodes: <code>p2-log-1.hpc.adelaide.edu.au</code> or <code>p2-log-2.hpc.adelaide.edu.au</code>.</p>
-              </div>
-              <div class="mini-block">
-                <h3>Linux / macOS File Transfer</h3>
-                <p>Upload files to Phoenix:</p>
-                <pre>scp -r FILES a1234567@p2-log-1.hpc.adelaide.edu.au:/hpcfs/users/a1234567/</pre>
-                <p>Download files from Phoenix:</p>
-                <pre>scp -r a1234567@p2-log-1.hpc.adelaide.edu.au:/hpcfs/users/a1234567/FILES YourLocalDirectory</pre>
-              </div>
-            </div>
-          </section>
         </article>
 
         <article class="step-detail" data-step-panel="2">
@@ -157,13 +149,13 @@
             <li>Add or link the annotation file in <code>input/annotation/</code>.</li>
             <li>Open your terminal.</li>
             <li>Move into your project folder:
-              <pre>cd /path/to/your_project</pre>
+              <pre data-command="local-cd"></pre>
             </li>
             <li>Generate <code>input/samplesheet.csv</code>:
-              <pre>bash scripts/make_samplesheet.sh</pre>
+              <pre data-command="step2-make"></pre>
             </li>
             <li>Validate files, pairs, sample names, references, annotation, scripts, and upload size:
-              <pre>bash scripts/input_validate.sh</pre>
+              <pre data-command="step2-validate"></pre>
             </li>
               </ol>
             </div>
@@ -182,8 +174,7 @@
                 <li>Do not overwrite an existing samplesheet unless explicitly requested</li>
               </ul>
               <p><strong>How to run:</strong></p>
-              <pre>cd /path/to/your_project
-bash scripts/make_samplesheet.sh</pre>
+              <pre data-command="step2-make"></pre>
             </div>
             <div class="mini-block">
               <h3><code>input_validate.sh</code></h3>
@@ -195,8 +186,7 @@ bash scripts/make_samplesheet.sh</pre>
               </ul>
               <p><strong>Output:</strong> <code>reports/input_validation_report.md</code></p>
               <p><strong>How to run:</strong></p>
-              <pre>cd /path/to/your_project
-bash scripts/input_validate.sh</pre>
+              <pre data-command="step2-validate"></pre>
             </div>
           </div>
             <div class="notes-block notes-bottom">
@@ -220,7 +210,7 @@ bash scripts/input_validate.sh</pre>
               <ol>
             <li>Open your terminal.</li>
             <li>Move into your project folder:
-              <pre>cd /path/to/your_project</pre>
+              <pre data-command="local-cd"></pre>
             </li>
             <li>Choose the pipeline mode <a href="documents.html#choose-pipeline-mode">how to decide</a>:
               <ul>
@@ -229,10 +219,10 @@ bash scripts/input_validate.sh</pre>
               </ul>
             </li>
             <li>4a. Generate <code>configs/configure.yaml</code> with STAR + Salmon:
-              <pre>bash scripts/configure.sh --star-salmon</pre>
+              <pre data-command="step3-star"></pre>
             </li>
             <li>4b. Or generate <code>configs/configure.yaml</code> with Salmon only:
-              <pre>bash scripts/configure.sh --salmon</pre>
+              <pre data-command="step3-salmon"></pre>
             </li>
               </ol>
             </div>
@@ -251,7 +241,7 @@ genome_size_gb: 12
 sample_count: 30
 hpc_user: your_username
 hpc_host: your.cluster.edu
-hpc_project_dir: /path/on/hpc/happy_rnaseq_project
+hpc_project_dir: /scratchdata1/your_project/rnaseq_projects/my_project
 outdir: results
 workdir: work
 cache_dir: /scratch/your_username/apptainer_cache
@@ -276,24 +266,34 @@ walltime: 24:00:00</pre>
             <span class="context-pill local-pill">Local</span>
           </div>
           <p><strong>Purpose:</strong> Transfer the prepared project to HPC.</p>
+          <div class="simple-path-box">
+            <label for="hpcPath"><strong>HPC working folder</strong></label>
+            <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
+            <div class="simple-path-row">
+              <label for="hpcUser"><strong>HPC username</strong></label>
+              <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
+              <label for="hpcHost"><strong>HPC login host</strong></label>
+              <input id="hpcHost" type="text" autocomplete="off" placeholder="p2-log-1.hpc.adelaide.edu.au">
+            </div>
+            <p>These values are only used to fill the command boxes below. Please check the folder exists before running commands.</p>
+          </div>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What you do:</strong></p>
               <ol>
             <li>Open your terminal.</li>
             <li>Move into your local project folder:
-              <pre>cd /path/to/your_project</pre>
+              <pre data-command="local-cd"></pre>
             </li>
             <li>Log in to your HPC using your Phoenix account:
-              <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+              <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Confirm the target HPC project folder exists or can be created:
-              <pre>mkdir -p /path/on/hpc/happy_rnaseq_project
-ls -ld /path/on/hpc/happy_rnaseq_project</pre>
+              <pre data-command="hpc-folder-check"></pre>
             </li>
             <li>Exit back to your local terminal after the login check.</li>
             <li>Upload the initialized project folder with resume-safe rsync:
-              <pre>bash scripts/upload_to_hpc.sh</pre>
+              <pre data-command="upload-rsync"></pre>
             </li>
               </ol>
             </div>
@@ -343,17 +343,17 @@ ls -ld /path/on/hpc/happy_rnaseq_project</pre>
               <ol>
             <li>Open your terminal.</li>
             <li>Log in to your HPC using your Phoenix account:
-              <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+              <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Move into the uploaded HPC project folder:
-              <pre>cd /path/on/hpc/happy_rnaseq_project</pre>
+              <pre data-command="hpc-cd"></pre>
             </li>
             <li>Enable safe automatic fixes and resume during validation.</li>
             <li>Run the Smoke Test:
-              <pre>bash scripts/smoke_run.sh</pre>
+              <pre data-command="step5-smoke"></pre>
             </li>
             <li>Run the One Sample Run:
-              <pre>bash scripts/one_sample_run.sh</pre>
+              <pre data-command="step5-one-sample"></pre>
             </li>
             <li>Continue to the full run only after preflight validation passes.</li>
               </ol>
@@ -374,9 +374,7 @@ ls -ld /path/on/hpc/happy_rnaseq_project</pre>
               </ul>
               <p><strong>Output:</strong> <code>reports/smoke_test_report.md</code></p>
               <p><strong>How to run:</strong></p>
-              <pre>ssh your_username@your.cluster.edu
-cd /path/on/hpc/happy_rnaseq_project
-bash scripts/smoke_run.sh</pre>
+              <pre data-command="step5-smoke"></pre>
             </div>
             <div class="mini-block">
               <h3>One Sample Run</h3>
@@ -390,9 +388,7 @@ bash scripts/smoke_run.sh</pre>
               </ul>
               <p><strong>Output:</strong> <code>reports/one_sample_validation_report.md</code></p>
               <p><strong>How to run:</strong></p>
-              <pre>ssh your_username@your.cluster.edu
-cd /path/on/hpc/happy_rnaseq_project
-bash scripts/one_sample_run.sh</pre>
+              <pre data-command="step5-one-sample"></pre>
             </div>
           </div>
             <div class="notes-block notes-bottom">
@@ -418,16 +414,16 @@ bash scripts/one_sample_run.sh</pre>
               <ol>
             <li>Open your terminal.</li>
             <li>Log in to your HPC using your Phoenix account:
-              <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+              <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Move into the uploaded HPC project folder:
-              <pre>cd /path/on/hpc/happy_rnaseq_project</pre>
+              <pre data-command="hpc-cd"></pre>
             </li>
             <li>Launch the workflow:
-              <pre>bash scripts/run.sh</pre>
+              <pre data-command="step6-run"></pre>
             </li>
             <li>Monitor job status, current stage, failed tasks, disk usage, and recent logs:
-              <pre>bash scripts/monitor_run.sh</pre>
+              <pre data-command="step6-monitor"></pre>
             </li>
               </ol>
             </div>
@@ -467,10 +463,10 @@ bash scripts/one_sample_run.sh</pre>
               <ol>
             <li>Open your terminal on your local computer.</li>
             <li>Move into your local project folder:
-              <pre>cd /path/to/your_project</pre>
+              <pre data-command="local-cd"></pre>
             </li>
             <li>Download results from HPC:
-              <pre>bash scripts/download_results.sh</pre>
+              <pre data-command="download-rsync"></pre>
             </li>
               </ol>
             </div>
@@ -555,6 +551,19 @@ bash scripts/one_sample_run.sh</pre>
   <script>
     const tabs = document.querySelectorAll('.step-tab');
     const panels = document.querySelectorAll('.step-detail');
+    const storagePrefix = 'happy-rnaseq-paths-';
+    const defaults = {
+      localPath: '/Users/yourname/rnaseq_projects/my_project',
+      hpcPath: '/scratchdata1/your_project/rnaseq_projects/my_project',
+      hpcUser: 'a1234567',
+      hpcHost: 'p2-log-1.hpc.adelaide.edu.au'
+    };
+    const pathInputs = {
+      localPath: document.getElementById('localPath'),
+      hpcPath: document.getElementById('hpcPath'),
+      hpcUser: document.getElementById('hpcUser'),
+      hpcHost: document.getElementById('hpcHost')
+    };
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -568,6 +577,107 @@ bash scripts/one_sample_run.sh</pre>
         });
       });
     });
+
+    function fieldValue(key) {
+      const input = pathInputs[key];
+      const value = input ? input.value.trim() : '';
+      return value || defaults[key];
+    }
+
+    function cleanShellValue(value) {
+      return String(value || '').replace(/[\r\n]/g, ' ').trim();
+    }
+
+    function shellQuote(value) {
+      return `"${cleanShellValue(value).replace(/(["\\$`])/g, '\\$1')}"`;
+    }
+
+    function trailingSlash(value) {
+      const cleaned = cleanShellValue(value);
+      return cleaned.endsWith('/') ? cleaned : `${cleaned}/`;
+    }
+
+    function sshTarget() {
+      return `${fieldValue('hpcUser')}@${fieldValue('hpcHost')}`;
+    }
+
+    function commandFor(key) {
+      const local = fieldValue('localPath');
+      const hpc = fieldValue('hpcPath');
+      const target = sshTarget();
+      const qLocal = shellQuote(local);
+      const qHpc = shellQuote(hpc);
+      const star = 'bash scripts/configure.sh --star-salmon';
+      const salmon = 'bash scripts/configure.sh --salmon';
+
+      const commands = {
+        'local-mkdir': `mkdir -p ${qLocal}`,
+        'local-cd': `cd ${qLocal}`,
+        'local-chmod': `chmod -R u+rwX ${qLocal}`,
+        'hpc-ssh': `ssh ${target}`,
+        'hpc-mkdir': `mkdir -p ${qHpc}`,
+        'hpc-cd': `cd ${qHpc}`,
+        'hpc-chmod': `chmod -R u+rwX ${qHpc}`,
+        'hpc-chmod-group': `chmod -R u+rwX,g+rwX,o-rwx ${qHpc}`,
+        'hpc-folder-check': `mkdir -p ${qHpc}\nls -ld ${qHpc}`,
+        'upload-rsync': `rsync -avh --progress \\\n  ${shellQuote(trailingSlash(local))} \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}`)}`,
+        'download-rsync': `rsync -avh --progress \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}results/`)} \\\n  ${shellQuote(`${trailingSlash(local)}results/`)}`,
+        'step2-make': `cd ${qLocal}\nbash scripts/make_samplesheet.sh`,
+        'step2-validate': `cd ${qLocal}\nbash scripts/input_validate.sh`,
+        'step3-star': `cd ${qLocal}\n${star}`,
+        'step3-salmon': `cd ${qLocal}\n${salmon}`,
+        'step5-smoke': `ssh ${target}\ncd ${qHpc}\nbash scripts/smoke_run.sh`,
+        'step5-one-sample': `ssh ${target}\ncd ${qHpc}\nbash scripts/one_sample_run.sh`,
+        'step6-run': `ssh ${target}\ncd ${qHpc}\nbash scripts/run.sh`,
+        'step6-monitor': `ssh ${target}\ncd ${qHpc}\nbash scripts/monitor_run.sh`
+      };
+
+      return commands[key] || '';
+    }
+
+    function updateCommands() {
+      document.querySelectorAll('pre[data-command]').forEach((pre) => {
+        pre.textContent = commandFor(pre.dataset.command);
+      });
+    }
+
+    function hydratePathInputs() {
+      Object.entries(pathInputs).forEach(([key, input]) => {
+        if (!input) return;
+        input.value = localStorage.getItem(`${storagePrefix}${key}`) || '';
+        input.addEventListener('input', () => {
+          localStorage.setItem(`${storagePrefix}${key}`, input.value);
+          updateCommands();
+        });
+      });
+      updateCommands();
+    }
+
+    function runIntro() {
+      const intro = document.getElementById('introOverlay');
+      if (!intro) return;
+
+      const seenKey = 'happy-rnaseq-intro-seen';
+      const skip = intro.querySelector('.intro-skip');
+      const start = document.getElementById('introStart');
+
+      function closeIntro() {
+        localStorage.setItem(seenKey, 'true');
+        intro.classList.add('hide');
+        window.setTimeout(() => {
+          intro.classList.remove('show', 'hide');
+          intro.setAttribute('aria-hidden', 'true');
+        }, 520);
+      }
+
+      intro.classList.add('show');
+      intro.setAttribute('aria-hidden', 'false');
+      skip?.addEventListener('click', closeIntro, { once: true });
+      start?.addEventListener('click', closeIntro, { once: true });
+    }
+
+    hydratePathInputs();
+    runIntro();
   </script>
 </body>
 </html>
