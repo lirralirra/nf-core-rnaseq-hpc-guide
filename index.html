@@ -85,7 +85,7 @@
                 <p><a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
               </section>
               <section class="step-one-section">
-                <p><strong>What you do:</strong></p>
+                <p><strong>What You Do:</strong></p>
                 <ol>
                   <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
                   <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
@@ -96,6 +96,10 @@
               <div class="guide-callout expected">
                 <strong>Expected outcome</strong>
                 <p>Your local project folder exists, the template structure is visible, and you know whether you are using the demo project or your own data.</p>
+              </div>
+              <div class="guide-callout pipeline-does">
+                <strong>What the Pipeline Will Do</strong>
+                <p>No analysis runs yet. The template provides the folder structure, reusable scripts, config file, report locations, and downloads used in later steps.</p>
               </div>
               <div class="simple-path-box">
                 <label for="localPath"><strong>Local working folder</strong></label>
@@ -158,7 +162,7 @@
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
-              <p><strong>What you do:</strong></p>
+              <p><strong>What You Do:</strong></p>
               <ol>
             <li>Add or link FASTQ files in <code>input/fastq/</code>.</li>
             <li>Add or link the reference genome in <code>input/reference/</code>.</li>
@@ -174,6 +178,15 @@
               <pre data-command="step2-validate"></pre>
             </li>
               </ol>
+            </div>
+            <div class="notes-block pipeline-does-block">
+              <h3>What the Pipeline Will Do</h3>
+              <ul>
+                <li>Scan <code>input/fastq/</code> for paired FASTQ files.</li>
+                <li>Generate <code>input/samplesheet.csv</code> when requested.</li>
+                <li>Validate sample names, FASTQ pairs, reference, annotation, scripts, and upload size.</li>
+                <li>Write <code>reports/input_validation_report.md</code>.</li>
+              </ul>
             </div>
           </div>
           <h3>Scripts involved</h3>
@@ -230,7 +243,7 @@
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
-              <p><strong>What you do:</strong></p>
+              <p><strong>What You Do:</strong></p>
               <ol>
             <li>Open your terminal.</li>
             <li>Move into your project folder:
@@ -249,6 +262,15 @@
               <pre data-command="step3-salmon"></pre>
             </li>
               </ol>
+            </div>
+            <div class="notes-block pipeline-does-block">
+              <h3>What the Pipeline Will Do</h3>
+              <ul>
+                <li>Create <code>configs/configure.yaml</code> from the selected mode.</li>
+                <li>Record local paths, HPC destination, output directory, work directory, and cache path.</li>
+                <li>Estimate memory, CPU, and walltime from project metadata where possible.</li>
+                <li>Keep biological choices explicit so they can be reviewed before upload.</li>
+              </ul>
             </div>
           </div>
           <h3>Scripts involved</h3>
@@ -311,7 +333,7 @@ walltime: 24:00:00</pre>
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
-              <p><strong>What you do:</strong></p>
+              <p><strong>What You Do:</strong></p>
               <ol>
             <li>Open your terminal.</li>
             <li>Move into your local project folder:
@@ -328,6 +350,14 @@ walltime: 24:00:00</pre>
               <pre data-command="upload-rsync"></pre>
             </li>
               </ol>
+            </div>
+            <div class="notes-block pipeline-does-block">
+              <h3>What the Pipeline Will Do</h3>
+              <ul>
+                <li>Use <code>rsync</code> to transfer the prepared project folder.</li>
+                <li>Skip local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs.</li>
+                <li>Create an upload log and verify transferred files when possible.</li>
+              </ul>
             </div>
           </div>
           <h3>Scripts involved</h3>
@@ -371,7 +401,7 @@ walltime: 24:00:00</pre>
           <p><strong>Purpose:</strong> Validate the HPC environment and the current project configuration before the full analysis.</p>
           <div class="action-notes-grid">
             <div class="action-block">
-              <p><strong>What you do:</strong></p>
+              <p><strong>What You Do:</strong></p>
               <ol>
             <li>Open your terminal.</li>
             <li>Log in to your HPC using your Phoenix account:
@@ -389,6 +419,15 @@ walltime: 24:00:00</pre>
             </li>
             <li>Continue to the full run only after preflight validation passes.</li>
               </ol>
+            </div>
+            <div class="notes-block pipeline-does-block">
+              <h3>What the Pipeline Will Do</h3>
+              <ul>
+                <li>Run a tiny built-in nf-core test dataset to check the HPC environment.</li>
+                <li>Run one real sample to validate the current project configuration and resources.</li>
+                <li>Apply safe infrastructure/resource fixes only when allowed.</li>
+                <li>Write Smoke Test and One Sample Run reports.</li>
+              </ul>
             </div>
           </div>
           <p class="auto-fix-note">☑ Allow automatic fixes and resume during validation</p>
@@ -458,7 +497,7 @@ walltime: 24:00:00</pre>
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
-              <p><strong>What you do:</strong></p>
+              <p><strong>What You Do:</strong></p>
               <ol>
             <li>Open your terminal.</li>
             <li>Log in to your HPC using your Phoenix account:
@@ -474,6 +513,15 @@ walltime: 24:00:00</pre>
               <pre data-command="step6-monitor"></pre>
             </li>
               </ol>
+            </div>
+            <div class="notes-block pipeline-does-block">
+              <h3>What the Pipeline Will Do</h3>
+              <ul>
+                <li>Launch nf-core/rnaseq with the saved configuration.</li>
+                <li>Use Nextflow resume support when appropriate.</li>
+                <li>Report current stage, job status, failed tasks, disk usage, and recent logs.</li>
+                <li>Provide suggested actions for known infrastructure or resource issues.</li>
+              </ul>
             </div>
           </div>
           <h3>Scripts involved</h3>
@@ -507,7 +555,7 @@ walltime: 24:00:00</pre>
           <p><strong>Purpose:</strong> Transfer final results from HPC back to local storage using rsync.</p>
           <div class="action-notes-grid">
             <div class="action-block">
-              <p><strong>What you do:</strong></p>
+              <p><strong>What You Do:</strong></p>
               <ol>
             <li>Open your terminal on your local computer.</li>
             <li>Move into your local project folder:
@@ -517,6 +565,14 @@ walltime: 24:00:00</pre>
               <pre data-command="download-rsync"></pre>
             </li>
               </ol>
+            </div>
+            <div class="notes-block pipeline-does-block">
+              <h3>What the Pipeline Will Do</h3>
+              <ul>
+                <li>Download selected final results with resume-safe <code>rsync</code>.</li>
+                <li>Create a download log and verify transferred files when possible.</li>
+                <li>Bring back results, reports, logs, MultiQC output, quantification outputs, and summaries.</li>
+              </ul>
             </div>
           </div>
           <h3>Scripts involved</h3>

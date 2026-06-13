@@ -875,7 +875,10 @@ h1 {
 }
 
 .action-notes-grid {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(260px, 0.82fr);
+  gap: 16px;
+  align-items: start;
   margin-top: 12px;
 }
 
@@ -896,6 +899,15 @@ h1 {
   margin-top: 22px;
   background: #f6fbf6;
   border-color: #d7e8d8;
+}
+
+.action-notes-grid .notes-block {
+  margin-top: 0;
+}
+
+.pipeline-does-block {
+  background: #fbf8ff;
+  border-color: #ddd1e4;
 }
 
 .notes-bottom {
@@ -967,6 +979,12 @@ h1 {
   background: #f7fbf6;
   border-color: #d5e5d8;
   border-left-color: #6a8f52;
+}
+
+.guide-callout.pipeline-does {
+  background: #fbf8ff;
+  border-color: #ddd1e4;
+  border-left-color: #8a6f92;
 }
 
 .guide-callout.expected {
