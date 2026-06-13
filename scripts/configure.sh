@@ -2,7 +2,10 @@
 set -euo pipefail
 
 CONFIG="${CONFIG:-configs/configure.yaml}"
+RUN_MODE="${RUN_MODE:-star_salmon}"
 ALIGNER="${ALIGNER:-star_salmon}"
+PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
+SKIP_ALIGNMENT="${SKIP_ALIGNMENT:-false}"
 SPECIES="${SPECIES:-unknown}"
 GENOME_SIZE_GB="${GENOME_SIZE_GB:-}"
 SAMPLE_COUNT="${SAMPLE_COUNT:-}"
@@ -10,11 +13,17 @@ SAMPLE_COUNT="${SAMPLE_COUNT:-}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --star-salmon)
+      RUN_MODE="star_salmon"
       ALIGNER="star_salmon"
+      PSEUDO_ALIGNER="salmon"
+      SKIP_ALIGNMENT="false"
       shift
       ;;
     --salmon)
-      ALIGNER="salmon"
+      RUN_MODE="salmon_only"
+      ALIGNER=""
+      PSEUDO_ALIGNER="salmon"
+      SKIP_ALIGNMENT="true"
       shift
       ;;
     *)
@@ -32,6 +41,7 @@ FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
 SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="${REFERENCE:-input/reference/genome.fa}"
 ANNOTATION="${ANNOTATION:-input/annotation/genes.gtf}"
+ANNOTATION_TYPE="${ANNOTATION_TYPE:-auto}"
 PROFILE="${PROFILE:-singularity}"
 WORKDIR="${WORKDIR:-work}"
 OUTDIR="${OUTDIR:-results}"
@@ -95,12 +105,18 @@ fi
 if [[ -z "$SAMPLE_COUNT" ]]; then
   SAMPLE_COUNT="$(infer_sample_count)"
 fi
+if [[ "$ANNOTATION_TYPE" == "auto" ]]; then
+  case "$ANNOTATION" in
+    *.gff|*.gff3|*.GFF|*.GFF3) ANNOTATION_TYPE="gff" ;;
+    *) ANNOTATION_TYPE="gtf" ;;
+  esac
+fi
 
 estimate_memory() {
-  local aligner="$1"
+  local run_mode="$1"
   local genome_size="${2:-0}"
-  awk -v aligner="$aligner" -v genome="$genome_size" 'BEGIN {
-    if (aligner == "salmon") {
+  awk -v run_mode="$run_mode" -v genome="$genome_size" 'BEGIN {
+    if (run_mode == "salmon_only") {
       mem = 32
     } else if (genome <= 2) {
       mem = 48
@@ -116,9 +132,9 @@ estimate_memory() {
 }
 
 estimate_cpu() {
-  local aligner="$1"
+  local run_mode="$1"
   local samples="${2:-0}"
-  if [[ "$aligner" == "salmon" ]]; then
+  if [[ "$run_mode" == "salmon_only" ]]; then
     if [[ "$samples" =~ ^[0-9]+$ && "$samples" -ge 48 ]]; then
       echo 12
     else
@@ -134,52 +150,63 @@ estimate_cpu() {
 }
 
 estimate_walltime() {
-  local aligner="$1"
+  local run_mode="$1"
   local samples="${2:-0}"
-  if [[ "$aligner" == "salmon" ]]; then
+  if [[ "$run_mode" == "salmon_only" ]]; then
     if [[ "$samples" =~ ^[0-9]+$ && "$samples" -ge 48 ]]; then
-      echo "24:00:00"
+      echo "24.h"
     else
-      echo "12:00:00"
+      echo "12.h"
     fi
   else
     if [[ "$samples" =~ ^[0-9]+$ && "$samples" -ge 48 ]]; then
-      echo "48:00:00"
+      echo "48.h"
     else
-      echo "24:00:00"
+      echo "24.h"
     fi
   fi
 }
 
-MEMORY="${MEMORY:-$(estimate_memory "$ALIGNER" "${GENOME_SIZE_GB:-0}")}"
-CPU="${CPU:-$(estimate_cpu "$ALIGNER" "${SAMPLE_COUNT:-0}")}"
-WALLTIME="${WALLTIME:-$(estimate_walltime "$ALIGNER" "${SAMPLE_COUNT:-0}")}"
+MEMORY="${MEMORY:-$(estimate_memory "$RUN_MODE" "${GENOME_SIZE_GB:-0}")}"
+CPU="${CPU:-$(estimate_cpu "$RUN_MODE" "${SAMPLE_COUNT:-0}")}"
+WALLTIME="${WALLTIME:-$(estimate_walltime "$RUN_MODE" "${SAMPLE_COUNT:-0}")}"
 
 mkdir -p configs logs
 
+yaml_quote() {
+  local value="${1:-}"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf '"%s"' "$value"
+}
+
 cat > "$CONFIG" <<YAML
-local_project_dir: ${LOCAL_PROJECT_DIR}
-hpc_user: ${HPC_USER}
-hpc_host: ${HPC_HOST}
-hpc_project_dir: ${HPC_PROJECT_DIR}
-fastq_dir: ${FASTQ_DIR}
-samplesheet: ${SAMPLESHEET}
-reference: ${REFERENCE}
-annotation: ${ANNOTATION}
-species: ${SPECIES}
+local_project_dir: $(yaml_quote "$LOCAL_PROJECT_DIR")
+hpc_user: $(yaml_quote "$HPC_USER")
+hpc_host: $(yaml_quote "$HPC_HOST")
+hpc_project_dir: $(yaml_quote "$HPC_PROJECT_DIR")
+fastq_dir: $(yaml_quote "$FASTQ_DIR")
+samplesheet: $(yaml_quote "$SAMPLESHEET")
+reference: $(yaml_quote "$REFERENCE")
+annotation: $(yaml_quote "$ANNOTATION")
+annotation_type: $(yaml_quote "$ANNOTATION_TYPE")
+species: $(yaml_quote "$SPECIES")
 genome_size_gb: ${GENOME_SIZE_GB:-unknown}
 sample_count: ${SAMPLE_COUNT:-unknown}
-aligner: ${ALIGNER}
-profile: ${PROFILE}
-memory: ${MEMORY}
+run_mode: $(yaml_quote "$RUN_MODE")
+aligner: $(yaml_quote "$ALIGNER")
+pseudo_aligner: $(yaml_quote "$PSEUDO_ALIGNER")
+skip_alignment: ${SKIP_ALIGNMENT}
+profile: $(yaml_quote "$PROFILE")
+memory: $(yaml_quote "$MEMORY")
 cpu: ${CPU}
-walltime: ${WALLTIME}
-workdir: ${WORKDIR}
-outdir: ${OUTDIR}
-cache_dir: ${CACHE_DIR}
+walltime: $(yaml_quote "$WALLTIME")
+workdir: $(yaml_quote "$WORKDIR")
+outdir: $(yaml_quote "$OUTDIR")
+cache_dir: $(yaml_quote "$CACHE_DIR")
 YAML
 
 echo "Wrote $CONFIG"
-echo "Aligner: $ALIGNER"
+echo "Run mode: $RUN_MODE"
 echo "Estimated resources: memory=$MEMORY cpu=$CPU walltime=$WALLTIME"
 echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"

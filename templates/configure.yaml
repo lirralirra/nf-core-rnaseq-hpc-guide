@@ -6,12 +6,16 @@ hpc_project_dir: /hpc/path/to/project
 fastq_dir: input/fastq
 samplesheet: input/samplesheet.csv
 reference: input/reference/genome.fa
-annotation: input/annotation/annotation.gtf
+annotation: input/annotation/genes.gtf
+annotation_type: gtf
 species: unknown
 genome_size_gb: unknown
 sample_count: unknown
 
+run_mode: star_salmon
 aligner: star_salmon
+pseudo_aligner: salmon
+skip_alignment: false
 profile: singularity
 
 memory: auto

@@ -19,7 +19,7 @@ HPC system: `<cluster_name>`
 - Samplesheet: `input/samplesheet.csv`
 - FASTQ directory: `input/fastq/`
 - Genome FASTA: `input/reference/genome.fa`
-- Annotation: `input/annotation/annotation.gtf`
+- Annotation: `input/annotation/genes.gtf`
 
 ## Main Command
 
@@ -30,7 +30,7 @@ bash scripts/run.sh
 ## Resume Command
 
 ```bash
-bash scripts/run.sh -resume
+bash scripts/run.sh
 ```
 
 ## Outputs To Archive

@@ -8,6 +8,11 @@ REPORT="reports/input_validation_report.md"
 
 mkdir -p "$(dirname "$SAMPLESHEET")" reports
 
+if [[ ! -d "$FASTQ_DIR" ]]; then
+  echo "FASTQ directory not found: $FASTQ_DIR" >&2
+  exit 1
+fi
+
 if [[ -f "$SAMPLESHEET" && "$FORCE" != "true" ]]; then
   echo "Samplesheet exists: $SAMPLESHEET"
   echo "Set FORCE=true to overwrite."
