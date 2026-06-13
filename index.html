@@ -11,7 +11,7 @@
     <button class="intro-skip" type="button" aria-label="Skip intro">×</button>
     <div class="intro-scene">
       <img class="intro-storyboard" src="assets/happy-rnaseq-intro-witch.jpg" alt="Illustrated Happy RNA-seq opening showing inputs FASTQ, reference genome, and GFF3 annotation; running the nf-core RNA-seq pipeline on HPC; and outputting a count matrix.">
-      <button class="intro-start" id="introStart" type="button" aria-label="Start Brewing">Start Brewing</button>
+      <button class="intro-start" id="introStart" type="button" aria-label="Start">Start</button>
     </div>
   </div>
   <nav class="site-nav product-nav" aria-label="Site navigation">
@@ -74,15 +74,17 @@
           <div class="step-one-grid">
             <div class="step-one-copy">
               <section class="step-one-section">
-                <p><strong>Purpose:</strong> Create a new project from a ready-to-use template.</p>
+                <div class="guide-callout purpose">
+                  <strong>Purpose</strong>
+                  <p>Download a ready-to-use template to create a new project.</p>
+                </div>
               </section>
-              <div class="guide-callout recommend">
-                <strong>Beginner recommendation</strong>
-                <p>Use <strong>Demo Project ZIP</strong> first if you want to practise safely. Use <strong>Template ZIP</strong> when you are ready to add your own FASTQ, reference genome, and annotation.</p>
+              <div class="guide-callout expected">
+                <strong>Expected outcome</strong>
+                <p>Your local project folder exists, the template structure is visible, and you know whether you are using the demo project or your own data.</p>
               </div>
               <section class="step-one-section">
-                <p><strong>Phoenix HPC Access Prerequisite:</strong> Before uploading or running the project, make sure you have University of Adelaide Phoenix HPC access.</p>
-                <p><a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
+                <p><strong>Phoenix HPC Access Prerequisite:</strong> Before uploading or running the project, make sure you have University of Adelaide Phoenix HPC access. <a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
               </section>
               <section class="step-one-section">
                 <p><strong>What You Do:</strong></p>
@@ -90,22 +92,15 @@
                   <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
                   <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
                   <li>Unzip the project on your local computer.</li>
-                  <li>Check the folder structure before moving to the next step.</li>
+                  <li>Check the folder structure and put the folder path below.
+                    <div class="simple-path-box">
+                      <label for="localPath"><strong>Local working folder</strong></label>
+                      <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
+                      <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
+                    </div>
+                  </li>
                 </ol>
               </section>
-              <div class="guide-callout expected">
-                <strong>Expected outcome</strong>
-                <p>Your local project folder exists, the template structure is visible, and you know whether you are using the demo project or your own data.</p>
-              </div>
-              <div class="guide-callout pipeline-does">
-                <strong>What the Pipeline Will Do</strong>
-                <p>No analysis runs yet. The template provides the folder structure, reusable scripts, config file, report locations, and downloads used in later steps.</p>
-              </div>
-              <div class="simple-path-box">
-                <label for="localPath"><strong>Local working folder</strong></label>
-                <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
-                <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
-              </div>
             </div>
             <div>
               <h3>Template structure</h3>
@@ -113,34 +108,8 @@
                 <span><i class="source-dot source-template"></i>ZIP template</span>
                 <span><i class="source-dot source-user"></i>Load in</span>
                 <span><i class="source-dot source-script"></i>Script generated</span>
-                <span><i class="source-dot source-pipeline"></i>Pipeline generated</span>
               </div>
-              <pre class="structure-tree"><span>project_root/</span>
-<span>├── input/</span>
-<span>│   ├── fastq/ <b class="source-tag user">Load in</b> FASTQ files</span>
-<span>│   ├── reference/ <b class="source-tag user">Load in</b> genome FASTA</span>
-<span>│   ├── annotation/ <b class="source-tag user">Load in</b> GTF/GFF annotation</span>
-<span>│   └── samplesheet.csv <b class="source-tag script">Script generated</b> Step 2</span>
-<span>├── configs/</span>
-<span>│   └── configure.yaml <b class="source-tag script">Script generated</b> Step 3</span>
-<span>├── scripts/ <b class="source-tag template">ZIP template</b></span>
-<span>│   ├── make_samplesheet.sh <b class="source-tag template">ZIP template</b> Step 2</span>
-<span>│   ├── input_validate.sh <b class="source-tag template">ZIP template</b> Step 2</span>
-<span>│   ├── configure.sh <b class="source-tag template">ZIP template</b> Step 3</span>
-<span>│   ├── upload_to_hpc.sh <b class="source-tag template">ZIP template</b> Step 4</span>
-<span>│   ├── smoke_run.sh <b class="source-tag template">ZIP template</b> Step 5</span>
-<span>│   ├── one_sample_run.sh <b class="source-tag template">ZIP template</b> Step 5</span>
-<span>│   ├── run.sh <b class="source-tag template">ZIP template</b> Step 6</span>
-<span>│   ├── monitor_run.sh <b class="source-tag template">ZIP template</b> Step 6</span>
-<span>│   └── download_results.sh <b class="source-tag template">ZIP template</b> Step 7</span>
-<span>├── reports/</span>
-<span>│   ├── input_validation_report.md <b class="source-tag script">Script generated</b> Step 2</span>
-<span>│   ├── smoke_test_report.md <b class="source-tag script">Script generated</b> Step 5</span>
-<span>│   └── one_sample_validation_report.md <b class="source-tag script">Script generated</b> Step 5</span>
-<span>├── logs/ <b class="source-tag script">Script generated</b></span>
-<span>├── results/ <b class="source-tag pipeline">Pipeline generated</b></span>
-<span>├── work/ <b class="source-tag pipeline">Pipeline generated</b></span>
-<span>└── README.md <b class="source-tag template">ZIP template</b></span></pre>
+              <pre class="structure-tree"><span>project_root/</span><span class="tree-group">├── input/</span><span>│   ├── <b class="source-tag user" title="Load in: FASTQ files">fastq/</b></span><span>│   ├── <b class="source-tag user" title="Load in: genome FASTA">reference/</b></span><span>│   ├── <b class="source-tag user" title="Load in: GTF/GFF annotation">annotation/</b></span><span>│   └── <b class="source-tag script" title="Script generated by Step 2 make_samplesheet.sh">samplesheet.csv</b></span><span class="tree-group">├── configs/</span><span>│   └── <b class="source-tag script" title="Script generated by Step 3 configure.sh">configure.yaml</b></span><span class="tree-group">├── <b class="source-tag template" title="ZIP template">scripts/</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 2">make_samplesheet.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 2">input_validate.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 3">configure.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 4">upload_to_hpc.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 5">smoke_run.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 5">one_sample_run.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 6">run.sh</b></span><span>│   ├── <b class="source-tag template" title="ZIP template, used in Step 6">monitor_run.sh</b></span><span>│   └── <b class="source-tag template" title="ZIP template, used in Step 7">download_results.sh</b></span><span class="tree-group">├── reports/</span><span>│   ├── <b class="source-tag script" title="Script generated by Step 2 input_validate.sh">input_validation_report.md</b></span><span>│   ├── <b class="source-tag script" title="Script generated by Step 5 smoke_run.sh">smoke_test_report.md</b></span><span>│   └── <b class="source-tag script" title="Script generated by Step 5 one_sample_run.sh">one_sample_validation_report.md</b></span><span class="tree-group">├── <b class="source-tag script" title="Script generated">logs/</b></span><span class="tree-group">├── <b class="source-tag pipeline" title="Pipeline generated">results/</b></span><span class="tree-group">├── <b class="source-tag pipeline" title="Pipeline generated">work/</b></span><span class="tree-group">└── <b class="source-tag template" title="ZIP template">README.md</b></span></pre>
             </div>
           </div>
         </article>
@@ -148,13 +117,11 @@
         <article class="step-detail" data-step-panel="2">
           <div class="step-title-row">
             <h2>Step 2 — Prepare &amp; Validate Inputs</h2>
-            <span class="validation-pill">Are the project files correct?</span>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p><strong>Purpose:</strong> Put the input files in the expected local folders, then create and validate the project metadata before uploading large data to HPC.</p>
-          <div class="guide-callout warning">
-            <strong>Watch out</strong>
-            <p>Most early failures come from FASTQ pair mismatches, duplicate sample IDs, or a samplesheet path that points to the wrong file. Fix these locally before uploading.</p>
+          <div class="guide-callout purpose">
+            <strong>Purpose</strong>
+            <p>Get your input data ready.</p>
           </div>
           <div class="guide-callout expected">
             <strong>Expected outcome</strong>
@@ -179,52 +146,124 @@
             </li>
               </ol>
             </div>
-            <div class="notes-block pipeline-does-block">
-              <h3>What the Pipeline Will Do</h3>
+            <details class="notes-block pipeline-does-block">
+              <summary>What Scripts Will Do</summary>
+              <p><code>make_samplesheet.sh</code></p>
               <ul>
-                <li>Scan <code>input/fastq/</code> for paired FASTQ files.</li>
-                <li>Generate <code>input/samplesheet.csv</code> when requested.</li>
-                <li>Validate sample names, FASTQ pairs, reference, annotation, scripts, and upload size.</li>
-                <li>Write <code>reports/input_validation_report.md</code>.</li>
-              </ul>
-            </div>
-          </div>
-          <h3>Scripts involved</h3>
-          <div class="two-col">
-            <div class="mini-block">
-              <h3><code>make_samplesheet.sh</code></h3>
-              <ul>
-                <li>Scan <code>input/fastq/</code></li>
-                <li>Detect paired-end FASTQ files</li>
-                <li>Match R1/R2 pairs</li>
-                <li>Infer sample names</li>
-                <li>Generate <code>samplesheet.csv</code></li>
+                <li>Scan <code>input/fastq/</code> for paired FASTQ files</li>
+                <li>Match R1/R2 pairs and infer sample names</li>
+                <li>Generate <code>input/samplesheet.csv</code></li>
                 <li>Flag unmatched FASTQ files</li>
                 <li>Do not overwrite an existing samplesheet unless explicitly requested</li>
               </ul>
-              <p><strong>How to run:</strong></p>
-              <pre data-command="step2-make"></pre>
-            </div>
-            <div class="mini-block">
-              <h3><code>input_validate.sh</code></h3>
+              <p><code>input_validate.sh</code></p>
               <ul>
                 <li>Check FASTQ files exist and paired-end files match</li>
                 <li>Check sample IDs are unique and samplesheet format is valid</li>
                 <li>Check reference, annotation, and required inputs exist</li>
                 <li>Estimate upload size and detect missing files</li>
+                <li>Write <code>reports/input_validation_report.md</code></li>
               </ul>
-              <p><strong>Output:</strong> <code>reports/input_validation_report.md</code></p>
-              <p><strong>How to run:</strong></p>
-              <pre data-command="step2-validate"></pre>
-            </div>
+            </details>
           </div>
-            <div class="notes-block notes-bottom">
-              <h3>Notes</h3>
+            <details class="notes-block notes-bottom">
+              <summary>Notes</summary>
               <ul>
             <li>Review <code>input/samplesheet.csv</code> before continuing.</li>
             <li>Read <code>reports/input_validation_report.md</code> and fix any problems locally.</li>
               </ul>
-            </div>
+            </details>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/make_samplesheet.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
+SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
+FORCE="${FORCE:-false}"
+REPORT="reports/input_validation_report.md"
+
+mkdir -p "$(dirname "$SAMPLESHEET")" reports
+
+if [[ -f "$SAMPLESHEET" &amp;&amp; "$FORCE" != "true" ]]; then
+  echo "Samplesheet exists: $SAMPLESHEET"
+  echo "Set FORCE=true to overwrite."
+  exit 0
+fi
+
+tmp="$(mktemp)"
+echo "sample,fastq_1,fastq_2,strandedness" &gt; "$tmp"
+
+find "$FASTQ_DIR" -type f \( -name "*R1*.fastq.gz" -o -name "*_1.fastq.gz" \) | sort | while read -r r1; do
+  r2="${r1/R1/R2}"
+  [[ "$r2" == "$r1" ]] &amp;&amp; r2="${r1/_1.fastq.gz/_2.fastq.gz}"
+  sample="$(basename "$r1" | sed -E 's/(_R?1|_1).*//')"
+  if [[ -f "$r2" ]]; then
+    echo "$sample,$r1,$r2,auto" &gt;&gt; "$tmp"
+  else
+    echo "- Unmatched R1 FASTQ: $r1" &gt;&gt; "$REPORT"
+  fi
+done
+
+mv "$tmp" "$SAMPLESHEET"
+echo "Wrote $SAMPLESHEET"
+</code></pre>
+              </div>
+            </details>
+          </div>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/input_validate.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-configs/configure.yaml}"
+REPORT="reports/input_validation_report.md"
+mkdir -p reports logs
+
+get_config() {
+  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\''']//; s/["'\''']$//'
+}
+
+SAMPLESHEET="$(get_config samplesheet)"
+REFERENCE="$(get_config reference)"
+ANNOTATION="$(get_config annotation)"
+FASTQ_DIR="$(get_config fastq_dir)"
+
+{
+  echo "# Input Validation Report"
+  echo
+  echo "Generated: $(date)"
+  echo
+  echo "## Required paths"
+  for path in "$CONFIG" "$SAMPLESHEET" "$REFERENCE" "$ANNOTATION" "$FASTQ_DIR"; do
+    [[ -e "$path" ]] &amp;&amp; echo "- OK: $path" || echo "- MISSING: $path"
+  done
+  echo
+  echo "## Samplesheet checks"
+  if [[ -f "$SAMPLESHEET" ]]; then
+    head -n 1 "$SAMPLESHEET" | grep -q 'sample,fastq_1,fastq_2,strandedness' &amp;&amp; echo "- OK: header" || echo "- CHECK: unexpected header"
+    awk -F, 'NR&gt;1 {print $1}' "$SAMPLESHEET" | sort | uniq -d | sed 's/^/- DUPLICATE SAMPLE: /' || true
+    awk -F, 'NR&gt;1 {print $2"\n"$3}' "$SAMPLESHEET" | while read -r fq; do
+      [[ -z "$fq" ]] &amp;&amp; continue
+      [[ -f "$fq" ]] &amp;&amp; echo "- OK FASTQ: $fq" || echo "- MISSING FASTQ: $fq"
+    done
+  fi
+  echo
+  echo "## Upload size estimate"
+  du -sh input configs scripts reports README.md 2&gt;/dev/null || true
+} &gt; "$REPORT"
+
+echo "Wrote $REPORT"
+</code></pre>
+              </div>
+            </details>
+          </div>
         </article>
 
         <article class="step-detail" data-step-panel="3">
@@ -232,10 +271,9 @@
             <h2>Step 3 — Pipeline Configure</h2>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p><strong>Purpose:</strong> Choose how nf-core/rnaseq will run.</p>
-          <div class="guide-callout recommend configure-focus">
-            <strong>Beginner recommendation for configuration</strong>
-            <p>Choose <strong>STAR + Salmon</strong> when you have a genome FASTA and GFF/GTF annotation. Choose <strong>Salmon only</strong> for a faster quantification-focused run when genome alignment outputs are not needed.</p>
+          <div class="guide-callout purpose">
+            <strong>Purpose</strong>
+            <p>Learn the nf-core/rnaseq steps and choose an aligner to configure the pipeline.</p>
           </div>
           <div class="guide-callout expected">
             <strong>Expected outcome</strong>
@@ -263,21 +301,21 @@
             </li>
               </ol>
             </div>
-            <div class="notes-block pipeline-does-block">
-              <h3>What the Pipeline Will Do</h3>
+            <details class="notes-block pipeline-does-block">
+              <summary>What Scripts Will Do</summary>
+              <p><code>configure.sh</code></p>
               <ul>
-                <li>Create <code>configs/configure.yaml</code> from the selected mode.</li>
-                <li>Record local paths, HPC destination, output directory, work directory, and cache path.</li>
-                <li>Estimate memory, CPU, and walltime from project metadata where possible.</li>
-                <li>Keep biological choices explicit so they can be reviewed before upload.</li>
+                <li>Create <code>configs/configure.yaml</code> from the selected mode</li>
+                <li>Record local paths, HPC destination, output directory, work directory, and cache path</li>
+                <li>Scan project metadata, reference files, and samplesheet information</li>
+                <li>Estimate memory, CPU, and walltime from project metadata where possible</li>
+                <li>Keep biological choices explicit so they can be reviewed before upload</li>
               </ul>
-            </div>
+            </details>
           </div>
-          <h3>Scripts involved</h3>
-          <p><a class="script-tag strong" href="scripts/configure.sh" download>configure.sh</a></p>
-          <p><code>configure.sh</code> auto-generates <code>configs/configure.yaml</code> with local paths, HPC destination, aligner choice, profile, work directory, output directory, cache path, and estimated memory, CPU, and walltime settings. It scans project metadata, reference files, and samplesheet information to estimate resources for the project.</p>
-          <p><strong>Example <code>configs/configure.yaml</code> fields:</strong></p>
-          <pre>aligner: star_salmon
+          <details class="notes-block notes-bottom">
+            <summary>Example <code>configs/configure.yaml</code> fields</summary>
+            <pre>aligner: star_salmon
 fastq_dir: input/fastq
 samplesheet: input/samplesheet.csv
 reference: input/reference/genome.fa
@@ -294,42 +332,224 @@ cache_dir: /scratch/your_username/apptainer_cache
 memory: 64G
 cpu: 16
 walltime: 24:00:00</pre>
-            <div class="notes-block notes-bottom">
-              <h3>Notes</h3>
+          </details>
+            <details class="notes-block notes-bottom">
+              <summary>Notes</summary>
               <ul>
             <li>The script writes <code>configs/configure.yaml</code> automatically.</li>
             <li><code>configure.sh</code> scans project files to infer species, genome size, and sample count, then estimates memory, CPU, and walltime.</li>
-            <li>Open <code>configs/configure.yaml</code> after generation and quickly check the paths.</li>
+            <li>Review <code>configs/configure.yaml</code> and quickly check the paths before opening it for editing.</li>
             <li>Only override memory, CPU, walltime, scratch, and profile values if your HPC needs different settings.</li>
               </ul>
-            </div>
+            </details>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/configure.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-configs/configure.yaml}"
+ALIGNER="${ALIGNER:-star_salmon}"
+SPECIES="${SPECIES:-unknown}"
+GENOME_SIZE_GB="${GENOME_SIZE_GB:-}"
+SAMPLE_COUNT="${SAMPLE_COUNT:-}"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --star-salmon)
+      ALIGNER="star_salmon"
+      shift
+      ;;
+    --salmon)
+      ALIGNER="salmon"
+      shift
+      ;;
+    *)
+      echo "Usage: bash scripts/configure.sh [--star-salmon|--salmon]" &gt;&amp;2
+      exit 2
+      ;;
+  esac
+done
+
+LOCAL_PROJECT_DIR="${LOCAL_PROJECT_DIR:-$(pwd)}"
+HPC_USER="${HPC_USER:-your_username}"
+HPC_HOST="${HPC_HOST:-your.cluster.edu}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
+FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
+SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
+REFERENCE="${REFERENCE:-input/reference/genome.fa}"
+ANNOTATION="${ANNOTATION:-input/annotation/genes.gtf}"
+PROFILE="${PROFILE:-singularity}"
+WORKDIR="${WORKDIR:-work}"
+OUTDIR="${OUTDIR:-results}"
+CACHE_DIR="${CACHE_DIR:-/scratch/${HPC_USER}/apptainer_cache}"
+
+metadata_value() {
+  local key="$1"
+  local file="${PROJECT_METADATA:-configs/project_metadata.tsv}"
+  [[ -f "$file" ]] || return 0
+  awk -F'\t' -v key="$key" '$1 == key {print $2; exit}' "$file"
+}
+
+infer_species() {
+  local value
+  value="$(metadata_value species)"
+  if [[ -n "$value" ]]; then
+    echo "$value"
+    return
+  fi
+  basename "$(pwd)" | sed 's/[_-]/ /g'
+}
+
+infer_sample_count() {
+  local value
+  value="$(metadata_value sample_count)"
+  if [[ -n "$value" ]]; then
+    echo "$value"
+    return
+  fi
+  if [[ -f "$SAMPLESHEET" ]]; then
+    awk 'END {print (NR &gt; 0 ? NR - 1 : 0)}' "$SAMPLESHEET"
+    return
+  fi
+  if [[ -d "$FASTQ_DIR" ]]; then
+    find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) 2&gt;/dev/null | sed -E 's/(_R?[12]|_1|_2)\.(fastq|fq)(\.gz)?$//' | sort -u | wc -l | tr -d ' '
+  else
+    echo 0
+  fi
+}
+
+infer_genome_size_gb() {
+  local value
+  value="$(metadata_value genome_size_gb)"
+  if [[ -n "$value" ]]; then
+    echo "$value"
+    return
+  fi
+  if [[ -f "$REFERENCE" ]]; then
+    awk 'BEGIN {n=0} /^&gt;/ {next} {gsub(/[[:space:]]/, ""); n += length($0)} END {printf "%.2f", n/1000000000}' "$REFERENCE"
+    return
+  fi
+  echo 0
+}
+
+if [[ "$SPECIES" == "unknown" ]]; then
+  SPECIES="$(infer_species)"
+fi
+if [[ -z "$GENOME_SIZE_GB" ]]; then
+  GENOME_SIZE_GB="$(infer_genome_size_gb)"
+fi
+if [[ -z "$SAMPLE_COUNT" ]]; then
+  SAMPLE_COUNT="$(infer_sample_count)"
+fi
+
+estimate_memory() {
+  local aligner="$1"
+  local genome_size="${2:-0}"
+  awk -v aligner="$aligner" -v genome="$genome_size" 'BEGIN {
+    if (aligner == "salmon") {
+      mem = 32
+    } else if (genome &lt;= 2) {
+      mem = 48
+    } else if (genome &lt;= 8) {
+      mem = 64
+    } else if (genome &lt;= 16) {
+      mem = 96
+    } else {
+      mem = 128
+    }
+    printf "%dG", mem
+  }'
+}
+
+estimate_cpu() {
+  local aligner="$1"
+  local samples="${2:-0}"
+  if [[ "$aligner" == "salmon" ]]; then
+    if [[ "$samples" =~ ^[0-9]+$ &amp;&amp; "$samples" -ge 48 ]]; then
+      echo 12
+    else
+      echo 8
+    fi
+  else
+    if [[ "$samples" =~ ^[0-9]+$ &amp;&amp; "$samples" -ge 48 ]]; then
+      echo 24
+    else
+      echo 16
+    fi
+  fi
+}
+
+estimate_walltime() {
+  local aligner="$1"
+  local samples="${2:-0}"
+  if [[ "$aligner" == "salmon" ]]; then
+    if [[ "$samples" =~ ^[0-9]+$ &amp;&amp; "$samples" -ge 48 ]]; then
+      echo "24:00:00"
+    else
+      echo "12:00:00"
+    fi
+  else
+    if [[ "$samples" =~ ^[0-9]+$ &amp;&amp; "$samples" -ge 48 ]]; then
+      echo "48:00:00"
+    else
+      echo "24:00:00"
+    fi
+  fi
+}
+
+MEMORY="${MEMORY:-$(estimate_memory "$ALIGNER" "${GENOME_SIZE_GB:-0}")}"
+CPU="${CPU:-$(estimate_cpu "$ALIGNER" "${SAMPLE_COUNT:-0}")}"
+WALLTIME="${WALLTIME:-$(estimate_walltime "$ALIGNER" "${SAMPLE_COUNT:-0}")}"
+
+mkdir -p configs logs
+
+cat &gt; "$CONFIG" &lt;&lt;YAML
+local_project_dir: ${LOCAL_PROJECT_DIR}
+hpc_user: ${HPC_USER}
+hpc_host: ${HPC_HOST}
+hpc_project_dir: ${HPC_PROJECT_DIR}
+fastq_dir: ${FASTQ_DIR}
+samplesheet: ${SAMPLESHEET}
+reference: ${REFERENCE}
+annotation: ${ANNOTATION}
+species: ${SPECIES}
+genome_size_gb: ${GENOME_SIZE_GB:-unknown}
+sample_count: ${SAMPLE_COUNT:-unknown}
+aligner: ${ALIGNER}
+profile: ${PROFILE}
+memory: ${MEMORY}
+cpu: ${CPU}
+walltime: ${WALLTIME}
+workdir: ${WORKDIR}
+outdir: ${OUTDIR}
+cache_dir: ${CACHE_DIR}
+YAML
+
+echo "Wrote $CONFIG"
+echo "Aligner: $ALIGNER"
+echo "Estimated resources: memory=$MEMORY cpu=$CPU walltime=$WALLTIME"
+echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
+</code></pre>
+              </div>
+            </details>
+          </div>
         </article>
 
         <article class="step-detail" data-step-panel="4">
           <div class="step-title-row">
             <h2>Step 4 — Upload to HPC</h2>
-            <span class="validation-pill">Has the project transferred successfully?</span>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p><strong>Purpose:</strong> Transfer the prepared project to HPC.</p>
-          <div class="guide-callout warning">
-            <strong>Storage note</strong>
-            <p>Upload raw inputs, configs, scripts, and reports. Avoid uploading old <code>work/</code>, cache folders, or previous large outputs unless you truly need them.</p>
+          <div class="guide-callout purpose">
+            <strong>Purpose</strong>
+            <p>Transfer the prepared project to HPC.</p>
           </div>
           <div class="guide-callout expected">
             <strong>Expected outcome</strong>
             <p>The project folder exists on HPC, the upload log is saved, and <code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README files are present.</p>
-          </div>
-          <div class="simple-path-box">
-            <label for="hpcPath"><strong>HPC working folder</strong></label>
-            <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
-            <div class="simple-path-row">
-              <label for="hpcUser"><strong>HPC username</strong></label>
-              <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
-              <label for="hpcHost"><strong>HPC login host</strong></label>
-              <input id="hpcHost" type="text" autocomplete="off" placeholder="p2-log-1.hpc.adelaide.edu.au">
-            </div>
-            <p>These values are only used to fill the command boxes below. Please check the folder exists before running commands.</p>
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
@@ -339,10 +559,26 @@ walltime: 24:00:00</pre>
             <li>Move into your local project folder:
               <pre data-command="local-cd"></pre>
             </li>
-            <li>Log in to your HPC using your Phoenix account:
+            <li>Enter your HPC username and login host below, then log in to your HPC using your Phoenix account.
+              <div class="simple-path-box">
+                <div class="simple-path-row">
+                  <label for="hpcUser"><strong>HPC username</strong></label>
+                  <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
+                  <label for="hpcHost"><strong>HPC login host</strong></label>
+                  <input id="hpcHost" type="text" autocomplete="off" placeholder="p2-log-1.hpc.adelaide.edu.au">
+                </div>
+                <p>These values are only used to fill the command boxes below.</p>
+              </div>
               <pre data-command="hpc-ssh"></pre>
             </li>
-            <li>Confirm the target HPC project folder exists or can be created:
+            <li>Enter the HPC project folder path, then either locate an existing folder or create a new one:
+              <div class="simple-path-box">
+                <label for="hpcPath"><strong>HPC working folder</strong></label>
+                <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
+              </div>
+              <p>If the folder already exists, locate it:</p>
+              <pre data-command="hpc-folder-locate"></pre>
+              <p>If it does not exist yet, create it:</p>
               <pre data-command="hpc-folder-check"></pre>
             </li>
             <li>Exit back to your local terminal after the login check.</li>
@@ -351,67 +587,90 @@ walltime: 24:00:00</pre>
             </li>
               </ol>
             </div>
-            <div class="notes-block pipeline-does-block">
-              <h3>What the Pipeline Will Do</h3>
-              <ul>
-                <li>Use <code>rsync</code> to transfer the prepared project folder.</li>
-                <li>Skip local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs.</li>
-                <li>Create an upload log and verify transferred files when possible.</li>
-              </ul>
-            </div>
-          </div>
-          <h3>Scripts involved</h3>
-          <p><a class="script-tag" href="scripts/upload_to_hpc.sh" download>upload_to_hpc.sh</a></p>
-          <p><code>upload_to_hpc.sh</code> reads the HPC destination from <code>configure.yaml</code>, uploads the project with rsync, writes an upload log, and verifies transferred files when possible.</p>
-          <div class="two-col">
-            <div class="mini-block">
-              <h3>Responsibilities</h3>
+            <details class="notes-block pipeline-does-block">
+              <summary>What Scripts Will Do</summary>
+              <p><code>upload_to_hpc.sh</code></p>
               <ul>
                 <li>Read HPC destination from <code>configure.yaml</code></li>
-                <li>Upload project using rsync</li>
-                <li>Use resume-safe transfer</li>
-                <li>Create upload log</li>
+                <li>Upload the prepared project folder using resume-safe <code>rsync</code></li>
+                <li>Skip local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs</li>
+                <li>Create an upload log</li>
                 <li>Verify transferred files when possible</li>
               </ul>
-            </div>
-            <div class="mini-block">
-              <h3>Upload</h3>
-              <p><code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README.</p>
-              <h3>Do not upload</h3>
-              <p>Local cache, temporary files, old work directories, or unnecessary outputs.</p>
-            </div>
+            </details>
           </div>
-            <div class="notes-block notes-bottom">
-              <h3>Notes</h3>
+            <details class="notes-block notes-bottom">
+              <summary>Notes</summary>
               <ul>
             <li><code>upload_to_hpc.sh</code> reads the HPC user, host, and project path from the auto-generated <code>configs/configure.yaml</code>.</li>
             <li>Check the upload log and confirm the transferred files look complete.</li>
             <li>Uploaded by default: <code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README files.</li>
             <li>Skipped by default: local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs.</li>
               </ul>
-            </div>
+            </details>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/upload_to_hpc.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-configs/configure.yaml}"
+LOG="logs/upload_to_hpc.log"
+mkdir -p logs
+
+get_config() {
+  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\''\\'\'']//; s/["'\''\\'\'']$//'
+}
+
+HPC_USER="$(get_config hpc_user)"
+HPC_HOST="$(get_config hpc_host)"
+HPC_PROJECT_DIR="$(get_config hpc_project_dir)"
+HPC_TARGET="${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR%/}/"
+
+rsync -avh --partial --progress \
+  --exclude '.git/' \
+  --exclude '.DS_Store' \
+  --exclude '._*' \
+  --exclude '.nextflow*' \
+  --exclude '.nf-core/' \
+  --exclude 'work/' \
+  --exclude 'results/' \
+  --exclude 'tmp/' \
+  ./ "$HPC_TARGET" 2&gt;&amp;1 | tee "$LOG"
+
+echo "Upload log: $LOG"
+</code></pre>
+              </div>
+            </details>
+          </div>
         </article>
 
         <article class="step-detail" data-step-panel="5">
           <div class="step-title-row">
             <h2>Step 5 — Preflight Validation</h2>
-            <span class="validation-pill">Can this HPC run? Can this project survive a full run?</span>
             <span class="context-pill hpc-pill">HPC</span>
           </div>
-          <p><strong>Purpose:</strong> Validate the HPC environment and the current project configuration before the full analysis.</p>
+          <div class="guide-callout purpose">
+            <strong>Purpose</strong>
+            <p>Validate the HPC environment and the current project configuration before the full analysis.</p>
+          </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p><code>reports/smoke_test_report.md</code> and <code>reports/one_sample_validation_report.md</code> exist, and the project is either ready for the full run or has clear fixes to apply.</p>
+          </div>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal.</li>
-            <li>Log in to your HPC using your Phoenix account:
+            <li>Open your terminal and log in to your HPC using your Phoenix account:
               <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Move into the uploaded HPC project folder:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>Enable safe automatic fixes and resume during validation.</li>
-            <li>Run the Smoke Test:
+            <li>(Optional, only needed the first time) Enable safe automatic fixes and resume during validation, then run the Smoke Test:
               <pre data-command="step5-smoke"></pre>
             </li>
             <li>Run the One Sample Run:
@@ -420,65 +679,129 @@ walltime: 24:00:00</pre>
             <li>Continue to the full run only after preflight validation passes.</li>
               </ol>
             </div>
-            <div class="notes-block pipeline-does-block">
-              <h3>What the Pipeline Will Do</h3>
+            <details class="notes-block pipeline-does-block">
+              <summary>What Scripts Will Do</summary>
+              <p><code>smoke_run.sh</code></p>
               <ul>
-                <li>Run a tiny built-in nf-core test dataset to check the HPC environment.</li>
-                <li>Run one real sample to validate the current project configuration and resources.</li>
-                <li>Apply safe infrastructure/resource fixes only when allowed.</li>
-                <li>Write Smoke Test and One Sample Run reports.</li>
-              </ul>
-            </div>
-          </div>
-          <p class="auto-fix-note">☑ Allow automatic fixes and resume during validation</p>
-          <p>Safe infrastructure and resource fixes may be applied automatically. Biological settings are never changed automatically.</p>
-          <div class="guide-callout trust">
-            <strong>Automation scope</strong>
-            <p>Automatic fixes may adjust cache paths, scratch/work directories, containers, and resource settings. They should not change reference genome, annotation, strandedness, aligner choice, sample grouping, or experimental design.</p>
-          </div>
-          <div class="guide-callout expected">
-            <strong>Expected outcome</strong>
-            <p><code>reports/smoke_test_report.md</code> and <code>reports/one_sample_validation_report.md</code> exist, and the project is either ready for the full run or has clear fixes to apply.</p>
-          </div>
-          <h3>Scripts involved</h3>
-          <div class="two-col">
-            <div class="mini-block">
-              <h3>Smoke Test</h3>
-              <p><a class="script-tag" href="scripts/smoke_run.sh" download>smoke_run.sh</a></p>
-              <p><strong>Purpose:</strong> Validate the HPC environment using a tiny built-in test dataset.</p>
-              <ul>
+                <li>Run a tiny built-in nf-core test dataset to check the HPC environment</li>
                 <li>Check Nextflow, Apptainer/Singularity, container downloads, cache configuration, permissions, modules, work directory, and scratch directory</li>
                 <li>Auto-fix container download failures, missing cache directory, bad cache path, permission issue, module issue, and common Nextflow problems</li>
-                <li><strong>Behaviour:</strong> Detect → Auto-fix → Resume</li>
+                <li>Write <code>reports/smoke_test_report.md</code></li>
               </ul>
-              <p><strong>Output:</strong> <code>reports/smoke_test_report.md</code></p>
-              <p><strong>How to run:</strong></p>
-              <pre data-command="step5-smoke"></pre>
-            </div>
-            <div class="mini-block">
-              <h3>One Sample Run</h3>
-              <p><a class="script-tag" href="scripts/one_sample_run.sh" download>one_sample_run.sh</a></p>
-              <p><strong>Purpose:</strong> Validate the current project configuration and estimate real resource requirements.</p>
-              <p><strong>Workflow:</strong> Dry Run → Run one real sample.</p>
-              <p><strong>Default sample:</strong> Largest sample, because resource validation should detect STAR memory issues, BEDTOOLS memory issues, walltime limits, scratch/work directory problems, disk quota issues, and bottlenecks.</p>
+              <p><code>one_sample_run.sh</code></p>
               <ul>
-                <li>Advanced options: largest sample, smallest sample, or user-selected sample</li>
+                <li>Run one real sample (largest by default) to validate the current project configuration and estimate real resource requirements</li>
+                <li>Workflow: Dry Run → Run one real sample</li>
                 <li>Auto-fix STAR memory failure, CPU/thread mismatch, BEDTOOLS memory failure, walltime issues, quota or TMPDIR issues, scratch recommendations, and resumable task failures</li>
+                <li>Write <code>reports/one_sample_validation_report.md</code></li>
               </ul>
-              <p><strong>Output:</strong> <code>reports/one_sample_validation_report.md</code></p>
-              <p><strong>How to run:</strong></p>
-              <pre data-command="step5-one-sample"></pre>
-            </div>
+            </details>
           </div>
-            <div class="notes-block notes-bottom">
-              <h3>Notes</h3>
+          <div class="guide-callout trust">
+            <strong>☑ Allow automatic fixes and resume during validation</strong>
+            <p>Safe infrastructure and resource fixes (cache paths, scratch/work directories, containers, resource settings) may be applied automatically and resumed; biological settings (reference genome, annotation, strandedness, aligner choice, sample grouping, experimental design) are never changed automatically.</p>
+          </div>
+            <details class="notes-block notes-bottom">
+              <summary>Notes</summary>
               <ul>
             <li>Review <code>reports/smoke_test_report.md</code>.</li>
             <li>Use the largest sample by default when the goal is resource validation.</li>
             <li>Review <code>reports/one_sample_validation_report.md</code> before launching the full run.</li>
             <li><strong>Never auto-change:</strong> reference genome, annotation, strandedness, aligner choice, metadata, sample grouping, or experimental design.</li>
               </ul>
-            </div>
+            </details>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/smoke_run.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+ALLOW_FIXES="${ALLOW_FIXES:-false}"
+REPORT="reports/smoke_test_report.md"
+mkdir -p reports logs work
+
+{
+  echo "# Smoke Test Report"
+  echo
+  echo "Generated: $(date)"
+  echo
+  echo "## Purpose"
+  echo "Validate nf-core / Nextflow / HPC environment using tiny built-in test data."
+  echo
+  echo "## Automatic fixes allowed"
+  echo "${ALLOW_FIXES}"
+} &gt; "$REPORT"
+
+if [[ "$ALLOW_FIXES" == "true" ]]; then
+  mkdir -p "${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}" "${TMPDIR:-$PWD/work/tmp}"
+fi
+
+nextflow run nf-core/rnaseq \
+  -profile test,singularity \
+  -resume 2&gt;&amp;1 | tee logs/smoke_run.log || {
+    echo "Smoke test failed. Review logs/smoke_run.log" | tee -a "$REPORT"
+    exit 1
+  }
+
+echo "Smoke test passed." &gt;&gt; "$REPORT"
+</code></pre>
+              </div>
+            </details>
+          </div>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/one_sample_run.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+ALLOW_FIXES="${ALLOW_FIXES:-false}"
+SAMPLE_MODE="${SAMPLE_MODE:-smallest}"
+REPORT="reports/one_sample_validation_report.md"
+mkdir -p reports logs work
+
+{
+  echo "# One Sample Validation Report"
+  echo
+  echo "Generated: $(date)"
+  echo
+  echo "Sample mode: ${SAMPLE_MODE}"
+  echo "Automatic fixes allowed: ${ALLOW_FIXES}"
+} &gt; "$REPORT"
+
+CONFIG="${CONFIG:-configs/configure.yaml}"
+get_config() {
+  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\''\\'\'']//; s/["'\''\\'\'']$//'
+}
+SAMPLESHEET="$(get_config samplesheet)"
+REFERENCE="$(get_config reference)"
+ANNOTATION="$(get_config annotation)"
+ALIGNER="$(get_config aligner)"
+PROFILE="$(get_config profile)"
+
+ONE_SAMPLE_SHEET="input/one_sample.samplesheet.csv"
+head -n 1 "$SAMPLESHEET" &gt; "$ONE_SAMPLE_SHEET"
+tail -n +2 "$SAMPLESHEET" | head -n 1 &gt;&gt; "$ONE_SAMPLE_SHEET"
+
+nextflow run nf-core/rnaseq \
+  -profile "$PROFILE" \
+  --input "$ONE_SAMPLE_SHEET" \
+  --fasta "$REFERENCE" \
+  --gtf "$ANNOTATION" \
+  --aligner "$ALIGNER" \
+  -resume 2&gt;&amp;1 | tee logs/one_sample_run.log || {
+    echo "One sample validation failed. Review logs/one_sample_run.log" | tee -a "$REPORT"
+    exit 1
+  }
+
+echo "One sample validation passed." &gt;&gt; "$REPORT"
+</code></pre>
+              </div>
+            </details>
+          </div>
         </article>
 
         <article class="step-detail" data-step-panel="6">
@@ -486,10 +809,9 @@ walltime: 24:00:00</pre>
             <h2>Step 6 — Run &amp; Monitor</h2>
             <span class="context-pill hpc-pill">HPC</span>
           </div>
-          <p><strong>Purpose:</strong> Launch the full nf-core/rnaseq workflow after validation passes and keep the run understandable while it is executing.</p>
-          <div class="guide-callout recovery">
-            <strong>If something fails</strong>
-            <p>Do not restart from zero immediately. Check logs, fix the cause, then resume when appropriate. Memory failures often need higher resources; storage failures often need a better scratch/work directory.</p>
+          <div class="guide-callout purpose">
+            <strong>Purpose</strong>
+            <p>Launch the full nf-core/rnaseq workflow after validation passes and keep the run understandable while it is executing.</p>
           </div>
           <div class="guide-callout expected">
             <strong>Expected outcome</strong>
@@ -499,8 +821,7 @@ walltime: 24:00:00</pre>
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal.</li>
-            <li>Log in to your HPC using your Phoenix account:
+            <li>Open your terminal and log in to your HPC using your Phoenix account:
               <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Move into the uploaded HPC project folder:
@@ -511,40 +832,97 @@ walltime: 24:00:00</pre>
             </li>
             <li>Monitor job status, current stage, failed tasks, disk usage, and recent logs:
               <pre data-command="step6-monitor"></pre>
+              <p class="tip"><strong>Tip:</strong> Press <code>Ctrl+C</code> to stop the monitor (or any running process) without affecting the pipeline run itself.</p>
             </li>
               </ol>
             </div>
-            <div class="notes-block pipeline-does-block">
-              <h3>What the Pipeline Will Do</h3>
+            <details class="notes-block pipeline-does-block">
+              <summary>What Scripts Will Do</summary>
+              <p><code>run.sh</code></p>
               <ul>
-                <li>Launch nf-core/rnaseq with the saved configuration.</li>
-                <li>Use Nextflow resume support when appropriate.</li>
-                <li>Report current stage, job status, failed tasks, disk usage, and recent logs.</li>
-                <li>Provide suggested actions for known infrastructure or resource issues.</li>
+                <li>Launch the full nf-core/rnaseq workflow with the saved configuration</li>
+                <li>Read <code>configure.yaml</code></li>
+                <li>Support Nextflow resume when appropriate</li>
               </ul>
-            </div>
-          </div>
-          <h3>Scripts involved</h3>
-          <div class="two-col">
-            <div class="mini-block">
-              <h3>run.sh</h3>
-              <p><a class="script-tag" href="scripts/run.sh" download>run.sh</a></p>
-              <p>Launch the full nf-core/rnaseq workflow, read <code>configure.yaml</code>, and support Nextflow resume.</p>
-            </div>
-            <div class="mini-block">
-              <h3>monitor_run.sh</h3>
-              <p><a class="script-tag" href="scripts/monitor_run.sh" download>monitor_run.sh</a></p>
-              <p>Show current stage, job status, failed tasks, disk usage, and recent logs. Make it clear where the pipeline is running or stuck.</p>
-            </div>
-          </div>
-          <p>Known issues should include suggested actions.</p>
-            <div class="notes-block notes-bottom">
-              <h3>Notes</h3>
+              <p><code>monitor_run.sh</code></p>
               <ul>
-            <li>If the run is interrupted, use Nextflow resume instead of starting from scratch.</li>
-            <li>Use suggested actions from the monitor output for known infrastructure or resource issues.</li>
+                <li>Show current stage, job status, failed tasks, disk usage, and recent logs</li>
+                <li>Make it clear where the pipeline is running or stuck</li>
+                <li>Provide suggested actions for known infrastructure or resource issues</li>
               </ul>
-            </div>
+            </details>
+          </div>
+            <details class="notes-block notes-bottom">
+              <summary>Notes</summary>
+              <ul>
+            <li>Nextflow keeps track of completed steps, so after debugging an issue you can resume the run and pick up from where it left off instead of starting over from scratch.</li>
+              </ul>
+            </details>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/run.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-configs/configure.yaml}"
+mkdir -p logs
+
+get_config() {
+  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\''\\'\'']//; s/["'\''\\'\'']$//'
+}
+
+PROFILE="$(get_config profile)"
+SAMPLESHEET="$(get_config samplesheet)"
+OUTDIR="$(get_config outdir)"
+REFERENCE="$(get_config reference)"
+ANNOTATION="$(get_config annotation)"
+ALIGNER="$(get_config aligner)"
+WORKDIR="$(get_config workdir)"
+
+nextflow run nf-core/rnaseq \
+  -profile "$PROFILE" \
+  --input "$SAMPLESHEET" \
+  --outdir "$OUTDIR" \
+  --fasta "$REFERENCE" \
+  --gtf "$ANNOTATION" \
+  --aligner "$ALIGNER" \
+  -work-dir "$WORKDIR" \
+  -resume "$@" 2&gt;&amp;1 | tee logs/full_run.log
+</code></pre>
+              </div>
+            </details>
+          </div>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/monitor_run.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+echo "## Job status"
+squeue -u "$USER" 2&gt;/dev/null || true
+
+echo
+echo "## Disk usage"
+du -sh results work logs reports 2&gt;/dev/null || true
+
+echo
+echo "## Recent Nextflow log"
+tail -80 .nextflow.log 2&gt;/dev/null || echo "No .nextflow.log found"
+
+echo
+echo "## Failed tasks"
+grep -i "failed\|error\|killed" .nextflow.log 2&gt;/dev/null | tail -40 || true
+
+echo
+echo "Suggested actions: check memory, walltime, scratch space, container cache, and resume with -resume after safe fixes."
+</code></pre>
+              </div>
+            </details>
+          </div>
         </article>
 
         <article class="step-detail" data-step-panel="7">
@@ -552,7 +930,14 @@ walltime: 24:00:00</pre>
             <h2>Step 7 — Download Results</h2>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p><strong>Purpose:</strong> Transfer final results from HPC back to local storage using rsync.</p>
+          <div class="guide-callout purpose">
+            <strong>Purpose</strong>
+            <p>Transfer final results from HPC back to local storage using rsync.</p>
+          </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p>Results, reports, logs, MultiQC output, quantification/count files, and reproducibility metadata are back on your local machine.</p>
+          </div>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
@@ -566,34 +951,20 @@ walltime: 24:00:00</pre>
             </li>
               </ol>
             </div>
-            <div class="notes-block pipeline-does-block">
-              <h3>What the Pipeline Will Do</h3>
+            <details class="notes-block pipeline-does-block">
+              <summary>What Scripts Will Do</summary>
+              <p><code>download_results.sh</code></p>
               <ul>
-                <li>Download selected final results with resume-safe <code>rsync</code>.</li>
-                <li>Create a download log and verify transferred files when possible.</li>
-                <li>Bring back results, reports, logs, MultiQC output, quantification outputs, and summaries.</li>
+                <li>Download selected final results with resume-safe <code>rsync</code></li>
+                <li>Create a download log</li>
+                <li>Verify transferred files when possible</li>
+                <li>Bring back results, reports, logs, MultiQC output, quantification outputs, and summaries</li>
               </ul>
-            </div>
+            </details>
           </div>
-          <h3>Scripts involved</h3>
-          <p><a class="script-tag" href="scripts/download_results.sh" download>download_results.sh</a></p>
-          <p><code>download_results.sh</code> performs a resume-safe rsync download, creates a download log, and verifies transferred files when possible.</p>
-          <h3>Features</h3>
-          <ul>
-            <li>Resume-safe transfer</li>
-            <li>Download log</li>
-            <li>Verification when possible</li>
-          </ul>
-          <h3>Download by default</h3>
+          <details class="notes-block notes-bottom">
+          <summary>What You Will Get</summary>
           <p><code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</p>
-          <div class="guide-callout output-first">
-            <strong>Open first</strong>
-            <p>Start with <code>multiqc_report.html</code> for QC, then find count/quantification tables for DESeq2, edgeR, WGCNA, Shiny, or other downstream analysis. Keep <code>pipeline_info/</code>, configs, logs, and samplesheet for reproducibility.</p>
-          </div>
-          <div class="guide-callout expected">
-            <strong>Expected outcome</strong>
-            <p>Results, reports, logs, MultiQC output, quantification/count files, and reproducibility metadata are back on your local machine.</p>
-          </div>
           <div class="output-grid mini-output-grid full-output-grid">
             <article class="output-card">
               <h3>Analysis Data</h3>
@@ -646,17 +1017,58 @@ walltime: 24:00:00</pre>
               <p>Audit analysis settings</p>
             </article>
           </div>
+          </details>
           <div class="guide-callout completion">
             <strong>What next?</strong>
             <p>Review QC first, then use the count or quantification outputs for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
           </div>
-          <div class="notes-block notes-bottom">
-            <h3>Notes</h3>
+          <details class="notes-block notes-bottom">
+            <summary>Notes</summary>
             <ul>
-              <li>Downloads include <code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</li>
+              <li>MultiQC reports, quantification outputs, and pipeline summaries.</li>
               <li>Resume-safe rsync allows interrupted downloads to continue.</li>
               <li>Check the download log and verify transferred files when possible.</li>
             </ul>
+          </details>
+          <div class="script-source">
+            <details>
+              <summary>View <code>scripts/download_results.sh</code> source</summary>
+              <div class="code-block">
+                <button class="copy-btn" type="button">Copy</button>
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-configs/configure.yaml}"
+LOCAL_DEST="${LOCAL_DEST:-./downloaded_results}"
+INCLUDE_BAM="${INCLUDE_BAM:-false}"
+LOG="logs/download_results.log"
+mkdir -p logs "$LOCAL_DEST"
+
+get_config() {
+  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\''\\'\'']//; s/["'\''\\'\'']$//'
+}
+
+HPC_USER="$(get_config hpc_user)"
+HPC_HOST="$(get_config hpc_host)"
+HPC_PROJECT_DIR="$(get_config hpc_project_dir)"
+HPC_SOURCE="${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR%/}"
+
+EXCLUDES=(--exclude 'work/' --exclude '.nextflow*')
+if [[ "$INCLUDE_BAM" != "true" ]]; then
+  EXCLUDES+=(--exclude '*.bam' --exclude '*.cram')
+fi
+
+rsync -avh --partial --progress \
+  "${EXCLUDES[@]}" \
+  "${HPC_SOURCE%/}/results" \
+  "${HPC_SOURCE%/}/reports" \
+  "${HPC_SOURCE%/}/logs" \
+  "$LOCAL_DEST/" 2&gt;&amp;1 | tee "$LOG"
+
+echo "Download log: $LOG"
+</code></pre>
+              </div>
+            </details>
           </div>
         </article>
       </section>
@@ -735,9 +1147,10 @@ walltime: 24:00:00</pre>
         'hpc-cd': `cd ${qHpc}`,
         'hpc-chmod': `chmod -R u+rwX ${qHpc}`,
         'hpc-chmod-group': `chmod -R u+rwX,g+rwX,o-rwx ${qHpc}`,
+        'hpc-folder-locate': `ls -ld ${qHpc}`,
         'hpc-folder-check': `mkdir -p ${qHpc}\nls -ld ${qHpc}`,
         'upload-rsync': `rsync -avh --progress \\\n  ${shellQuote(trailingSlash(local))} \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}`)}`,
-        'download-rsync': `rsync -avh --progress \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}results/`)} \\\n  ${shellQuote(`${trailingSlash(local)}results/`)}`,
+        'download-rsync': `cd ${qLocal}\nbash scripts/download_results.sh`,
         'step2-make': `cd ${qLocal}\nbash scripts/make_samplesheet.sh`,
         'step2-validate': `cd ${qLocal}\nbash scripts/input_validate.sh`,
         'step3-star': `cd ${qLocal}\n${star}`,
@@ -792,8 +1205,27 @@ walltime: 24:00:00</pre>
       start?.addEventListener('click', closeIntro, { once: true });
     }
 
+    function attachCopyButtons() {
+      document.querySelectorAll('.copy-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const code = btn.parentElement.querySelector('pre code');
+          if (!code) return;
+          navigator.clipboard.writeText(code.textContent).then(() => {
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            window.setTimeout(() => {
+              btn.textContent = original;
+              btn.classList.remove('copied');
+            }, 1500);
+          });
+        });
+      });
+    }
+
     hydratePathInputs();
     runIntro();
+    attachCopyButtons();
   </script>
 </body>
 </html>
