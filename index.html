@@ -30,37 +30,44 @@
       <div class="step-tabs" role="tablist" aria-label="Workflow steps">
         <button class="step-tab local active" type="button" data-step="1" aria-selected="true">
           <span class="step-num">1</span>
+          <span class="step-icon" aria-hidden="true">▣</span>
           <strong>Initial Project</strong>
         </button>
         <button class="step-tab local" type="button" data-step="2">
           <span class="step-num">2</span>
+          <span class="step-icon" aria-hidden="true">✓</span>
           <strong>Prepare &amp; Validate Inputs</strong>
         </button>
         <button class="step-tab local" type="button" data-step="3">
           <span class="step-num">3</span>
+          <span class="step-icon" aria-hidden="true">⚙</span>
           <strong>Pipeline Configure</strong>
         </button>
         <button class="step-tab local" type="button" data-step="4">
           <span class="step-num">4</span>
+          <span class="step-icon" aria-hidden="true">↥</span>
           <strong>Upload to HPC</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="5">
           <span class="step-num">5</span>
+          <span class="step-icon" aria-hidden="true">◇</span>
           <strong>Preflight Validation</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="6">
           <span class="step-num">6</span>
+          <span class="step-icon" aria-hidden="true">▶</span>
           <strong>Run &amp; Monitor</strong>
         </button>
         <button class="step-tab local" type="button" data-step="7">
           <span class="step-num">7</span>
+          <span class="step-icon" aria-hidden="true">▦</span>
           <strong>Download Results</strong>
         </button>
       </div>
       <div class="sidebar-downloads" aria-label="Download project files">
         <h2>Downloads</h2>
-        <a class="demo-button" href="demo/template_project.zip" download>Template ZIP</a>
-        <a class="demo-button" href="demo/demo_project.zip" download>Demo Project ZIP</a>
+        <a class="demo-button" href="demo/template_project.zip" download><span aria-hidden="true">□</span> Template ZIP</a>
+        <a class="demo-button" href="demo/demo_project.zip" download><span aria-hidden="true">✦</span> Demo Project ZIP</a>
       </div>
     </section>
 
@@ -77,7 +84,20 @@
               <section class="step-one-section">
                 <p><strong>What You Do:</strong></p>
                 <ol>
-                  <li>Before upload or running the project, confirm you have University of Adelaide Phoenix HPC access: <a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a>.</li>
+                  <li>Before upload or running the project, confirm you have University of Adelaide Phoenix HPC access: <a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a>.
+                    <div class="simple-path-box">
+                      <div class="simple-path-row">
+                        <label for="hpcUser"><strong>HPC username</strong></label>
+                        <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
+                        <label for="hpcHost"><strong>HPC login host</strong></label>
+                        <select id="hpcHost">
+                          <option value="p2-log-1.hpc.adelaide.edu.au">p2-log-1.hpc.adelaide.edu.au</option>
+                          <option value="p2-log-2.hpc.adelaide.edu.au">p2-log-2.hpc.adelaide.edu.au</option>
+                        </select>
+                      </div>
+                      <p>These values are only used to fill the command boxes below.</p>
+                    </div>
+                  </li>
                   <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
                   <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
                   <li>Unzip the project on your local computer.</li>
@@ -607,16 +627,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
             <li>Move into your local project folder:
               <pre data-command="local-cd"></pre>
             </li>
-            <li>Enter your HPC username and login host below, then log in to your HPC using your Phoenix account.
-              <div class="simple-path-box">
-                <div class="simple-path-row">
-                  <label for="hpcUser"><strong>HPC username</strong></label>
-                  <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
-                  <label for="hpcHost"><strong>HPC login host</strong></label>
-                  <input id="hpcHost" type="text" autocomplete="off" placeholder="p2-log-1.hpc.adelaide.edu.au">
-                </div>
-                <p>These values are only used to fill the command boxes below.</p>
-              </div>
+            <li>Log in to your HPC using the Phoenix account and host selected in Step 1:
               <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Enter the HPC project folder path, then either locate an existing folder or create a new one:

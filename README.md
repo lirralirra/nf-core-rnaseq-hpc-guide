@@ -13,6 +13,10 @@ Small static GitHub Pages workflow page for a template-based local-to-HPC `nf-co
 - `demo/template_project.zip` - empty reusable project template
 - `demo/demo_project.zip` - small demo project skeleton
 
+## Visual Assets
+
+The opening illustration is an AI-generated project image made for this guide. It should stay generic: do not replace it with third-party characters, logos, or copyrighted artwork unless you have permission to use them.
+
 ## Runner Principle
 
 Keep the user journey simple with seven steps:
