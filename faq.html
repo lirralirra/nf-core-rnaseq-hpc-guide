@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ - Happy RNA-seq</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html">Home</a>
+    <a href="guide.html">Guide</a>
+    <a href="inside-nfcore.html">Inside nf-core</a>
+    <a class="active" href="faq.html">FAQ</a>
+  </nav>
+
+  <main class="text-page">
+    <section class="text-hero">
+      <h1>FAQ</h1>
+      <p>Practical answers for first-time nf-core/rnaseq users on HPC.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What is nf-core/rnaseq?</h2>
+      <p>It is a community-maintained RNA-seq pipeline built with Nextflow. It runs common RNA-seq processing steps in a consistent, versioned, and reproducible way.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What is a samplesheet?</h2>
+      <p>A samplesheet is a CSV file that tells the pipeline which FASTQ files belong to each sample. It usually includes sample name, FASTQ path, mate-pair path, and strandedness.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What is Apptainer?</h2>
+      <p>Apptainer is a container system often used on HPC clusters. It lets nf-core run software in controlled containers without installing every tool manually in your account.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What is a dry run?</h2>
+      <p>A dry run checks the command and planned workflow without launching the full analysis. It helps catch missing files, bad parameters, or configuration problems early.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Why should I check HPC resources first?</h2>
+      <p>RNA-seq runs can use a lot of disk space, memory, and scheduler jobs. Checking resources first helps avoid failed jobs, full disks, and long waits caused by incorrect queue settings.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>How much storage do I need?</h2>
+      <p>It depends on sample number, read depth, aligner, and whether intermediate files are kept. As a practical starting point, reserve several times the size of your compressed FASTQ files, and more if keeping BAM files or genome indices.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Can I resume a failed run?</h2>
+      <p>Yes. Nextflow supports `-resume`. Keep the `work/` directory and run the same command with `-resume`. If you changed important parameters, check carefully because some tasks may need to rerun.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What files should I keep after the run?</h2>
+      <p>Keep count or quantification outputs, `multiqc_report.html`, `pipeline_info/`, `software_versions.yml`, `configs/configure.yaml`, the samplesheet, configs, scripts, and reference metadata. Keep BAM files only if you need them and have enough storage.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What is MultiQC?</h2>
+      <p>MultiQC is an HTML report that gathers QC metrics from many pipeline tools. It is the easiest place to review sample quality, mapping rates, duplication, trimming, and other run-level summaries.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What are pipeline_info files?</h2>
+      <p>They are metadata files created by the pipeline. They record parameters, software versions, execution timeline, resource use, and reports that help reproduce or audit the run.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What should I do if STAR is killed?</h2>
+      <p>Check the task log and `.nextflow.log`. STAR often fails because of memory limits, genome index size, or walltime. Increase memory/time for STAR tasks, use the right queue, or ask the HPC team about recommended resources for your genome.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What should I do if I run out of storage?</h2>
+      <p>Stop the run, check which folders are largest, and avoid deleting `work/` if you want to resume. Move or archive unnecessary intermediate files, request more quota, or rerun with options that keep fewer large intermediates.</p>
+    </section>
+  </main>
+
+  <footer>Reproducible · Secure · Resumable · Shareable</footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+Reference metadata
+==================
+
+Project:
+Species:
+Genome build:
+Genome FASTA:
+Annotation file:
+Annotation format: GTF/GFF3
+Source URL:
+Download date:
+Checksum FASTA:
+Checksum annotation:
+Index strategy:
+Local reference path:
+HPC reference path:
+Notes:

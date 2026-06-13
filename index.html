@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Happy RNA-seq</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="site-nav product-nav" aria-label="Site navigation">
+    <div class="nav-brand">
+      <div class="nav-title">RNA-seq Workflow</div>
+      <div class="nav-subtitle">From FASTQ to count matrix using the nf-core RNA-seq pipeline.</div>
+    </div>
+    <div class="nav-links">
+      <a class="active" href="index.html">Workflow</a>
+      <a href="documents.html">Documents</a>
+    </div>
+  </nav>
+
+  <main class="hands-page">
+    <section class="workflow-panel compact-workflow" aria-label="Interactive workflow">
+      <div class="step-tabs" role="tablist" aria-label="Workflow steps">
+        <button class="step-tab local active" type="button" data-step="1" aria-selected="true">
+          <span class="step-num">1</span>
+          <strong>Initial Project</strong>
+        </button>
+        <button class="step-tab local" type="button" data-step="2">
+          <span class="step-num">2</span>
+          <strong>Prepare &amp; Validate Inputs</strong>
+        </button>
+        <button class="step-tab local" type="button" data-step="3">
+          <span class="step-num">3</span>
+          <strong>Pipeline Configure</strong>
+        </button>
+        <button class="step-tab local" type="button" data-step="4">
+          <span class="step-num">4</span>
+          <strong>Upload to HPC</strong>
+        </button>
+        <button class="step-tab hpc" type="button" data-step="5">
+          <span class="step-num">5</span>
+          <strong>Preflight Validation</strong>
+        </button>
+        <button class="step-tab hpc" type="button" data-step="6">
+          <span class="step-num">6</span>
+          <strong>Run &amp; Monitor</strong>
+        </button>
+        <button class="step-tab local" type="button" data-step="7">
+          <span class="step-num">7</span>
+          <strong>Download Results</strong>
+        </button>
+      </div>
+      <div class="sidebar-downloads" aria-label="Download project files">
+        <h2>Downloads</h2>
+        <a class="demo-button" href="demo/template_project.zip" download>Template ZIP</a>
+        <a class="demo-button" href="demo/demo_project.zip" download>Demo Project ZIP</a>
+      </div>
+    </section>
+
+    <section class="hands-lower">
+      <section class="step-detail-card" aria-live="polite">
+        <article class="step-detail active" data-step-panel="1">
+          <div class="step-title-row">
+            <h2>Step 1 — Initial Project</h2>
+            <span class="context-pill local-pill">Local</span>
+          </div>
+          <div class="step-one-grid">
+            <div>
+              <p><strong>Purpose:</strong> Create a new project from a ready-to-use template.</p>
+              <p><strong>What you do:</strong></p>
+              <ol>
+                <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
+                <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
+                <li>Unzip the project on your local computer.</li>
+                <li>Check the folder structure before moving to the next step.</li>
+              </ol>
+            </div>
+            <div>
+              <h3>Template structure</h3>
+              <div class="tree-legend" aria-label="Template structure legend">
+                <span><i class="source-dot source-template"></i>ZIP template</span>
+                <span><i class="source-dot source-user"></i>Load in</span>
+                <span><i class="source-dot source-script"></i>Script generated</span>
+                <span><i class="source-dot source-pipeline"></i>Pipeline generated</span>
+              </div>
+              <pre class="structure-tree"><span>project_root/</span>
+<span>├── input/</span>
+<span>│   ├── fastq/ <b class="source-tag user">Load in</b> FASTQ files</span>
+<span>│   ├── reference/ <b class="source-tag user">Load in</b> genome FASTA</span>
+<span>│   ├── annotation/ <b class="source-tag user">Load in</b> GTF/GFF annotation</span>
+<span>│   └── samplesheet.csv <b class="source-tag script">Script generated</b> Step 2</span>
+<span>├── configs/</span>
+<span>│   └── configure.yaml <b class="source-tag script">Script generated</b> Step 3</span>
+<span>├── scripts/ <b class="source-tag template">ZIP template</b></span>
+<span>│   ├── make_samplesheet.sh <b class="source-tag template">ZIP template</b> Step 2</span>
+<span>│   ├── input_validate.sh <b class="source-tag template">ZIP template</b> Step 2</span>
+<span>│   ├── configure.sh <b class="source-tag template">ZIP template</b> Step 3</span>
+<span>│   ├── upload_to_hpc.sh <b class="source-tag template">ZIP template</b> Step 4</span>
+<span>│   ├── smoke_run.sh <b class="source-tag template">ZIP template</b> Step 5</span>
+<span>│   ├── one_sample_run.sh <b class="source-tag template">ZIP template</b> Step 5</span>
+<span>│   ├── run.sh <b class="source-tag template">ZIP template</b> Step 6</span>
+<span>│   ├── monitor_run.sh <b class="source-tag template">ZIP template</b> Step 6</span>
+<span>│   └── download_results.sh <b class="source-tag template">ZIP template</b> Step 7</span>
+<span>├── reports/</span>
+<span>│   ├── input_validation_report.md <b class="source-tag script">Script generated</b> Step 2</span>
+<span>│   ├── smoke_test_report.md <b class="source-tag script">Script generated</b> Step 5</span>
+<span>│   └── one_sample_validation_report.md <b class="source-tag script">Script generated</b> Step 5</span>
+<span>├── logs/ <b class="source-tag script">Script generated</b></span>
+<span>├── results/ <b class="source-tag pipeline">Pipeline generated</b></span>
+<span>├── work/ <b class="source-tag pipeline">Pipeline generated</b></span>
+<span>└── README.md <b class="source-tag template">ZIP template</b></span></pre>
+            </div>
+          </div>
+          <section class="prereq-panel">
+            <h3>Prerequisites</h3>
+            <div class="prereq-grid">
+              <div class="mini-block">
+                <h3>Phoenix HPC Access</h3>
+                <p>Before uploading or running the project, make sure you have University of Adelaide Phoenix HPC access.</p>
+                <p><a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a></p>
+              </div>
+              <div class="mini-block">
+                <h3>Windows Login / Transfer</h3>
+                <p>Install one file-transfer client: WinSCP, Bitvise, or FileZilla.</p>
+                <p>WinSCP guide: <a href="https://wiki.adelaide.edu.au/hpc/Step_by_step_WinSCP_guide" target="_blank" rel="noopener">Step-by-step WinSCP guide</a></p>
+              </div>
+              <div class="mini-block">
+                <h3>Linux / macOS Login</h3>
+                <p>Open Terminal and log in to a Phoenix head node:</p>
+                <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+                <p>Regular logon nodes: <code>p2-log-1.hpc.adelaide.edu.au</code> or <code>p2-log-2.hpc.adelaide.edu.au</code>.</p>
+              </div>
+              <div class="mini-block">
+                <h3>Linux / macOS File Transfer</h3>
+                <p>Upload files to Phoenix:</p>
+                <pre>scp -r FILES a1234567@p2-log-1.hpc.adelaide.edu.au:/hpcfs/users/a1234567/</pre>
+                <p>Download files from Phoenix:</p>
+                <pre>scp -r a1234567@p2-log-1.hpc.adelaide.edu.au:/hpcfs/users/a1234567/FILES YourLocalDirectory</pre>
+              </div>
+            </div>
+          </section>
+        </article>
+
+        <article class="step-detail" data-step-panel="2">
+          <div class="step-title-row">
+            <h2>Step 2 — Prepare &amp; Validate Inputs</h2>
+            <span class="validation-pill">Are the project files correct?</span>
+            <span class="context-pill local-pill">Local</span>
+          </div>
+          <p><strong>Purpose:</strong> Put the input files in the expected local folders, then create and validate the project metadata before uploading large data to HPC.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
+              <p><strong>What you do:</strong></p>
+              <ol>
+            <li>Add or link FASTQ files in <code>input/fastq/</code>.</li>
+            <li>Add or link the reference genome in <code>input/reference/</code>.</li>
+            <li>Add or link the annotation file in <code>input/annotation/</code>.</li>
+            <li>Open your terminal.</li>
+            <li>Move into your project folder:
+              <pre>cd /path/to/your_project</pre>
+            </li>
+            <li>Generate <code>input/samplesheet.csv</code>:
+              <pre>bash scripts/make_samplesheet.sh</pre>
+            </li>
+            <li>Validate files, pairs, sample names, references, annotation, scripts, and upload size:
+              <pre>bash scripts/input_validate.sh</pre>
+            </li>
+              </ol>
+            </div>
+          </div>
+          <h3>Scripts involved</h3>
+          <div class="two-col">
+            <div class="mini-block">
+              <h3><code>make_samplesheet.sh</code></h3>
+              <ul>
+                <li>Scan <code>input/fastq/</code></li>
+                <li>Detect paired-end FASTQ files</li>
+                <li>Match R1/R2 pairs</li>
+                <li>Infer sample names</li>
+                <li>Generate <code>samplesheet.csv</code></li>
+                <li>Flag unmatched FASTQ files</li>
+                <li>Do not overwrite an existing samplesheet unless explicitly requested</li>
+              </ul>
+              <p><strong>How to run:</strong></p>
+              <pre>cd /path/to/your_project
+bash scripts/make_samplesheet.sh</pre>
+            </div>
+            <div class="mini-block">
+              <h3><code>input_validate.sh</code></h3>
+              <ul>
+                <li>Check FASTQ files exist and paired-end files match</li>
+                <li>Check sample IDs are unique and samplesheet format is valid</li>
+                <li>Check reference, annotation, and required inputs exist</li>
+                <li>Estimate upload size and detect missing files</li>
+              </ul>
+              <p><strong>Output:</strong> <code>reports/input_validation_report.md</code></p>
+              <p><strong>How to run:</strong></p>
+              <pre>cd /path/to/your_project
+bash scripts/input_validate.sh</pre>
+            </div>
+          </div>
+            <div class="notes-block notes-bottom">
+              <h3>Notes</h3>
+              <ul>
+            <li>Review <code>input/samplesheet.csv</code> before continuing.</li>
+            <li>Read <code>reports/input_validation_report.md</code> and fix any problems locally.</li>
+              </ul>
+            </div>
+        </article>
+
+        <article class="step-detail" data-step-panel="3">
+          <div class="step-title-row">
+            <h2>Step 3 — Pipeline Configure</h2>
+            <span class="context-pill local-pill">Local</span>
+          </div>
+          <p><strong>Purpose:</strong> Choose how nf-core/rnaseq will run.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
+              <p><strong>What you do:</strong></p>
+              <ol>
+            <li>Open your terminal.</li>
+            <li>Move into your project folder:
+              <pre>cd /path/to/your_project</pre>
+            </li>
+            <li>Choose the pipeline mode <a href="documents.html#choose-pipeline-mode">how to decide</a>:
+              <ul>
+                <li><strong>STAR + Salmon</strong>: align reads to the genome and quantify transcripts.</li>
+                <li><strong>Salmon only</strong>: quantify without genome alignment.</li>
+              </ul>
+            </li>
+            <li>4a. Generate <code>configs/configure.yaml</code> with STAR + Salmon:
+              <pre>bash scripts/configure.sh --star-salmon</pre>
+            </li>
+            <li>4b. Or generate <code>configs/configure.yaml</code> with Salmon only:
+              <pre>bash scripts/configure.sh --salmon</pre>
+            </li>
+              </ol>
+            </div>
+          </div>
+          <h3>Scripts involved</h3>
+          <p><a class="script-tag strong" href="scripts/configure.sh" download>configure.sh</a></p>
+          <p><code>configure.sh</code> auto-generates <code>configs/configure.yaml</code> with local paths, HPC destination, aligner choice, profile, work directory, output directory, cache path, and estimated memory, CPU, and walltime settings. It scans project metadata, reference files, and samplesheet information to estimate resources for the project.</p>
+          <p><strong>Example <code>configs/configure.yaml</code> fields:</strong></p>
+          <pre>aligner: star_salmon
+fastq_dir: input/fastq
+samplesheet: input/samplesheet.csv
+reference: input/reference/genome.fa
+annotation: input/annotation/genes.gtf
+species: oat
+genome_size_gb: 12
+sample_count: 30
+hpc_user: your_username
+hpc_host: your.cluster.edu
+hpc_project_dir: /path/on/hpc/happy_rnaseq_project
+outdir: results
+workdir: work
+cache_dir: /scratch/your_username/apptainer_cache
+memory: 64G
+cpu: 16
+walltime: 24:00:00</pre>
+            <div class="notes-block notes-bottom">
+              <h3>Notes</h3>
+              <ul>
+            <li>The script writes <code>configs/configure.yaml</code> automatically.</li>
+            <li><code>configure.sh</code> scans project files to infer species, genome size, and sample count, then estimates memory, CPU, and walltime.</li>
+            <li>Open <code>configs/configure.yaml</code> after generation and quickly check the paths.</li>
+            <li>Only override memory, CPU, walltime, scratch, and profile values if your HPC needs different settings.</li>
+              </ul>
+            </div>
+        </article>
+
+        <article class="step-detail" data-step-panel="4">
+          <div class="step-title-row">
+            <h2>Step 4 — Upload to HPC</h2>
+            <span class="validation-pill">Has the project transferred successfully?</span>
+            <span class="context-pill local-pill">Local</span>
+          </div>
+          <p><strong>Purpose:</strong> Transfer the prepared project to HPC.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
+              <p><strong>What you do:</strong></p>
+              <ol>
+            <li>Open your terminal.</li>
+            <li>Move into your local project folder:
+              <pre>cd /path/to/your_project</pre>
+            </li>
+            <li>Log in to your HPC using your Phoenix account:
+              <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+            </li>
+            <li>Confirm the target HPC project folder exists or can be created:
+              <pre>mkdir -p /path/on/hpc/happy_rnaseq_project
+ls -ld /path/on/hpc/happy_rnaseq_project</pre>
+            </li>
+            <li>Exit back to your local terminal after the login check.</li>
+            <li>Upload the initialized project folder with resume-safe rsync:
+              <pre>bash scripts/upload_to_hpc.sh</pre>
+            </li>
+              </ol>
+            </div>
+          </div>
+          <h3>Scripts involved</h3>
+          <p><a class="script-tag" href="scripts/upload_to_hpc.sh" download>upload_to_hpc.sh</a></p>
+          <p><code>upload_to_hpc.sh</code> reads the HPC destination from <code>configure.yaml</code>, uploads the project with rsync, writes an upload log, and verifies transferred files when possible.</p>
+          <div class="two-col">
+            <div class="mini-block">
+              <h3>Responsibilities</h3>
+              <ul>
+                <li>Read HPC destination from <code>configure.yaml</code></li>
+                <li>Upload project using rsync</li>
+                <li>Use resume-safe transfer</li>
+                <li>Create upload log</li>
+                <li>Verify transferred files when possible</li>
+              </ul>
+            </div>
+            <div class="mini-block">
+              <h3>Upload</h3>
+              <p><code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README.</p>
+              <h3>Do not upload</h3>
+              <p>Local cache, temporary files, old work directories, or unnecessary outputs.</p>
+            </div>
+          </div>
+            <div class="notes-block notes-bottom">
+              <h3>Notes</h3>
+              <ul>
+            <li><code>upload_to_hpc.sh</code> reads the HPC user, host, and project path from the auto-generated <code>configs/configure.yaml</code>.</li>
+            <li>Check the upload log and confirm the transferred files look complete.</li>
+            <li>Uploaded by default: <code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README files.</li>
+            <li>Skipped by default: local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs.</li>
+              </ul>
+            </div>
+        </article>
+
+        <article class="step-detail" data-step-panel="5">
+          <div class="step-title-row">
+            <h2>Step 5 — Preflight Validation</h2>
+            <span class="validation-pill">Can this HPC run? Can this project survive a full run?</span>
+            <span class="context-pill hpc-pill">HPC</span>
+          </div>
+          <p><strong>Purpose:</strong> Validate the HPC environment and the current project configuration before the full analysis.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
+              <p><strong>What you do:</strong></p>
+              <ol>
+            <li>Open your terminal.</li>
+            <li>Log in to your HPC using your Phoenix account:
+              <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+            </li>
+            <li>Move into the uploaded HPC project folder:
+              <pre>cd /path/on/hpc/happy_rnaseq_project</pre>
+            </li>
+            <li>Enable safe automatic fixes and resume during validation.</li>
+            <li>Run the Smoke Test:
+              <pre>bash scripts/smoke_run.sh</pre>
+            </li>
+            <li>Run the One Sample Run:
+              <pre>bash scripts/one_sample_run.sh</pre>
+            </li>
+            <li>Continue to the full run only after preflight validation passes.</li>
+              </ol>
+            </div>
+          </div>
+          <p class="auto-fix-note">☑ Allow automatic fixes and resume during validation</p>
+          <p>Safe infrastructure and resource fixes may be applied automatically. Biological settings are never changed automatically.</p>
+          <h3>Scripts involved</h3>
+          <div class="two-col">
+            <div class="mini-block">
+              <h3>Smoke Test</h3>
+              <p><a class="script-tag" href="scripts/smoke_run.sh" download>smoke_run.sh</a></p>
+              <p><strong>Purpose:</strong> Validate the HPC environment using a tiny built-in test dataset.</p>
+              <ul>
+                <li>Check Nextflow, Apptainer/Singularity, container downloads, cache configuration, permissions, modules, work directory, and scratch directory</li>
+                <li>Auto-fix container download failures, missing cache directory, bad cache path, permission issue, module issue, and common Nextflow problems</li>
+                <li><strong>Behaviour:</strong> Detect → Auto-fix → Resume</li>
+              </ul>
+              <p><strong>Output:</strong> <code>reports/smoke_test_report.md</code></p>
+              <p><strong>How to run:</strong></p>
+              <pre>ssh your_username@your.cluster.edu
+cd /path/on/hpc/happy_rnaseq_project
+bash scripts/smoke_run.sh</pre>
+            </div>
+            <div class="mini-block">
+              <h3>One Sample Run</h3>
+              <p><a class="script-tag" href="scripts/one_sample_run.sh" download>one_sample_run.sh</a></p>
+              <p><strong>Purpose:</strong> Validate the current project configuration and estimate real resource requirements.</p>
+              <p><strong>Workflow:</strong> Dry Run → Run one real sample.</p>
+              <p><strong>Default sample:</strong> Largest sample, because resource validation should detect STAR memory issues, BEDTOOLS memory issues, walltime limits, scratch/work directory problems, disk quota issues, and bottlenecks.</p>
+              <ul>
+                <li>Advanced options: largest sample, smallest sample, or user-selected sample</li>
+                <li>Auto-fix STAR memory failure, CPU/thread mismatch, BEDTOOLS memory failure, walltime issues, quota or TMPDIR issues, scratch recommendations, and resumable task failures</li>
+              </ul>
+              <p><strong>Output:</strong> <code>reports/one_sample_validation_report.md</code></p>
+              <p><strong>How to run:</strong></p>
+              <pre>ssh your_username@your.cluster.edu
+cd /path/on/hpc/happy_rnaseq_project
+bash scripts/one_sample_run.sh</pre>
+            </div>
+          </div>
+            <div class="notes-block notes-bottom">
+              <h3>Notes</h3>
+              <ul>
+            <li>Review <code>reports/smoke_test_report.md</code>.</li>
+            <li>Use the largest sample by default when the goal is resource validation.</li>
+            <li>Review <code>reports/one_sample_validation_report.md</code> before launching the full run.</li>
+            <li><strong>Never auto-change:</strong> reference genome, annotation, strandedness, aligner choice, metadata, sample grouping, or experimental design.</li>
+              </ul>
+            </div>
+        </article>
+
+        <article class="step-detail" data-step-panel="6">
+          <div class="step-title-row">
+            <h2>Step 6 — Run &amp; Monitor</h2>
+            <span class="context-pill hpc-pill">HPC</span>
+          </div>
+          <p><strong>Purpose:</strong> Launch the full nf-core/rnaseq workflow after validation passes and keep the run understandable while it is executing.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
+              <p><strong>What you do:</strong></p>
+              <ol>
+            <li>Open your terminal.</li>
+            <li>Log in to your HPC using your Phoenix account:
+              <pre>ssh a1234567@p2-log-1.hpc.adelaide.edu.au</pre>
+            </li>
+            <li>Move into the uploaded HPC project folder:
+              <pre>cd /path/on/hpc/happy_rnaseq_project</pre>
+            </li>
+            <li>Launch the workflow:
+              <pre>bash scripts/run.sh</pre>
+            </li>
+            <li>Monitor job status, current stage, failed tasks, disk usage, and recent logs:
+              <pre>bash scripts/monitor_run.sh</pre>
+            </li>
+              </ol>
+            </div>
+          </div>
+          <h3>Scripts involved</h3>
+          <div class="two-col">
+            <div class="mini-block">
+              <h3>run.sh</h3>
+              <p><a class="script-tag" href="scripts/run.sh" download>run.sh</a></p>
+              <p>Launch the full nf-core/rnaseq workflow, read <code>configure.yaml</code>, and support Nextflow resume.</p>
+            </div>
+            <div class="mini-block">
+              <h3>monitor_run.sh</h3>
+              <p><a class="script-tag" href="scripts/monitor_run.sh" download>monitor_run.sh</a></p>
+              <p>Show current stage, job status, failed tasks, disk usage, and recent logs. Make it clear where the pipeline is running or stuck.</p>
+            </div>
+          </div>
+          <p>Known issues should include suggested actions.</p>
+            <div class="notes-block notes-bottom">
+              <h3>Notes</h3>
+              <ul>
+            <li>If the run is interrupted, use Nextflow resume instead of starting from scratch.</li>
+            <li>Use suggested actions from the monitor output for known infrastructure or resource issues.</li>
+              </ul>
+            </div>
+        </article>
+
+        <article class="step-detail" data-step-panel="7">
+          <div class="step-title-row">
+            <h2>Step 7 — Download Results</h2>
+            <span class="context-pill local-pill">Local</span>
+          </div>
+          <p><strong>Purpose:</strong> Transfer final results from HPC back to local storage using rsync.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
+              <p><strong>What you do:</strong></p>
+              <ol>
+            <li>Open your terminal on your local computer.</li>
+            <li>Move into your local project folder:
+              <pre>cd /path/to/your_project</pre>
+            </li>
+            <li>Download results from HPC:
+              <pre>bash scripts/download_results.sh</pre>
+            </li>
+              </ol>
+            </div>
+          </div>
+          <h3>Scripts involved</h3>
+          <p><a class="script-tag" href="scripts/download_results.sh" download>download_results.sh</a></p>
+          <p><code>download_results.sh</code> performs a resume-safe rsync download, creates a download log, and verifies transferred files when possible.</p>
+          <h3>Features</h3>
+          <ul>
+            <li>Resume-safe transfer</li>
+            <li>Download log</li>
+            <li>Verification when possible</li>
+          </ul>
+          <h3>Download by default</h3>
+          <p><code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</p>
+          <div class="output-grid mini-output-grid full-output-grid">
+            <article class="output-card">
+              <h3>Analysis Data</h3>
+              <p class="label">Files</p>
+              <p><code>counts.tsv</code> / <code>counts.csv</code></p>
+              <p><code>quant.sf</code></p>
+              <p><code>analysis_ready.qs</code> or <code>.rds</code></p>
+              <p class="label">Use</p>
+              <p>DESeq2</p>
+              <p>WGCNA</p>
+              <p>Shiny</p>
+              <p>Downstream analysis</p>
+            </article>
+            <article class="output-card">
+              <h3>QC Report</h3>
+              <p class="label">Files</p>
+              <p><code>multiqc_report.html</code></p>
+              <p>FastQC summary</p>
+              <p>STAR / Salmon summary</p>
+              <p class="label">Use</p>
+              <p>Quality assessment</p>
+              <p>Mapping review</p>
+              <p>Duplication review</p>
+            </article>
+            <article class="output-card">
+              <h3>Run Metadata</h3>
+              <p class="label">Files</p>
+              <p><code>pipeline_info/</code></p>
+              <p><code>software_versions.yml</code></p>
+              <p><code>params.json</code></p>
+              <p><code>execution_report.html</code></p>
+              <p><code>timeline.html</code></p>
+              <p class="label">Use</p>
+              <p>Track software versions</p>
+              <p>Track parameters</p>
+              <p>Record runtime details</p>
+            </article>
+            <article class="output-card">
+              <h3>Reproducibility Docs</h3>
+              <p class="label">Files</p>
+              <p><code>README.md</code></p>
+              <p><code>samplesheet.csv</code></p>
+              <p><code>configure.yaml</code></p>
+              <p><code>run.sh</code></p>
+              <p><code>reference_metadata.txt</code></p>
+              <p><code>logs/commands.log</code></p>
+              <p class="label">Use</p>
+              <p>Re-run project</p>
+              <p>Share with collaborators</p>
+              <p>Audit analysis settings</p>
+            </article>
+          </div>
+          <div class="notes-block notes-bottom">
+            <h3>Notes</h3>
+            <ul>
+              <li>Downloads include <code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</li>
+              <li>Resume-safe rsync allows interrupted downloads to continue.</li>
+              <li>Check the download log and verify transferred files when possible.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <footer>Reproducible · Secure · Resumable · Shareable</footer>
+  <script>
+    const tabs = document.querySelectorAll('.step-tab');
+    const panels = document.querySelectorAll('.step-detail');
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const step = tab.dataset.step;
+        tabs.forEach((item) => {
+          item.classList.toggle('active', item === tab);
+          item.setAttribute('aria-selected', item === tab ? 'true' : 'false');
+        });
+        panels.forEach((panel) => {
+          panel.classList.toggle('active', panel.dataset.stepPanel === step);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

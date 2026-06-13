@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documents - Happy RNA-seq</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="site-nav product-nav" aria-label="Site navigation">
+    <div class="nav-brand">
+      <div class="nav-title">🧬 Happy RNA-seq</div>
+      <div class="nav-subtitle">A friendly nf-core RNA-seq runner for local setup, HPC validation, auto-fix, resume, and result download.</div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Workflow</a>
+      <a class="active" href="documents.html">Documents</a>
+    </div>
+  </nav>
+
+  <main class="text-page">
+    <section class="text-hero">
+      <h1>Documents</h1>
+      <p>Detailed explanations for the Happy RNA-seq runner, nf-core/rnaseq, validation, auto-fix, resume, and troubleshooting.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>nf-core RNA-seq Pipeline</h2>
+      <p>nf-core/rnaseq is a Nextflow pipeline for RNA-seq processing. It starts from FASTQ files, performs read QC, optional trimming, alignment or quantification, count generation, MultiQC reporting, and metadata capture.</p>
+      <p>The runner does not replace nf-core/rnaseq. It wraps project setup, validation, HPC transfer, safe recovery, monitoring, and result download around the pipeline.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>What Each Step Does</h2>
+      <ol>
+        <li><strong>Initial Project:</strong> start from one reusable project template.</li>
+        <li><strong>Prepare &amp; Validate Inputs:</strong> create samplesheet and validate FASTQ, reference, annotation, and project files locally.</li>
+        <li><strong>Pipeline Configure:</strong> set simple run choices in <code>configs/configure.yaml</code>.</li>
+        <li><strong>Upload to HPC:</strong> transfer the prepared project folder with resume-safe rsync.</li>
+        <li><strong>Preflight Validation:</strong> run Smoke Test and One Sample Run on HPC before the full analysis.</li>
+        <li><strong>Run &amp; Monitor:</strong> launch the full nf-core/rnaseq workflow and monitor progress.</li>
+        <li><strong>Download Results:</strong> retrieve results, reports, logs, MultiQC outputs, and summaries locally.</li>
+      </ol>
+    </section>
+
+    <section class="content-card" id="choose-pipeline-mode">
+      <h2>Choose Pipeline Mode</h2>
+      <p>Use <strong>STAR + Salmon</strong> when you want genome alignment outputs, splice-aware mapping evidence, and the most complete nf-core/rnaseq run. This is usually the safer default for a new species project when a reference genome and annotation are available.</p>
+      <p>Use <strong>Salmon only</strong> when you mainly need transcript or gene quantification and want a faster, lighter run. It uses fewer resources and can be useful for quick checks or projects where alignment files are not needed.</p>
+      <p>Resource settings are estimated from the chosen mode, species, genome size, and sample count. Large genomes and many samples generally need more memory, CPU, and walltime, especially for STAR-based alignment.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Smoke Test</h2>
+      <p>The Smoke Test checks whether the HPC environment can run nf-core/rnaseq at all. It uses tiny built-in test data, not user samples.</p>
+      <p>It checks Nextflow, Apptainer/Singularity, container downloads, cache paths, permissions, modules, work directory, and scratch directory.</p>
+      <p>Question answered: <strong>Can this HPC + nf-core environment run?</strong></p>
+    </section>
+
+    <section class="content-card">
+      <h2>One Sample Run</h2>
+      <p>The One Sample Run checks whether the current project configuration can survive a real run. It performs dry-run/config validation, then runs one real sample.</p>
+      <p>The default sample is the largest sample, because the goal is resource validation as well as workflow validation.</p>
+      <p>Question answered: <strong>Can this current project configuration survive a full run?</strong></p>
+    </section>
+
+    <section class="content-card">
+      <h2>Auto-fix and Resume</h2>
+      <p>Safe infrastructure and resource fixes may be applied automatically when the user allows it. Examples include creating cache directories, correcting cache paths, preparing scratch paths, adjusting resource recommendations, and resuming failed Nextflow tasks.</p>
+      <p>Biological settings must never be changed automatically: reference genome, annotation, strandedness, aligner choice, metadata, sample grouping, or experimental design.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>FAQ</h2>
+      <h3>What is nf-core/rnaseq?</h3>
+      <p>A community-maintained RNA-seq pipeline built with Nextflow.</p>
+      <h3>What is a samplesheet?</h3>
+      <p>A CSV file that maps sample IDs to FASTQ files and strandedness.</p>
+      <h3>What is Apptainer?</h3>
+      <p>A container runtime commonly used on HPC clusters.</p>
+      <h3>Can I resume a failed run?</h3>
+      <p>Yes. Keep the work directory and use Nextflow resume.</p>
+      <h3>What should I keep after the run?</h3>
+      <p>Results, reports, logs, MultiQC, quantification outputs, pipeline metadata, samplesheet, configs, scripts, and reference metadata.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Troubleshooting Notes</h2>
+      <ul>
+        <li><strong>STAR killed:</strong> check memory and walltime; use One Sample Run to estimate resources.</li>
+        <li><strong>Container download failure:</strong> check Apptainer/Singularity cache path and permissions.</li>
+        <li><strong>Disk quota issue:</strong> move workdir to scratch or clean old work/results folders.</li>
+        <li><strong>Samplesheet error:</strong> rerun make_samplesheet and input validation.</li>
+        <li><strong>Pipeline stuck:</strong> run monitor_run.sh and inspect recent Nextflow logs.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>Reproducible · Secure · Resumable · Shareable</footer>
+</body>
+</html>

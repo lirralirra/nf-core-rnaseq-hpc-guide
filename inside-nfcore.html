@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inside nf-core - Happy RNA-seq</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html">Home</a>
+    <a href="guide.html">Guide</a>
+    <a class="active" href="inside-nfcore.html">Inside nf-core</a>
+    <a href="faq.html">FAQ</a>
+  </nav>
+
+  <main class="text-page">
+    <section class="text-hero">
+      <h1>Inside nf-core/rnaseq</h1>
+      <p>A plain-language view of what the pipeline does after you give it FASTQ files and a samplesheet.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>FASTQ input</h2>
+      <h3>What it does</h3>
+      <p>The pipeline starts from FASTQ files. Each row in the samplesheet tells nf-core/rnaseq which FASTQ files belong to each biological sample and whether the reads are single-end or paired-end.</p>
+      <h3>What it produces</h3>
+      <p>This stage does not create final biological results. It validates input paths and prepares the files for the next steps.</p>
+      <h3>Why you should care</h3>
+      <p>If a FASTQ path, sample name, or mate-pair relationship is wrong, the pipeline may fail early or produce outputs assigned to the wrong sample.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Raw read QC</h2>
+      <h3>What it does</h3>
+      <p>Raw read QC checks sequencing quality before trimming or alignment. Tools such as FastQC summarize base quality, adapter content, sequence duplication, GC content, and overrepresented sequences.</p>
+      <h3>What it produces</h3>
+      <p>FastQC HTML reports and summary files for each FASTQ file.</p>
+      <h3>Why you should care</h3>
+      <p>Raw QC tells you whether the sequencing data look reasonable before the pipeline changes anything. It can reveal poor quality reads, adapter contamination, or unusual library composition.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Trimming</h2>
+      <h3>What it does</h3>
+      <p>Trimming removes adapter sequence and low-quality read ends when trimming is enabled. This can improve alignment or quantification for libraries with obvious adapter contamination.</p>
+      <h3>What it produces</h3>
+      <p>Trimmed FASTQ files and trimming reports, depending on the selected pipeline options.</p>
+      <h3>Why you should care</h3>
+      <p>Trimming changes the reads used downstream. You should know whether trimming was enabled when comparing runs or explaining the analysis.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Alignment or quantification</h2>
+      <h3>What it does</h3>
+      <p>nf-core/rnaseq can align reads to a genome, quantify transcripts, or do both depending on the selected options. Common choices include STAR for genome alignment and Salmon for transcript quantification.</p>
+      <h3>What it produces</h3>
+      <p>Alignment files and logs for genome-aligned runs, Salmon `quant.sf` files for transcript quantification, and mapping or assignment summaries.</p>
+      <h3>Why you should care</h3>
+      <p>This stage is usually compute-heavy and sensitive to reference choice. Memory errors often happen here, especially during STAR alignment or genome indexing.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Count generation</h2>
+      <h3>What it does</h3>
+      <p>The pipeline produces gene-level or transcript-level count-like tables that can be used for downstream differential expression and expression summaries.</p>
+      <h3>What it produces</h3>
+      <p>Count matrices, Salmon quantification files, and related feature or transcript summaries. Exact filenames depend on the pipeline version and options.</p>
+      <h3>Why you should care</h3>
+      <p>These are the files most downstream tools need. DESeq2 and edgeR use count-based inputs, while visualization and reporting often use transformed or normalized summaries later.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>MultiQC summary</h2>
+      <h3>What it does</h3>
+      <p>MultiQC collects many small QC reports into one readable HTML report. It combines FastQC, trimming, alignment, quantification, and other tool summaries.</p>
+      <h3>What it produces</h3>
+      <p>`multiqc_report.html` and supporting MultiQC data files.</p>
+      <h3>Why you should care</h3>
+      <p>MultiQC is usually the first report to open after a run. It helps you spot outlier samples, failed steps, low mapping rates, high duplication, or unexpected library behaviour.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Pipeline metadata</h2>
+      <h3>What it does</h3>
+      <p>nf-core/rnaseq records the pipeline version, parameters, software versions, execution reports, timelines, and trace information.</p>
+      <h3>What it produces</h3>
+      <p>`pipeline_info/`, `software_versions.yml`, `configs/configure.yaml`, `execution_report.html`, `timeline.html`, and trace files.</p>
+      <h3>Why you should care</h3>
+      <p>Metadata makes the run auditable and reproducible. Keep these files with your final results so you can explain exactly how the analysis was produced.</p>
+    </section>
+  </main>
+
+  <footer>Reproducible · Secure · Resumable · Shareable</footer>
+</body>
+</html>

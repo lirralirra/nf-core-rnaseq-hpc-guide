@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide - Happy RNA-seq</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html">Home</a>
+    <a class="active" href="guide.html">Guide</a>
+    <a href="inside-nfcore.html">Inside nf-core</a>
+    <a href="faq.html">FAQ</a>
+  </nav>
+
+  <main class="text-page">
+    <section class="text-hero">
+      <h1>🧬 nf-core RNA-seq Runner — Product Guide v1</h1>
+      <p>A template-based local-to-HPC runner for preparing inputs, validating infrastructure, launching nf-core/rnaseq, monitoring progress, and downloading results in 7 simple steps.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Product Goal</h2>
+      <p>This is not just a GUI for launching nf-core. It is a standardized RNA-seq runner that guides users from local project preparation to HPC execution with validation, automatic recovery, monitoring, and result download.</p>
+      <h3>Core value</h3>
+      <ul>
+        <li>Standardized project template</li>
+        <li>Automatic samplesheet generation</li>
+        <li>Input validation before upload</li>
+        <li>HPC environment and resource validation</li>
+        <li>Automatic safe fixes and resume</li>
+        <li>Simple execution workflow</li>
+        <li>Easy result retrieval</li>
+      </ul>
+    </section>
+
+    <section class="content-card">
+      <h2>Workflow and Execution Context</h2>
+      <ol>
+        <li><strong>Initial Project</strong> — local</li>
+        <li><strong>Prepare &amp; Validate Inputs</strong> — local</li>
+        <li><strong>Pipeline Configure</strong> — local</li>
+        <li><strong>Upload to HPC</strong> — local</li>
+        <li><strong>Preflight Validation</strong> — HPC</li>
+        <li><strong>Run &amp; Monitor</strong> — HPC</li>
+        <li><strong>Download Results</strong> — local</li>
+      </ol>
+    </section>
+
+    <section class="content-card">
+      <h2>Template Structure</h2>
+      <p>Users start by downloading or cloning one project template.</p>
+      <pre>project_root/
+├── input/
+│   ├── fastq/
+│   ├── reference/
+│   ├── annotation/
+│   └── samplesheet.csv
+├── configs/
+│   └── configure.yaml
+├── scripts/
+│   ├── make_samplesheet.sh
+│   ├── input_validate.sh
+│   ├── configure.sh
+│   ├── upload_to_hpc.sh
+│   ├── smoke_run.sh
+│   ├── one_sample_run.sh
+│   ├── run.sh
+│   ├── monitor_run.sh
+│   └── download_results.sh
+├── reports/
+│   ├── input_validation_report.md
+│   ├── smoke_test_report.md
+│   └── one_sample_validation_report.md
+├── logs/
+├── results/
+├── work/
+└── README.md</pre>
+    </section>
+
+    <section class="content-card">
+      <h2>Configuration Philosophy</h2>
+      <p>Use one configuration file only: <code>configs/configure.yaml</code>.</p>
+      <p>Do not use <code>params.yaml</code>, <code>nextflow_hpc.config</code>, or <code>resource_overrides.config</code> in v1. Keep configuration simple.</p>
+      <h3>Example fields</h3>
+      <ul>
+        <li><code>local_project_dir</code>, <code>hpc_user</code>, <code>hpc_host</code>, <code>hpc_project_dir</code></li>
+        <li><code>fastq_dir</code>, <code>samplesheet</code>, <code>reference</code>, <code>annotation</code></li>
+        <li><code>aligner</code>, <code>profile</code></li>
+        <li><code>memory</code>, <code>cpu</code>, <code>walltime</code></li>
+        <li><code>workdir</code>, <code>outdir</code>, <code>cache_dir</code></li>
+      </ul>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 1 — Initial Project</h2>
+      <p><strong>Purpose:</strong> Create a new project from a ready-to-use template.</p>
+      <p><strong>User action:</strong> Download or clone template.</p>
+      <p>The template already contains scripts, configs, reports, folder structure, and README. Users should not manually create scripts.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 2 — Prepare &amp; Validate Inputs</h2>
+      <p><strong>Runs locally.</strong></p>
+      <div class="two-col">
+        <div class="mini-block">
+          <h3>Scripts</h3>
+          <p><a class="script-tag" href="scripts/make_samplesheet.sh" download>make_samplesheet.sh</a></p>
+          <p><a class="script-tag" href="scripts/input_validate.sh" download>input_validate.sh</a></p>
+          <h3>Workflow</h3>
+          <p>Add FASTQ files → Add reference genome → Add annotation → Run make_samplesheet.sh → Review samplesheet → Run input_validate.sh</p>
+        </div>
+        <div class="mini-block">
+          <h3>Validation question</h3>
+          <p>Are the project files correct?</p>
+          <h3>Output</h3>
+          <p><code>reports/input_validation_report.md</code></p>
+        </div>
+      </div>
+      <h3><code>make_samplesheet.sh</code> responsibilities</h3>
+      <ul>
+        <li>Scan <code>input/fastq/</code></li>
+        <li>Detect paired-end FASTQ files</li>
+        <li>Match R1/R2 pairs</li>
+        <li>Infer sample names</li>
+        <li>Generate <code>samplesheet.csv</code></li>
+        <li>Flag unmatched FASTQ files</li>
+        <li>Do not overwrite an existing samplesheet unless explicitly requested</li>
+      </ul>
+      <h3><code>input_validate.sh</code> responsibilities</h3>
+      <ul>
+        <li>Check FASTQ files exist and paired-end files match</li>
+        <li>Check sample IDs are unique and samplesheet format is valid</li>
+        <li>Check reference, annotation, and required inputs exist</li>
+        <li>Estimate upload size and detect missing files</li>
+      </ul>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 3 — Pipeline Configure</h2>
+      <p><strong>Runs locally.</strong></p>
+      <p><strong>Script:</strong> <a class="script-tag strong" href="scripts/configure.sh" download>configure.sh</a></p>
+      <p><strong>Purpose:</strong> Choose how nf-core/rnaseq will run.</p>
+      <p>For v1, keep configuration very simple. The main required choice is the aligner.</p>
+      <h3>Aligner options</h3>
+      <ul>
+        <li>STAR + Salmon — default</li>
+        <li>Salmon only</li>
+      </ul>
+      <h3>Advanced settings</h3>
+      <p>Hidden by default. May include memory, CPU, walltime, workdir, outdir, scratch path, cache path, HPC project path, and profile.</p>
+      <p>Store all settings in <code>configs/configure.yaml</code>.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 4 — Upload to HPC</h2>
+      <p><strong>Runs locally.</strong></p>
+      <p><strong>Script:</strong> <a class="script-tag" href="scripts/upload_to_hpc.sh" download>upload_to_hpc.sh</a></p>
+      <p><strong>Purpose:</strong> Transfer the prepared project to HPC.</p>
+      <h3>Responsibilities</h3>
+      <ul>
+        <li>Read HPC destination from <code>configure.yaml</code></li>
+        <li>Upload project using rsync</li>
+        <li>Use resume-safe transfer</li>
+        <li>Create upload log</li>
+        <li>Verify transferred files when possible</li>
+      </ul>
+      <h3>Upload</h3>
+      <p><code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README.</p>
+      <h3>Do not upload</h3>
+      <p>Local cache, temporary files, old work directories, or unnecessary outputs.</p>
+      <h3>Validation question</h3>
+      <p>Has the project been successfully transferred to HPC?</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 5 — Preflight Validation</h2>
+      <p><strong>Runs on HPC.</strong></p>
+      <p><strong>☑ Allow automatic fixes and resume during validation</strong></p>
+      <p>Safe infrastructure and resource fixes may be applied automatically. Biological settings are never changed automatically.</p>
+      <div class="two-col">
+        <div class="mini-block">
+          <h3>Smoke Test</h3>
+          <p><a class="script-tag" href="scripts/smoke_run.sh" download>smoke_run.sh</a></p>
+          <p><strong>Purpose:</strong> Validate the HPC environment using a tiny built-in test dataset.</p>
+          <h3>Checks</h3>
+          <ul>
+            <li>Nextflow</li>
+            <li>Apptainer/Singularity</li>
+            <li>Container downloads</li>
+            <li>Cache configuration</li>
+            <li>Permissions, modules, work directory, scratch directory</li>
+          </ul>
+          <h3>Auto-fix examples</h3>
+          <ul>
+            <li>Container download failures</li>
+            <li>Missing cache directory or bad cache path</li>
+            <li>Permission issue</li>
+            <li>Module issue</li>
+            <li>Common Nextflow problems</li>
+          </ul>
+          <p><strong>Behaviour:</strong> Detect → Auto-fix → Resume</p>
+          <p><strong>Output:</strong> <code>reports/smoke_test_report.md</code></p>
+          <p><strong>Validation question:</strong> Can this HPC + nf-core environment run?</p>
+        </div>
+        <div class="mini-block">
+          <h3>One Sample Run</h3>
+          <p><a class="script-tag" href="scripts/one_sample_run.sh" download>one_sample_run.sh</a></p>
+          <p><strong>Purpose:</strong> Validate the current project configuration and estimate real resource requirements.</p>
+          <p><strong>Workflow:</strong> Dry Run → Run one real sample.</p>
+          <p><strong>Default sample:</strong> Largest sample, because resource validation should detect STAR memory issues, BEDTOOLS memory issues, walltime limits, scratch/work directory problems, disk quota issues, and bottlenecks.</p>
+          <h3>Advanced options</h3>
+          <ul>
+            <li>Largest sample — default</li>
+            <li>Smallest sample — quick validation</li>
+            <li>User-selected sample</li>
+          </ul>
+          <h3>Auto-fix examples</h3>
+          <ul>
+            <li>STAR memory failure or CPU/thread mismatch</li>
+            <li>BEDTOOLS memory failure</li>
+            <li>Walltime issues</li>
+            <li>Quota or TMPDIR issues</li>
+            <li>Scratch recommendations</li>
+            <li>Resumable task failures</li>
+          </ul>
+          <p><strong>Output:</strong> <code>reports/one_sample_validation_report.md</code></p>
+          <p><strong>Validation question:</strong> Can this current project configuration survive a full run?</p>
+        </div>
+      </div>
+      <h3>Never auto-change</h3>
+      <p>Reference genome, annotation, strandedness, aligner choice, metadata, sample grouping, or experimental design.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 6 — Run &amp; Monitor</h2>
+      <p><strong>Runs on HPC.</strong></p>
+      <div class="two-col">
+        <div class="mini-block">
+          <h3>run.sh</h3>
+          <p><a class="script-tag" href="scripts/run.sh" download>run.sh</a></p>
+          <p>Launch the full nf-core/rnaseq workflow, read <code>configure.yaml</code>, and support Nextflow resume.</p>
+        </div>
+        <div class="mini-block">
+          <h3>monitor_run.sh</h3>
+          <p><a class="script-tag" href="scripts/monitor_run.sh" download>monitor_run.sh</a></p>
+          <p>Show current stage, job status, failed tasks, disk usage, and recent logs. Make it clear where the pipeline is running or stuck.</p>
+        </div>
+      </div>
+      <p>Known issues should include suggested actions.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Step 7 — Download Results</h2>
+      <p><strong>Runs locally.</strong></p>
+      <p><strong>Script:</strong> <a class="script-tag" href="scripts/download_results.sh" download>download_results.sh</a></p>
+      <p><strong>Purpose:</strong> Transfer final results from HPC back to local storage using rsync.</p>
+      <h3>Features</h3>
+      <ul>
+        <li>Resume-safe transfer</li>
+        <li>Download log</li>
+        <li>Verification when possible</li>
+      </ul>
+      <h3>Download by default</h3>
+      <p><code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</p>
+      <h3>Do not download by default</h3>
+      <p><code>work/</code> or large BAM files. Large BAM files require explicit user selection.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Validation Hierarchy</h2>
+      <ul>
+        <li><strong>Input Validation:</strong> Are the project files correct?</li>
+        <li><strong>Smoke Test:</strong> Can this HPC + nf-core environment run?</li>
+        <li><strong>One Sample Run:</strong> Can this current project configuration survive a full run?</li>
+      </ul>
+    </section>
+
+    <section class="content-card">
+      <h2>Design Principles</h2>
+      <ul>
+        <li>One template</li>
+        <li>One configuration file</li>
+        <li>One main run script</li>
+        <li>Seven simple workflow steps</li>
+        <li>Local validation before upload</li>
+        <li>HPC validation before execution</li>
+        <li>Resource validation before full run</li>
+        <li>Automatic safe fixes and automatic resume</li>
+        <li>Minimal user decisions</li>
+        <li>Default aligner: STAR + Salmon</li>
+        <li>Default validation sample: Largest sample</li>
+        <li>Advanced settings hidden by default</li>
+        <li>Focus on preventing failed full-scale HPC runs</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>Reproducible · Secure · Resumable · Shareable</footer>
+</body>
+</html>
