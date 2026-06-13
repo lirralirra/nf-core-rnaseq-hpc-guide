@@ -93,6 +93,10 @@
                   <li>Check the folder structure before moving to the next step.</li>
                 </ol>
               </section>
+              <div class="guide-callout expected">
+                <strong>Expected outcome</strong>
+                <p>Your local project folder exists, the template structure is visible, and you know whether you are using the demo project or your own data.</p>
+              </div>
               <div class="simple-path-box">
                 <label for="localPath"><strong>Local working folder</strong></label>
                 <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
@@ -147,6 +151,10 @@
           <div class="guide-callout warning">
             <strong>Watch out</strong>
             <p>Most early failures come from FASTQ pair mismatches, duplicate sample IDs, or a samplesheet path that points to the wrong file. Fix these locally before uploading.</p>
+          </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p><code>input/samplesheet.csv</code> exists, FASTQ pairs match, sample IDs are unique, and <code>reports/input_validation_report.md</code> has no blocking errors.</p>
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
@@ -212,9 +220,13 @@
             <span class="context-pill local-pill">Local</span>
           </div>
           <p><strong>Purpose:</strong> Choose how nf-core/rnaseq will run.</p>
-          <div class="guide-callout recommend">
-            <strong>Beginner recommendation</strong>
+          <div class="guide-callout recommend configure-focus">
+            <strong>Beginner recommendation for configuration</strong>
             <p>Choose <strong>STAR + Salmon</strong> when you have a genome FASTA and GFF/GTF annotation. Choose <strong>Salmon only</strong> for a faster quantification-focused run when genome alignment outputs are not needed.</p>
+          </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p><code>configs/configure.yaml</code> exists, the selected mode is clear, local and HPC paths look right, and resource estimates are reasonable for the project size.</p>
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
@@ -281,6 +293,10 @@ walltime: 24:00:00</pre>
           <div class="guide-callout warning">
             <strong>Storage note</strong>
             <p>Upload raw inputs, configs, scripts, and reports. Avoid uploading old <code>work/</code>, cache folders, or previous large outputs unless you truly need them.</p>
+          </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p>The project folder exists on HPC, the upload log is saved, and <code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README files are present.</p>
           </div>
           <div class="simple-path-box">
             <label for="hpcPath"><strong>HPC working folder</strong></label>
@@ -381,6 +397,10 @@ walltime: 24:00:00</pre>
             <strong>Automation scope</strong>
             <p>Automatic fixes may adjust cache paths, scratch/work directories, containers, and resource settings. They should not change reference genome, annotation, strandedness, aligner choice, sample grouping, or experimental design.</p>
           </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p><code>reports/smoke_test_report.md</code> and <code>reports/one_sample_validation_report.md</code> exist, and the project is either ready for the full run or has clear fixes to apply.</p>
+          </div>
           <h3>Scripts involved</h3>
           <div class="two-col">
             <div class="mini-block">
@@ -431,6 +451,10 @@ walltime: 24:00:00</pre>
           <div class="guide-callout recovery">
             <strong>If something fails</strong>
             <p>Do not restart from zero immediately. Check logs, fix the cause, then resume when appropriate. Memory failures often need higher resources; storage failures often need a better scratch/work directory.</p>
+          </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p>The full run has completed or is safely resumable, recent logs are understood, and any failure has a clear next action.</p>
           </div>
           <div class="action-notes-grid">
             <div class="action-block">
@@ -510,6 +534,10 @@ walltime: 24:00:00</pre>
             <strong>Open first</strong>
             <p>Start with <code>multiqc_report.html</code> for QC, then find count/quantification tables for DESeq2, edgeR, WGCNA, Shiny, or other downstream analysis. Keep <code>pipeline_info/</code>, configs, logs, and samplesheet for reproducibility.</p>
           </div>
+          <div class="guide-callout expected">
+            <strong>Expected outcome</strong>
+            <p>Results, reports, logs, MultiQC output, quantification/count files, and reproducibility metadata are back on your local machine.</p>
+          </div>
           <div class="output-grid mini-output-grid full-output-grid">
             <article class="output-card">
               <h3>Analysis Data</h3>
@@ -561,6 +589,10 @@ walltime: 24:00:00</pre>
               <p>Share with collaborators</p>
               <p>Audit analysis settings</p>
             </article>
+          </div>
+          <div class="guide-callout completion">
+            <strong>What next?</strong>
+            <p>Review QC first, then use the count or quantification outputs for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
           </div>
           <div class="notes-block notes-bottom">
             <h3>Notes</h3>

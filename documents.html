@@ -21,7 +21,18 @@
   <main class="text-page">
     <section class="text-hero">
       <h1>Documents</h1>
-      <p>Detailed explanations for the Happy RNA-seq runner, nf-core/rnaseq, validation, auto-fix, resume, and troubleshooting.</p>
+      <p>A lightweight knowledge hub for the Happy RNA-seq runner, nf-core/rnaseq, validation, auto-fix, resume, outputs, and troubleshooting.</p>
+    </section>
+
+    <section class="content-card">
+      <h2>Knowledge Hub Map</h2>
+      <p>Use this page when you want a little more context than the workflow cards provide.</p>
+      <ul>
+        <li><strong>Pipeline overview:</strong> what nf-core/rnaseq does from FASTQ to count matrix.</li>
+        <li><strong>Beginner decisions:</strong> when to use STAR + Salmon or Salmon only.</li>
+        <li><strong>HPC recovery:</strong> how validation, auto-fix, logs, and resume fit together.</li>
+        <li><strong>Outputs and next steps:</strong> which files to open first and where downstream analysis begins.</li>
+      </ul>
     </section>
 
     <section class="content-card">
@@ -92,6 +103,17 @@
         <li><strong>Disk quota issue:</strong> move workdir to scratch or clean old work/results folders.</li>
         <li><strong>Samplesheet error:</strong> rerun make_samplesheet and input validation.</li>
         <li><strong>Pipeline stuck:</strong> run monitor_run.sh and inspect recent Nextflow logs.</li>
+      </ul>
+    </section>
+
+    <section class="content-card">
+      <h2>After Downloading Results</h2>
+      <p>Downloading results finishes the nf-core/rnaseq run, but it is usually the start of biological analysis.</p>
+      <ul>
+        <li>Open MultiQC first and check whether sequencing and mapping quality look acceptable.</li>
+        <li>Use count or quantification outputs for differential expression analysis.</li>
+        <li>Use reproducibility files when sharing or rerunning the project.</li>
+        <li>Move into enrichment, co-expression, visualisation, Shiny, or reporting only after QC looks reasonable.</li>
       </ul>
     </section>
   </main>
