@@ -583,7 +583,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
             </li>
             <li>Exit back to your local terminal after the login check.</li>
             <li>Upload the initialized project folder with resume-safe rsync:
-              <pre data-command="upload-rsync"></pre>
+              <pre data-command="upload-rsync2"></pre>
             </li>
               </ol>
             </div>
@@ -599,15 +599,6 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
               </ul>
             </details>
           </div>
-            <details class="notes-block notes-bottom">
-              <summary>Notes</summary>
-              <ul>
-            <li><code>upload_to_hpc.sh</code> reads the HPC user, host, and project path from the auto-generated <code>configs/configure.yaml</code>.</li>
-            <li>Check the upload log and confirm the transferred files look complete.</li>
-            <li>Uploaded by default: <code>scripts/</code>, <code>configs/</code>, <code>input/</code>, <code>reports/</code>, and README files.</li>
-            <li>Skipped by default: local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs.</li>
-              </ul>
-            </details>
           <div class="script-source">
             <details>
               <summary>View <code>scripts/upload_to_hpc.sh</code> source</summary>
@@ -670,10 +661,10 @@ echo "Upload log: $LOG"
             <li>Move into the uploaded HPC project folder:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>(Optional, only needed the first time) Enable safe automatic fixes and resume during validation, then run the Smoke Test:
+            <li>(Optional, only needed the first time) run the Smoke Test (including safe automatic fixes and resume):
               <pre data-command="step5-smoke"></pre>
             </li>
-            <li>Run the One Sample Run:
+            <li>Run the One Sample Run (including safe automatic fixes and resume):
               <pre data-command="step5-one-sample"></pre>
             </li>
             <li>Continue to the full run only after preflight validation passes.</li>
@@ -697,13 +688,10 @@ echo "Upload log: $LOG"
               </ul>
             </details>
           </div>
-          <div class="guide-callout trust">
-            <strong>☑ Allow automatic fixes and resume during validation</strong>
-            <p>Safe infrastructure and resource fixes (cache paths, scratch/work directories, containers, resource settings) may be applied automatically and resumed; biological settings (reference genome, annotation, strandedness, aligner choice, sample grouping, experimental design) are never changed automatically.</p>
-          </div>
             <details class="notes-block notes-bottom">
               <summary>Notes</summary>
               <ul>
+            <li><strong>☑ Allow automatic fixes and resume during validation:</strong> Safe infrastructure and resource fixes (cache paths, scratch/work directories, containers, resource settings) may be applied automatically and resumed; biological settings (reference genome, annotation, strandedness, aligner choice, sample grouping, experimental design) are never changed automatically.</li>
             <li>Review <code>reports/smoke_test_report.md</code>.</li>
             <li>Use the largest sample by default when the goal is resource validation.</li>
             <li>Review <code>reports/one_sample_validation_report.md</code> before launching the full run.</li>
@@ -830,9 +818,11 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"
             <li>Launch the workflow:
               <pre data-command="step6-run"></pre>
             </li>
-            <li>Monitor job status, current stage, failed tasks, disk usage, and recent logs:
+            <li>Monitor job status, current stage, failed tasks, disk usage, and recent logs (Press <code>Ctrl+C</code> can stop the monitor without affecting the pipeline run itself):
               <pre data-command="step6-monitor"></pre>
-              <p class="tip"><strong>Tip:</strong> Press <code>Ctrl+C</code> to stop the monitor (or any running process) without affecting the pipeline run itself.</p>
+            </li>
+            <li>If failed, Nextflow keeps track of completed steps, so after debugging an issue you can <code>resume</code> the run and pick up from where it left off instead of starting over from scratch:
+              <pre data-command="step6-resume"></pre>
             </li>
               </ol>
             </div>
@@ -852,12 +842,6 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"
               </ul>
             </details>
           </div>
-            <details class="notes-block notes-bottom">
-              <summary>Notes</summary>
-              <ul>
-            <li>Nextflow keeps track of completed steps, so after debugging an issue you can resume the run and pick up from where it left off instead of starting over from scratch.</li>
-              </ul>
-            </details>
           <div class="script-source">
             <details>
               <summary>View <code>scripts/run.sh</code> source</summary>
@@ -1018,14 +1002,9 @@ echo "Suggested actions: check memory, walltime, scratch space, container cache,
             </article>
           </div>
           </details>
-          <div class="guide-callout completion">
-            <strong>What next?</strong>
-            <p>Review QC first, then use the count or quantification outputs for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
-          </div>
           <details class="notes-block notes-bottom">
             <summary>Notes</summary>
             <ul>
-              <li>MultiQC reports, quantification outputs, and pipeline summaries.</li>
               <li>Resume-safe rsync allows interrupted downloads to continue.</li>
               <li>Check the download log and verify transferred files when possible.</li>
             </ul>
@@ -1150,6 +1129,7 @@ echo "Download log: $LOG"
         'hpc-folder-locate': `ls -ld ${qHpc}`,
         'hpc-folder-check': `mkdir -p ${qHpc}\nls -ld ${qHpc}`,
         'upload-rsync': `rsync -avh --progress \\\n  ${shellQuote(trailingSlash(local))} \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}`)}`,
+        'upload-rsync2': `cd ${qLocal}\nbash scripts/upload_to_hpc.sh`,
         'download-rsync': `cd ${qLocal}\nbash scripts/download_results.sh`,
         'step2-make': `cd ${qLocal}\nbash scripts/make_samplesheet.sh`,
         'step2-validate': `cd ${qLocal}\nbash scripts/input_validate.sh`,
@@ -1158,7 +1138,8 @@ echo "Download log: $LOG"
         'step5-smoke': `ssh ${target}\ncd ${qHpc}\nbash scripts/smoke_run.sh`,
         'step5-one-sample': `ssh ${target}\ncd ${qHpc}\nbash scripts/one_sample_run.sh`,
         'step6-run': `ssh ${target}\ncd ${qHpc}\nbash scripts/run.sh`,
-        'step6-monitor': `ssh ${target}\ncd ${qHpc}\nbash scripts/monitor_run.sh`
+        'step6-monitor': `ssh ${target}\ncd ${qHpc}\nbash scripts/monitor_run.sh`,
+        'step6-resume': `ssh ${target}\ncd ${qHpc}\nbash scripts/run.sh -resume`
       };
 
       return commands[key] || '';
