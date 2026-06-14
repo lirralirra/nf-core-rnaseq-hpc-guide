@@ -126,14 +126,16 @@
           </div>
           <p class="step-purpose">Place FASTQ, reference genome, and annotation files in the project, then generate and validate the samplesheet before upload.</p>
           <div class="action-notes-grid">
-            <div class="action-block">
+            <div class="action-block step2-action-block">
+              <figure class="step2-inline-visual">
+                <img src="assets/step2-input-files.png" alt="FASTQ file, reference genome, and GFF3 annotation inputs for Step 2.">
+              </figure>
               <p><strong>What You Do:</strong></p>
               <ol>
             <li>Add or link FASTQ files in <code>input/fastq/</code>.</li>
             <li>Add or link the reference genome in <code>input/reference/</code>.</li>
             <li>Add or link the annotation file in <code>input/annotation/</code>.</li>
-            <li>Open your terminal.</li>
-            <li>Move into your project folder:
+            <li>Open your terminal and move into your local project folder:
               <pre data-command="local-cd"></pre>
             </li>
             <li>Generate <code>input/samplesheet.csv</code>:
@@ -318,8 +320,7 @@ fi
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal.</li>
-            <li>Move into your project folder:
+            <li>Open your terminal and move into your local project folder:
               <pre data-command="local-cd"></pre>
             </li>
             <li>Choose the pipeline mode <a href="documents.html#choose-pipeline-mode">how to decide</a>:
@@ -617,8 +618,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal.</li>
-            <li>Move into your local project folder:
+            <li>Open your terminal and move into your local project folder:
               <pre data-command="local-cd"></pre>
             </li>
             <li>Log in to your HPC using the Phoenix account and host selected in Step 1:

@@ -30,19 +30,72 @@
 
     <section class="content-card">
       <h2>Knowledge Hub Map</h2>
-      <p>Use this page when you want a little more context than the workflow cards provide.</p>
+      <p>Use this page as a quick reference when you want the details behind the workflow cards.</p>
       <ul>
-        <li><strong>Pipeline overview:</strong> what nf-core/rnaseq does from FASTQ to count matrix.</li>
-        <li><strong>Beginner decisions:</strong> when to use STAR + Salmon or Salmon only.</li>
-        <li><strong>HPC recovery:</strong> how validation, auto-fix, logs, and resume fit together.</li>
-        <li><strong>Outputs and next steps:</strong> which files to open first and where downstream analysis begins.</li>
+        <li><strong>nf-core/rnaseq Pipeline:</strong> official pipeline role, inputs, major processing stages, outputs, and reference links.</li>
+        <li><strong>What Each Step Does:</strong> how the seven workflow steps connect from project setup to downloaded results.</li>
+        <li><strong>Choose Pipeline Mode:</strong> when STAR + Salmon is the safer default and when Salmon-only may be enough.</li>
+        <li><strong>Validation and recovery:</strong> what Smoke Test, One Sample Run, auto-fix, logs, and resume are meant to protect.</li>
+        <li><strong>Troubleshooting and next steps:</strong> common HPC issues, which output files to open first, and where downstream analysis begins.</li>
+        <li><strong>FAQ:</strong> short answers to beginner questions, collected at the end of this page.</li>
       </ul>
     </section>
 
-    <section class="content-card">
-      <h2>nf-core RNA-seq Pipeline</h2>
-      <p>nf-core/rnaseq is a Nextflow pipeline for RNA-seq processing. It starts from FASTQ files, performs read QC, optional trimming, alignment or quantification, count generation, MultiQC reporting, and metadata capture.</p>
-      <p>The runner does not replace nf-core/rnaseq. It wraps project setup, validation, HPC transfer, safe recovery, monitoring, and result download around the pipeline.</p>
+    <section class="content-card pipeline-reference-card">
+      <h2>nf-core/rnaseq Pipeline</h2>
+      <p>nf-core/rnaseq is the official nf-core RNA-seq analysis pipeline. It is built with Nextflow and is designed for RNA-seq data from organisms with a reference genome and annotation. It can start from FASTQ files or compatible BAM inputs, then run quality control, trimming, alignment or pseudo-alignment, quantification, MultiQC reporting, and pipeline metadata capture.</p>
+
+      <div class="pipeline-flow" aria-label="Simple nf-core/rnaseq flow">
+        <div>
+          <h3>Inputs</h3>
+          <p>FASTQ files + samplesheet + reference genome + annotation</p>
+        </div>
+        <div>
+          <h3>Pipeline</h3>
+          <p>QC → trimming → STAR + Salmon or Salmon-only → count matrix → MultiQC report</p>
+        </div>
+        <div>
+          <h3>Outputs</h3>
+          <p>gene/transcript counts, quality-control reports, logs, software versions, and reproducibility metadata.</p>
+        </div>
+      </div>
+
+      <div class="pipeline-stage-list" aria-label="Pipeline stage details">
+        <div>
+          <h3>QC</h3>
+          <p>Checks raw read quality before analysis. This helps you see read quality, adapter content, duplication, overrepresented sequences, and other warning signs before trusting downstream results.</p>
+        </div>
+        <div>
+          <h3>Trimming</h3>
+          <p>Removes adapters and low-quality sequence when trimming is enabled. This can improve mapping or quantification when raw reads contain technical sequence or poor-quality tails.</p>
+        </div>
+        <div>
+          <h3>STAR + Salmon</h3>
+          <p>Aligns reads to the reference genome with STAR, then uses Salmon for transcript-level quantification. This mode is useful when you want alignment evidence, mapping metrics, and a full reference-guided RNA-seq run.</p>
+        </div>
+        <div>
+          <h3>Salmon-only</h3>
+          <p>Quantifies reads without genome alignment. This is faster and lighter, but it is mainly for quantification-focused runs and does not produce the same genome-alignment evidence as STAR-based mode.</p>
+        </div>
+        <div>
+          <h3>Count matrix</h3>
+          <p>Produces gene-level and/or transcript-level count or abundance tables for downstream analysis. These are the key files used later for differential expression, visualisation, and other RNA-seq summaries.</p>
+        </div>
+        <div>
+          <h3>MultiQC report</h3>
+          <p>Collects QC and pipeline metrics into one HTML report. Open this first after a run to review sequencing quality, trimming, mapping or quantification performance, and whether the run looks usable.</p>
+        </div>
+      </div>
+
+      <div class="official-link-grid" aria-label="Official nf-core/rnaseq references">
+        <a href="https://nf-co.re/rnaseq">Official nf-core/rnaseq page</a>
+        <a href="https://nf-co.re/rnaseq/3.26.0/docs/usage/">Usage documentation</a>
+        <a href="https://nf-co.re/rnaseq/3.26.0/parameters/">Parameters</a>
+        <a href="https://nf-co.re/rnaseq/3.26.0/docs/output/">Output documentation</a>
+        <a href="https://github.com/nf-core/rnaseq">GitHub repository</a>
+      </div>
+
+      <p class="reference-note">This guide is not a replacement for the official nf-core/rnaseq documentation. It is a beginner-friendly HPC wrapper that helps users prepare inputs, validate configuration, run safely on HPC, resume failed jobs, and download results.</p>
     </section>
 
     <section class="content-card">
@@ -86,20 +139,6 @@
     </section>
 
     <section class="content-card">
-      <h2>FAQ</h2>
-      <h3>What is nf-core/rnaseq?</h3>
-      <p>A community-maintained RNA-seq pipeline built with Nextflow.</p>
-      <h3>What is a samplesheet?</h3>
-      <p>A CSV file that maps sample IDs to FASTQ files and strandedness.</p>
-      <h3>What is Apptainer?</h3>
-      <p>A container runtime commonly used on HPC clusters.</p>
-      <h3>Can I resume a failed run?</h3>
-      <p>Yes. Keep the work directory and use Nextflow resume.</p>
-      <h3>What should I keep after the run?</h3>
-      <p>Results, reports, logs, MultiQC, quantification outputs, pipeline metadata, samplesheet, configs, scripts, and reference metadata.</p>
-    </section>
-
-    <section class="content-card">
       <h2>Troubleshooting Notes</h2>
       <ul>
         <li><strong>STAR killed:</strong> check memory and walltime; use One Sample Run to estimate resources.</li>
@@ -121,6 +160,21 @@
         <li>Move into enrichment, co-expression, visualisation, Shiny, or reporting only after QC looks reasonable.</li>
       </ul>
     </section>
+    <section class="content-card">
+      <h2>FAQ</h2>
+      <h3>What is nf-core/rnaseq?</h3>
+      <p>A community-maintained RNA-seq pipeline built with Nextflow.</p>
+      <h3>What is a samplesheet?</h3>
+      <p>A CSV file that maps sample IDs to FASTQ files and strandedness.</p>
+      <h3>What is Apptainer?</h3>
+      <p>A container runtime commonly used on HPC clusters.</p>
+      <h3>Can I resume a failed run?</h3>
+      <p>Yes. Keep the work directory and use Nextflow resume.</p>
+      <h3>What should I keep after the run?</h3>
+      <p>Results, reports, logs, MultiQC, quantification outputs, pipeline metadata, samplesheet, configs, scripts, and reference metadata.</p>
+    </section>
+
+
   </main>
 
   <footer>Reproducible · Secure · Resumable · Shareable</footer>
