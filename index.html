@@ -71,10 +71,9 @@
             <h2>Step 1 — Initial Project</h2>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p class="step-purpose">Download a ready-to-use template to create a new project.</p>
-          <div class="step-one-grid">
-            <div class="step-one-copy">
-              <section class="step-one-section">
+          <p class="step-purpose">Download a ready-to-use template, confirm HPC access, and record the local folder path before preparing inputs.</p>
+          <div class="action-notes-grid">
+            <div class="action-block">
                 <p><strong>What You Do:</strong></p>
                 <ol>
                   <li>Before upload or running the project, confirm you have University of Adelaide Phoenix HPC access: <a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a>.
@@ -103,7 +102,6 @@
                   </li>
                   <li>This workflow is written for bash-style shell commands. Before running local commands, confirm you are using a local bash-style terminal.</li>
                 </ol>
-              </section>
             </div>
             <div class="pipeline-side">
               <details class="notes-block template-structure-block">
@@ -1351,6 +1349,37 @@ echo "Download log: $LOG"
           panel.classList.toggle('active', panel.dataset.stepPanel === step);
         });
       });
+    });
+
+    panels.forEach((panel) => {
+      if (panel.querySelector('.step-bottom-nav')) return;
+      const current = Number(panel.dataset.stepPanel);
+      const nav = document.createElement('nav');
+      nav.className = 'step-bottom-nav';
+      nav.setAttribute('aria-label', 'Step navigation');
+
+      const prev = document.createElement('button');
+      prev.type = 'button';
+      prev.className = 'step-nav-btn prev';
+      prev.textContent = current > 1 ? `← Previous Step ${current - 1}` : '← Previous Step';
+      prev.disabled = current === 1;
+      prev.addEventListener('click', () => {
+        document.querySelector(`.step-tab[data-step="${current - 1}"]`)?.click();
+        document.querySelector('.step-detail-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.className = 'step-nav-btn next';
+      next.textContent = current < 7 ? `Next Step ${current + 1} →` : 'Next Step →';
+      next.disabled = current === 7;
+      next.addEventListener('click', () => {
+        document.querySelector(`.step-tab[data-step="${current + 1}"]`)?.click();
+        document.querySelector('.step-detail-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      nav.append(prev, next);
+      panel.appendChild(nav);
     });
 
     function fieldValue(key) {
