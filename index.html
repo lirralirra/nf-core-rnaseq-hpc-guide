@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Happy RNA-seq</title>
+  <title>RNA-seq made easy</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="intro-overlay" id="introOverlay" aria-hidden="true">
     <button class="intro-skip" type="button" aria-label="Skip intro">×</button>
     <div class="intro-scene" role="button" tabindex="0" aria-label="Start">
-      <img class="intro-storyboard" src="assets/happy-rnaseq-intro-light.png" alt="Illustrated Happy RNA-seq opening showing FASTQ, reference genome, and GFF3 annotation as inputs; nf-core RNA-seq running on HPC; and a count matrix as the output.">
+      <img class="intro-storyboard" src="assets/rnaseq-journey-home.png" alt="Illustrated RNA-seq journey showing seven workflow steps and the nf-core/rnaseq pipeline from FASTQ input to results.">
       <button class="intro-start" id="introStart" type="button" aria-label="Start">Start</button>
     </div>
   </div>
   <nav class="site-nav product-nav" aria-label="Site navigation">
     <div class="nav-brand">
-      <div class="nav-title">RNA-seq Workflow</div>
-      <div class="nav-subtitle">From FASTQ to count matrix using the nf-core RNA-seq pipeline.</div>
+      <div class="nav-title">RNA-seq made easy</div>
+      <div class="nav-subtitle">From FASTQ to count matrix using the nf-core RNA-seq pipeline on HPC.</div>
     </div>
     <div class="nav-links">
       <a class="active" href="index.html">Workflow</a>
@@ -29,38 +29,31 @@
     <section class="workflow-panel compact-workflow" aria-label="Interactive workflow">
       <div class="step-tabs" role="tablist" aria-label="Workflow steps">
         <button class="step-tab local active" type="button" data-step="1" aria-selected="true">
-          <span class="step-num">1</span>
-          <span class="step-icon" aria-hidden="true">▣</span>
+          <span class="step-mark"><span class="step-num">1</span><span class="step-run">Local</span></span>
           <strong>Initial Project</strong>
         </button>
         <button class="step-tab local" type="button" data-step="2">
-          <span class="step-num">2</span>
-          <span class="step-icon" aria-hidden="true">✓</span>
+          <span class="step-mark"><span class="step-num">2</span><span class="step-run">Local</span></span>
           <strong>Prepare &amp; Validate Inputs</strong>
         </button>
         <button class="step-tab local" type="button" data-step="3">
-          <span class="step-num">3</span>
-          <span class="step-icon" aria-hidden="true">⚙</span>
+          <span class="step-mark"><span class="step-num">3</span><span class="step-run">Local</span></span>
           <strong>Pipeline Configure</strong>
         </button>
         <button class="step-tab local" type="button" data-step="4">
-          <span class="step-num">4</span>
-          <span class="step-icon" aria-hidden="true">↥</span>
+          <span class="step-mark"><span class="step-num">4</span><span class="step-run">Local</span></span>
           <strong>Upload to HPC</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="5">
-          <span class="step-num">5</span>
-          <span class="step-icon" aria-hidden="true">◇</span>
+          <span class="step-mark"><span class="step-num">5</span><span class="step-run">HPC</span></span>
           <strong>Preflight Validation</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="6">
-          <span class="step-num">6</span>
-          <span class="step-icon" aria-hidden="true">▶</span>
+          <span class="step-mark"><span class="step-num">6</span><span class="step-run">HPC</span></span>
           <strong>Run &amp; Monitor</strong>
         </button>
         <button class="step-tab local" type="button" data-step="7">
-          <span class="step-num">7</span>
-          <span class="step-icon" aria-hidden="true">▦</span>
+          <span class="step-mark"><span class="step-num">7</span><span class="step-run">Local</span></span>
           <strong>Download Results</strong>
         </button>
       </div>
@@ -108,6 +101,7 @@
                       <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
                     </div>
                   </li>
+                  <li>This workflow is written for bash-style shell commands. Before running local commands, confirm you are using a local bash-style terminal.</li>
                 </ol>
               </section>
             </div>
@@ -1419,9 +1413,28 @@ echo "Download log: $LOG"
       return commands[key] || '';
     }
 
+    const localBashCommands = new Set([
+      'local-mkdir',
+      'local-cd',
+      'local-chmod',
+      'hpc-ssh',
+      'upload-rsync2',
+      'upload-rsync',
+      'download-rsync',
+      'step2-make',
+      'step2-validate',
+      'step3-star',
+      'step3-salmon'
+    ]);
+
     function updateCommands() {
       document.querySelectorAll('pre[data-command]').forEach((pre) => {
         pre.textContent = commandFor(pre.dataset.command);
+        if (localBashCommands.has(pre.dataset.command)) {
+          pre.dataset.shell = 'bash';
+        } else {
+          delete pre.dataset.shell;
+        }
       });
     }
 
