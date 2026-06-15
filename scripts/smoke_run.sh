@@ -17,6 +17,12 @@ PROFILE="${PROFILE:-singularity}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 
+if ! command -v nextflow >/dev/null 2>&1; then
+  echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." >&2
+  exit 1
+fi
+echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
+
 {
   echo "# Smoke Test Report"
   echo

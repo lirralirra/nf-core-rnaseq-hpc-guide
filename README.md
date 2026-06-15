@@ -42,6 +42,7 @@ The initialized project folder is uploaded to HPC with all scripts included from
 - `run.sh` - HPC
 - `monitor_run.sh` - HPC
 - `download_results.sh` - local
+- `make_report.R` - local (optional project report from MultiQC + project info)
 
 ## Use With GitHub Pages
 

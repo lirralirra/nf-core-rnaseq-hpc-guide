@@ -50,6 +50,12 @@ if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -u nocasematch
 fi
 
+if ! command -v nextflow >/dev/null 2>&1; then
+  echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." >&2
+  exit 1
+fi
+echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
+
 cmd=(nextflow run nf-core/rnaseq
   -r "$PIPELINE_VERSION"
   -profile "$PROFILE"

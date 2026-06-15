@@ -188,17 +188,23 @@ run_one_sample() {
   "${cmd[@]}" -resume 2>&1 | tee logs/one_sample_run.log
 }
 
+if ! command -v nextflow >/dev/null 2>&1; then
+  echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." | tee -a "$REPORT" >&2
+  exit 1
+fi
+echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
+
 if ! run_one_sample; then
   if [[ "$ALLOW_FIXES" == "true" ]]; then
     echo "Initial one sample run failed. Applying safe infrastructure/resource fixes and resuming." >> "$REPORT"
     prepare_runtime_dirs
-    if grep -Eiq 'out.of.memory|oom|killed|cannot allocate|memory|exit status 137|exit status 143' logs/one_sample_run.log; then
+    if grep -Eiq 'out.of.memory|oom|oom-kill|slurmstepd|killed|cannot allocate|memory|exit status 137|exit status 143' logs/one_sample_run.log; then
       bump_memory
     fi
-    if grep -Eiq 'time limit|walltime|wall time|exceeded.*time|exit status 140' logs/one_sample_run.log; then
+    if grep -Eiq 'time limit|walltime|wall time|exceeded.*time|DUE TO TIME LIMIT|exit status 140' logs/one_sample_run.log; then
       bump_walltime
     fi
-    if grep -Eiq 'no space left|quota|disk|scratch|tmpdir|permission denied|read-only' logs/one_sample_run.log; then
+    if grep -Eiq 'no space left|quota|disk quota exceeded|disk|scratch|tmpdir|permission denied|read-only' logs/one_sample_run.log; then
       move_workdir_to_retry_area
     fi
     run_one_sample || {

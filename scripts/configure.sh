@@ -7,7 +7,18 @@ ALIGNER="${ALIGNER:-star_salmon}"
 PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
 SKIP_ALIGNMENT="${SKIP_ALIGNMENT:-false}"
 GC_BIAS="${GC_BIAS:-true}"
+
+# Shared constants (keep in sync with the guide UI and templates).
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+GUIDE_VERSION="${GUIDE_VERSION:-v1.0.0}"
+TEMPLATE_VERSION="${TEMPLATE_VERSION:-v1.0.0}"
+CREATED_DATE="${CREATED_DATE:-$(date +%Y-%m-%d)}"
+
+# Project metadata (identification only; does not affect nf-core/rnaseq execution).
+PROJECT_NAME="${PROJECT_NAME:-}"
+PROJECT_DESCRIPTION="${PROJECT_DESCRIPTION:-}"
+PROJECT_OWNER="${PROJECT_OWNER:-}"
+
 SPECIES="${SPECIES:-unknown}"
 GENOME_SIZE_GB="${GENOME_SIZE_GB:-}"
 SAMPLE_COUNT="${SAMPLE_COUNT:-}"
@@ -188,6 +199,12 @@ yaml_quote() {
 }
 
 cat > "$CONFIG" <<YAML
+project_name: $(yaml_quote "$PROJECT_NAME")
+project_description: $(yaml_quote "$PROJECT_DESCRIPTION")
+project_owner: $(yaml_quote "$PROJECT_OWNER")
+guide_version: $(yaml_quote "$GUIDE_VERSION")
+template_version: $(yaml_quote "$TEMPLATE_VERSION")
+created_date: $(yaml_quote "$CREATED_DATE")
 local_project_dir: $(yaml_quote "$LOCAL_PROJECT_DIR")
 hpc_user: $(yaml_quote "$HPC_USER")
 hpc_host: $(yaml_quote "$HPC_HOST")
@@ -216,6 +233,93 @@ cache_dir: $(yaml_quote "$CACHE_DIR")
 YAML
 
 echo "Wrote $CONFIG"
+
+# Human-readable project summary at the project root.
+nv() { if [[ -n "${1:-}" ]]; then printf '%s' "$1"; else printf '(not set)'; fi; }
+if [[ "$RUN_MODE" == "salmon_only" ]]; then
+  MODE_LABEL="Salmon only"
+else
+  MODE_LABEL="STAR + Salmon"
+fi
+if [[ "$GC_BIAS" == "true" ]]; then GC_LABEL="enabled"; else GC_LABEL="disabled"; fi
+
+cat > PROJECT_INFO.md <<INFO
+# Project Information
+
+## Project
+
+Project Name:
+$(nv "$PROJECT_NAME")
+
+Project Description:
+$(nv "$PROJECT_DESCRIPTION")
+
+Project Owner:
+$(nv "$PROJECT_OWNER")
+
+Created Date:
+$CREATED_DATE
+
+## Version Information
+
+Guide Version:
+$GUIDE_VERSION
+
+Template Version:
+$TEMPLATE_VERSION
+
+Pipeline Version:
+nf-core/rnaseq $PIPELINE_VERSION
+
+## Workflow
+
+Pipeline Mode:
+$MODE_LABEL
+
+Profile:
+$PROFILE
+
+GC Bias Correction:
+$GC_LABEL
+
+## Inputs
+
+Samples:
+${SAMPLE_COUNT:-unknown}
+
+Reference:
+$REFERENCE
+
+Annotation:
+$ANNOTATION
+
+Annotation Type:
+$ANNOTATION_TYPE
+
+## Workflow Summary
+
+This project was configured using the Happy RNA-seq HPC Guide.
+
+The workflow is designed to reduce RNA-seq setup anxiety by using a staged validation process:
+
+Smoke Test
+->
+One Sample Validation
+->
+Full Run
+
+For STAR + Salmon mode:
+- Genome alignment: STAR
+- Quantification: Salmon
+- Output includes gene/transcript expression matrices, Salmon quantification files, MultiQC report, and pipeline execution reports.
+
+For Salmon only mode:
+- Genome alignment: skipped
+- Quantification: Salmon pseudoalignment
+- Output includes Salmon quantification files, expression matrices where generated, MultiQC report, and pipeline execution reports.
+INFO
+
+echo "Wrote PROJECT_INFO.md"
 echo "Run mode: $RUN_MODE"
 echo "Estimated resources: memory=$MEMORY cpu=$CPU walltime=$WALLTIME"
 echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"

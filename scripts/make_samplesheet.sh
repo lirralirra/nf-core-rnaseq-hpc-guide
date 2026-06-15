@@ -53,4 +53,12 @@ fi
 
 mv "$tmp" "$SAMPLESHEET"
 echo "Wrote $SAMPLESHEET ($data_rows sample(s))."
+
+# nf-core/rnaseq requires gzipped FASTQ; warn if any uncompressed files were used.
+if grep -qE '\.(fastq|fq),' "$SAMPLESHEET"; then
+  echo "WARNING: uncompressed FASTQ detected. nf-core/rnaseq expects gzipped FASTQ files (.fastq.gz / .fq.gz)." >&2
+  echo "         gzip your FASTQ files before running the pipeline." >&2
+  echo "- WARNING: uncompressed FASTQ in samplesheet; nf-core/rnaseq expects gzipped FASTQ (.fastq.gz / .fq.gz)." >> "$REPORT"
+fi
+
 echo "ACTION: open $SAMPLESHEET and check sample names, R1/R2 pairing, and strandedness before continuing."

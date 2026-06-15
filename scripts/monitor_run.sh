@@ -18,7 +18,11 @@ nextflow log 2>/dev/null | tail -6 || echo "nextflow log unavailable (run from t
 
 echo
 echo "## Failed tasks"
-grep -i "failed\\|error\\|killed" .nextflow.log 2>/dev/null | tail -40 || true
+grep -iE "failed|error|killed|oom-kill|slurmstepd|DUE TO TIME LIMIT|disk quota exceeded" .nextflow.log 2>/dev/null | tail -40 || true
+
+echo
+echo "## Slurm accounting (recent jobs)"
+sacct -u "$USER" --format=JobID,JobName%20,State,ExitCode,Elapsed,ReqMem,MaxRSS 2>/dev/null | tail -15 || echo "sacct unavailable"
 
 echo
 echo "## Most recent failed-task log"
