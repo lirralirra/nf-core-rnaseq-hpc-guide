@@ -37,6 +37,16 @@ a {
   color: inherit;
 }
 
+.action-block a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.action-block a:hover {
+  text-decoration: none;
+}
+
 .site-nav {
   position: sticky;
   top: 0;
@@ -1104,6 +1114,12 @@ h1 {
   gap: 24px;
   align-items: start;
   margin-top: 18px;
+}
+
+.action-stack {
+  display: grid;
+  gap: 18px;
+  align-content: start;
 }
 
 .action-block,
@@ -3196,4 +3212,788 @@ footer {
 .notes-block.notes-bottom li {
   font-size: 13.5px !important;
   line-height: 1.45 !important;
+}
+
+/* Real research-notebook refinement: workflow only */
+.hands-page {
+  background:
+    linear-gradient(90deg, #eee6d6 0 304px, #fbf4e6 304px),
+    #fbf4e6;
+}
+
+.hands-lower {
+  background:
+    radial-gradient(circle at 96% 4%, rgba(217, 240, 211, 0.45), transparent 24%),
+    radial-gradient(circle at 6% 94%, rgba(231, 212, 232, 0.32), transparent 22%),
+    #fbf4e6;
+}
+
+.step-detail-card {
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(90, 174, 97, 0.055) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(180deg, rgba(90, 174, 97, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+    repeating-linear-gradient(180deg, transparent 0 30px, rgba(79, 97, 80, 0.045) 30px 31px),
+    #fffdf6;
+  border: 1px solid #d8ccb4;
+  border-radius: 18px 28px 24px 18px;
+  box-shadow:
+    0 18px 42px rgba(74, 62, 44, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.step-detail-card::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 20px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, rgba(153, 112, 171, 0.35) 0 9px, transparent 9px 18px);
+  border-radius: 99px;
+  pointer-events: none;
+}
+
+.step-detail-card::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  top: 18px;
+  width: 76px;
+  height: 24px;
+  background: rgba(255, 244, 184, 0.45);
+  border: 1px solid rgba(201, 178, 135, 0.35);
+  border-radius: 5px;
+  transform: rotate(2deg);
+  pointer-events: none;
+}
+
+.step-detail.active {
+  position: relative;
+}
+
+.step-title-row {
+  padding-left: 4px;
+}
+
+.step-title-row::before {
+  width: 12px;
+  height: 38px;
+  background:
+    linear-gradient(180deg, rgba(90, 174, 97, 0.78), rgba(217, 240, 211, 0.92));
+  border-radius: 8px 11px 9px 7px;
+  transform: rotate(-1deg);
+  box-shadow: 0 2px 0 rgba(27, 120, 55, 0.12);
+}
+
+.step-detail h2 {
+  color: #244936;
+  font-size: 31px;
+  letter-spacing: 0.01em;
+  text-decoration: underline;
+  text-decoration-color: rgba(166, 219, 160, 0.85);
+  text-decoration-thickness: 6px;
+  text-underline-offset: -3px;
+  text-decoration-skip-ink: none;
+}
+
+.context-pill {
+  transform: rotate(1deg);
+  border-radius: 10px 12px 10px 14px;
+  box-shadow: 0 2px 0 rgba(70, 78, 64, 0.1);
+}
+
+.step-purpose {
+  max-width: 920px;
+  margin-left: 24px;
+  padding: 9px 12px;
+  color: #55645d;
+  background: rgba(255, 253, 246, 0.64);
+  border-left: 3px solid rgba(90, 174, 97, 0.38);
+  border-radius: 0 12px 12px 0;
+}
+
+.action-block {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,253,246,0.92));
+  border: 1px solid #d8ccb4;
+  border-left: 0;
+  border-radius: 18px 20px 22px 16px;
+  box-shadow: 0 12px 24px rgba(74, 62, 44, 0.075);
+}
+
+.action-block::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 0;
+  width: 8px;
+  background:
+    linear-gradient(180deg, rgba(90, 174, 97, 0.7), rgba(217, 240, 211, 0.95));
+  border-radius: 0 8px 8px 0;
+  transform: skewY(-2deg);
+}
+
+.action-block > p:first-child > strong {
+  color: #1B7837;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.action-block ol,
+.action-block ul {
+  padding-left: 22px;
+}
+
+.action-block li::marker {
+  color: #1B7837;
+  font-weight: 900;
+}
+
+.step-detail pre {
+  background:
+    linear-gradient(180deg, #fbfdf9, #f2f8f2);
+  border: 1px solid #bfdcbd;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 10px rgba(27,120,55,0.055);
+}
+
+.compact-workflow {
+  background:
+    linear-gradient(90deg, rgba(139, 111, 76, 0.04) 1px, transparent 1px) 0 0 / 22px 22px,
+    linear-gradient(180deg, #f2eadb 0%, #e6ddca 100%);
+  border-right-color: #c4b79a;
+}
+
+.step-tabs {
+  gap: 7px;
+}
+
+.step-tab {
+  min-height: 66px;
+  border-radius: 18px 0 0 18px;
+  border-color: #c9bea2;
+  background:
+    linear-gradient(90deg, #fffdf6, #f1eadb);
+  box-shadow:
+    0 4px 10px rgba(74, 62, 44, 0.055),
+    inset 0 1px 0 rgba(255,255,255,0.72);
+}
+
+.step-tab::after {
+  content: "";
+  position: absolute;
+  right: 9px;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: rgba(116, 103, 74, 0.16);
+}
+
+.step-tab.active {
+  transform: translateX(10px) rotate(-0.4deg);
+}
+
+.step-tab strong {
+  font-size: 14px;
+}
+
+.step-num {
+  font-size: 16px;
+  border-radius: 46% 54% 50% 50%;
+}
+
+.step-run {
+  border-radius: 10px 13px 10px 12px;
+  transform: rotate(1deg);
+}
+
+.sidebar-downloads {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,253,246,0.82), rgba(242,234,219,0.9));
+  border-color: #c9bea2;
+  border-radius: 18px 0 0 18px;
+}
+
+.sidebar-downloads::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: -7px;
+  height: 13px;
+  background: rgba(255, 244, 184, 0.46);
+  border: 1px solid rgba(201, 178, 135, 0.36);
+  border-radius: 4px;
+  transform: rotate(-1.5deg);
+}
+
+.notes-block,
+.script-source details,
+.pipeline-does-block,
+.template-structure-block {
+  border-style: dashed !important;
+}
+
+.notes-block:hover,
+.script-source details:hover,
+.template-structure-block:hover,
+.pipeline-does-block:hover,
+.step-detail .pipeline-does-block:hover {
+  transform: translateY(-1px) rotate(-0.15deg);
+}
+
+.notes-block summary,
+.script-source summary,
+.template-structure-block summary,
+.pipeline-does-block summary,
+.step-detail .pipeline-does-block summary {
+  letter-spacing: 0.02em;
+}
+
+.step-bottom-nav {
+  border-top-style: dashed;
+}
+
+.step-nav-btn {
+  border-radius: 15px 18px 15px 20px;
+  transform: rotate(-0.4deg);
+}
+
+.step-nav-btn.next {
+  transform: rotate(0.4deg);
+}
+
+.step-nav-btn:hover:not(:disabled),
+.step-nav-btn:focus-visible:not(:disabled) {
+  transform: translateY(-1px) rotate(0deg);
+}
+
+/* Aligner choice dropdown and removed Step 2 art spacing */
+.aligner-choice-box {
+  max-width: 520px;
+}
+
+.aligner-choice-box select {
+  cursor: pointer;
+}
+
+.aligner-choice-box p {
+  margin-top: 8px;
+  font-size: 14px !important;
+}
+
+.step2-action-block {
+  min-height: 0 !important;
+}
+
+/* Terminal context and configure field notes */
+pre[data-command="local-context"],
+pre[data-command="hpc-context"] {
+  color: #365340;
+  background: #fffdf6;
+  border-style: dashed;
+  font-weight: 400;
+}
+
+pre[data-command="local-context"]::before,
+pre[data-command="hpc-context"]::before {
+  content: "current folder";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 2px 7px;
+  color: #607066;
+  background: #f7fcf5;
+  border: 1px solid #d9f0d3;
+  border-radius: 999px;
+  font: 700 10px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.config-field-notes {
+  margin: 12px 16px 18px;
+  padding-left: 18px;
+}
+
+.config-field-notes li {
+  margin: 7px 0;
+  font-size: 13.5px !important;
+  line-height: 1.45 !important;
+}
+
+
+/* Local/HPC command labels: keep code boxes clear without showing a bash tag. */
+.step-detail pre[data-shell="local"],
+.step-detail pre[data-command="local-context"] {
+  background: #f4fbf1;
+  border-color: rgba(90, 174, 97, 0.38);
+  box-shadow: inset 4px 0 0 rgba(90, 174, 97, 0.58);
+}
+
+.step-detail pre[data-shell="hpc"],
+.step-detail pre[data-command="hpc-context"] {
+  background: #fbf7fc;
+  border-color: rgba(153, 112, 171, 0.38);
+  box-shadow: inset 4px 0 0 rgba(153, 112, 171, 0.58);
+}
+
+.step-detail pre[data-shell="local"]::before,
+.step-detail pre[data-command="local-context"]::before {
+  content: "local" !important;
+  background: #d9f0d3;
+  color: #1b7837;
+  border-color: rgba(90, 174, 97, 0.42);
+}
+
+.step-detail pre[data-shell="hpc"]::before,
+.step-detail pre[data-command="hpc-context"]::before {
+  content: "HPC" !important;
+  background: #e7d4e8;
+  color: #762a83;
+  border-color: rgba(153, 112, 171, 0.42);
+}
+
+
+/* Command boxes use color, not inline labels; copy buttons sit outside the pre text. */
+.pre-copy-wrap {
+  position: relative;
+  margin: 10px 0 0;
+}
+
+.pre-copy-wrap pre {
+  margin: 0;
+  padding-right: 76px;
+}
+
+.step-detail pre[data-shell="local"]::before,
+.step-detail pre[data-shell="hpc"]::before,
+.step-detail pre[data-command="local-context"]::before,
+.step-detail pre[data-command="hpc-context"]::before {
+  content: none !important;
+  display: none !important;
+}
+
+.pre-copy-wrap .copy-btn {
+  top: 9px;
+  right: 9px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(4px);
+}
+
+.pre-copy-wrap pre[data-shell="local"] + .copy-btn,
+.pre-copy-wrap pre[data-command="local-context"] + .copy-btn {
+  border-color: rgba(90, 174, 97, 0.38);
+  color: #1b7837;
+}
+
+.pre-copy-wrap pre[data-shell="hpc"] + .copy-btn,
+.pre-copy-wrap pre[data-command="hpc-context"] + .copy-btn {
+  border-color: rgba(153, 112, 171, 0.42);
+  color: #762a83;
+}
+
+
+/* ============================================================
+   Color discipline: green & purple signal ONLY local vs HPC,
+   and only on the command code boxes. All other chrome is
+   neutral (warm paper / tan / charcoal).
+   ============================================================ */
+
+/* Step tabs — neutral, no local/HPC hue */
+.step-tab,
+.step-tab.local,
+.step-tab.hpc,
+.step-tab[data-step] {
+  background: #fffdf8 !important;
+  border-color: #e0d9ca !important;
+}
+.step-tab.active,
+.step-tab.hpc.active {
+  background: linear-gradient(90deg, #6f675a, #4a4640) !important;
+  color: #fffdf8 !important;
+  border-color: #4a4640 !important;
+  box-shadow: 0 10px 22px rgba(74, 70, 64, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+.step-tab.active::before,
+.step-tab.hpc.active::before {
+  background: #4a4640 !important;
+}
+.step-tab.active .step-num,
+.step-tab.active .step-run,
+.step-tab.hpc.active .step-num,
+.step-tab.hpc.active .step-run {
+  color: #fffdf8 !important;
+  background: rgba(0, 0, 0, 0.18) !important;
+  border-color: rgba(255, 253, 248, 0.5) !important;
+}
+
+/* Context pills (Local / HPC) — neutral; the text still labels them */
+.context-pill,
+.local-pill,
+.hpc-pill,
+.step-detail[data-step-panel="5"] .context-pill,
+.step-detail[data-step-panel="6"] .context-pill {
+  color: #4a4640 !important;
+  background: #f1ece2 !important;
+  border-color: #e0d9ca !important;
+}
+
+/* Action cards — neutral left bar, heading, and list markers */
+.action-block {
+  border-left-color: #d8ccb4 !important;
+}
+.action-block::before {
+  background: #d8ccb4 !important;
+}
+.action-block > p:first-child > strong {
+  color: #4a4640 !important;
+}
+.action-block li::marker {
+  color: #8c8474 !important;
+}
+.step-detail[data-step-panel="5"] .action-block,
+.step-detail[data-step-panel="6"] .action-block {
+  border-left-color: #d8ccb4 !important;
+}
+
+/* Step title — neutral text and underline (was green) */
+.step-detail h2 {
+  color: #2f2b25 !important;
+  text-decoration-color: #d8ccb4 !important;
+}
+
+/* Step title accent bar */
+.step-title-row::before,
+.step-detail[data-step-panel="5"] .step-title-row::before,
+.step-detail[data-step-panel="6"] .step-title-row::before {
+  background: #d8ccb4 !important;
+}
+
+/* Secondary cards — notes / pipeline / source / template structure */
+.notes-block,
+.script-source details,
+.pipeline-does-block,
+.template-structure-block,
+.step-detail .pipeline-does-block {
+  border-color: #e0d9ca !important;
+}
+.notes-block:hover,
+.script-source details:hover,
+.template-structure-block:hover,
+.pipeline-does-block:hover,
+.step-detail .pipeline-does-block:hover {
+  background: #faf7f0 !important;
+  border-color: #cfc6b4 !important;
+  box-shadow: 0 12px 26px rgba(74, 70, 64, 0.07) !important;
+}
+.notes-block summary,
+.script-source summary,
+.template-structure-block summary,
+.pipeline-does-block summary,
+.step-detail .pipeline-does-block summary {
+  color: #4a4640 !important;
+}
+.notes-block[open] summary,
+.script-source details[open] summary,
+.pipeline-does-block[open] summary,
+.step-detail .pipeline-does-block[open] summary {
+  border-bottom-color: rgba(120, 108, 84, 0.3) !important;
+}
+
+/* "What Scripts Will Do" script-name chips */
+.pipeline-does-block > p code {
+  color: #4a4640 !important;
+  background: #f1ece2 !important;
+  border-color: #e0d9ca !important;
+}
+
+/* Copy buttons — neutral by default; code-box copies keep local/HPC tint */
+.copy-btn {
+  border-color: #cfc6b4 !important;
+  background: #f1ece2 !important;
+  color: #4a4640 !important;
+}
+.pre-copy-wrap pre[data-shell="local"] + .copy-btn,
+.pre-copy-wrap pre[data-command="local-context"] + .copy-btn {
+  border-color: rgba(90, 174, 97, 0.42) !important;
+  background: #f4fbf1 !important;
+  color: #1b7837 !important;
+}
+.pre-copy-wrap pre[data-shell="hpc"] + .copy-btn,
+.pre-copy-wrap pre[data-command="hpc-context"] + .copy-btn {
+  border-color: rgba(153, 112, 171, 0.46) !important;
+  background: #fbf7fc !important;
+  color: #762a83 !important;
+}
+
+/* Bottom step navigation buttons — neutral */
+.step-nav-btn {
+  color: #4a4640 !important;
+  background: #f1ece2 !important;
+  border-color: #e0d9ca !important;
+  box-shadow: 0 8px 18px rgba(74, 70, 64, 0.07) !important;
+}
+.step-nav-btn:hover:not(:disabled),
+.step-nav-btn:focus-visible:not(:disabled) {
+  background: #e7e0d2 !important;
+  box-shadow: 0 12px 24px rgba(74, 70, 64, 0.1) !important;
+}
+
+/* Inline step links — neutral, underlined */
+.action-block a {
+  color: #2f2b25 !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+
+/* ============================================================
+   Sidebar numbering, collapsible Prerequisites, and the
+   "Local"/"HPC" label pills (the only colored chrome).
+   ============================================================ */
+
+/* Sidebar step tabs: number badge + label in a row */
+.step-tab {
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px;
+  text-align: left;
+}
+.step-tab .step-num {
+  flex: 0 0 auto;
+  color: #4a4640 !important;
+  background: #fffdf8 !important;
+  border: 1px solid #d9cdae !important;
+  box-shadow: 0 0 0 4px rgba(250, 247, 240, 0.9) !important;
+}
+.step-tab strong {
+  flex: 1 1 auto;
+}
+
+/* Collapsible action-block (e.g. Prerequisites) */
+.action-block > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  margin: 0;
+}
+.action-block > summary::-webkit-details-marker {
+  display: none;
+}
+.action-block > summary::before {
+  content: "▸";
+  font-size: 13px;
+  color: currentColor;
+}
+.action-block[open] > summary::before {
+  content: "▾";
+}
+.action-block > summary > strong {
+  color: #4a4640;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Green & purple appear ONLY on the literal "Local" / "HPC" labels
+   (the context pills). Everything else stays neutral; the command
+   code boxes keep their own local/HPC tint. */
+.context-pill.local-pill {
+  color: #1b7837 !important;
+  background: #e9f6ea !important;
+  border-color: #a6dba0 !important;
+}
+.context-pill.hpc-pill {
+  color: #762a83 !important;
+  background: #f4eeff !important;
+  border-color: #c2a5cf !important;
+}
+
+
+/* ============================================================
+   Downloads block — clean two-line buttons, neutral and even.
+   ============================================================ */
+.sidebar-downloads {
+  gap: 10px;
+  padding: 16px 14px;
+}
+.sidebar-downloads h2 {
+  margin: 0 0 6px !important;
+  color: #6e6248 !important;
+}
+.sidebar-downloads .demo-button {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start !important;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 0 !important;
+  padding: 11px 14px !important;
+  background: #fffdf8 !important;
+  border: 1px solid #d9cdae !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 10px rgba(83, 72, 50, 0.05) !important;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+/* reset the old icon-box span styling */
+.sidebar-downloads .demo-button span {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.sidebar-downloads .demo-button .dl-title {
+  color: #34463d !important;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.sidebar-downloads .demo-button .dl-sub {
+  color: #7c7461 !important;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sidebar-downloads .demo-button:hover,
+.sidebar-downloads .demo-button:nth-of-type(1):hover,
+.sidebar-downloads .demo-button:nth-of-type(2):hover {
+  transform: translateX(2px);
+  background: #faf7f0 !important;
+  border-color: #c9bd9e !important;
+  box-shadow: 0 8px 18px rgba(83, 72, 50, 0.08) !important;
+}
+
+
+/* ============================================================
+   Kraft journal + engineering grid paper (restrained).
+   Desk = kraft with paper grain; main page = cream-kraft sheet
+   on faint engineering grid; titles get a hand-drawn underline.
+   ============================================================ */
+
+/* Light neutral paper: fine fibrous grain + soft large-scale mottle */
+body {
+  background-color: #fbfaf6 !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.035'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.014' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.03'/%3E%3C/svg%3E") !important;
+  background-size: 180px 180px, 520px 520px !important;
+}
+
+/* Main reading surface = near-white sheet on a faint neutral grid */
+.step-detail-card {
+  background-color: #ffffff !important;
+  background-image:
+    linear-gradient(rgba(120, 122, 120, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 122, 120, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(120, 122, 120, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 122, 120, 0.08) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='gp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23gp)' opacity='0.03'/%3E%3C/svg%3E") !important;
+  background-size: 22px 22px, 22px 22px, 110px 110px, 110px 110px, 180px 180px !important;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px, 0 0 !important;
+  border-color: #e7e4da !important;
+  box-shadow: 0 18px 44px rgba(60, 60, 55, 0.08) !important;
+}
+
+/* Warm the sheet's surrounding tone */
+.hands-lower {
+  background: transparent !important;
+}
+
+/* Hand-drawn ink underline on step titles (restrained) */
+.step-detail h2 {
+  display: inline-block;
+  text-decoration: none !important;
+  padding-bottom: 9px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='8' viewBox='0 0 120 8'%3E%3Cpath d='M1 5 Q 15 1 30 5 T 60 5 T 90 5 T 119 5' fill='none' stroke='%23b6b3aa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left calc(100% - 1px);
+  background-size: 100% 7px;
+}
+
+/* Secondary summaries (Notes, Example fields, etc.) — neutral like
+   "What Scripts Will Do" (override leftover green) */
+.step-detail .notes-block:not(.pipeline-does-block) summary,
+.step-detail .script-source summary,
+.step-detail .template-structure-block summary {
+  color: #4a4640 !important;
+}
+
+/* Script source viewer — keep dark background with light text legible
+   (a later .step-detail pre rule was lightening the background) */
+.script-source .code-block pre {
+  background: #1e242a !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.script-source .code-block pre,
+.script-source .code-block code {
+  color: #eef1e8 !important;
+}
+
+/* Homepage intro image — paper mat / whitespace around it */
+.intro-scene {
+  width: min(calc(100vw - 56px), calc((100dvh - 56px) * 1672 / 941)) !important;
+  height: auto !important;
+  max-height: calc(100dvh - 56px) !important;
+  padding: clamp(14px, 2.2vw, 30px) !important;
+  background: #ffffff !important;
+  border: 1px solid #e8e6dd !important;
+  border-radius: 16px !important;
+}
+.intro-storyboard {
+  border-radius: 10px;
+}
+
+/* De-brown: neutralize remaining warm/tan chrome */
+.step-tab,
+.step-tab.local,
+.step-tab.hpc,
+.step-tab[data-step="4"],
+.step-tab[data-step="7"] {
+  background: #fcfcf9 !important;
+  border-color: #e5e3d9 !important;
+}
+.step-tab .step-num {
+  border-color: #e1dfd5 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(251, 250, 246, 0.9) !important;
+}
+.step-tab.active,
+.step-tab.hpc.active {
+  background: linear-gradient(90deg, #6a6a64, #4c4c47) !important;
+  border-color: #4c4c47 !important;
+}
+.step-tab.active::before,
+.step-tab.hpc.active::before {
+  background: #4c4c47 !important;
+}
+.sidebar-downloads {
+  background: #fcfcf8 !important;
+  border-color: #e6e4da !important;
+}
+.sidebar-downloads::before {
+  background: rgba(236, 236, 229, 0.6) !important;
+  border-color: rgba(208, 206, 197, 0.5) !important;
+}
+.sidebar-downloads .demo-button,
+.sidebar-downloads .demo-button:nth-of-type(2) {
+  background: #ffffff !important;
+  border-color: #e5e2d7 !important;
+}
+.step-detail-card {
+  border-color: #e7e4da !important;
 }

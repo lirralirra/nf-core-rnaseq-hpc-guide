@@ -10,7 +10,7 @@
   <div class="intro-overlay" id="introOverlay" aria-hidden="true">
     <button class="intro-skip" type="button" aria-label="Skip intro">×</button>
     <div class="intro-scene" role="button" tabindex="0" aria-label="Start">
-      <img class="intro-storyboard" src="assets/rnaseq-journey-home.png" alt="Illustrated RNA-seq journey showing seven workflow steps and the nf-core/rnaseq pipeline from FASTQ input to results.">
+      <img class="intro-storyboard" src="assets/happy-rnaseq-intro-witch.jpg" alt="Illustrated Happy RNA-seq visual showing inputs, running the pipeline, and count matrix outputs.">
       <button class="intro-start" id="introStart" type="button" aria-label="Start">Start</button>
     </div>
   </div>
@@ -29,38 +29,44 @@
     <section class="workflow-panel compact-workflow" aria-label="Interactive workflow">
       <div class="step-tabs" role="tablist" aria-label="Workflow steps">
         <button class="step-tab local active" type="button" data-step="1" aria-selected="true">
-          <span class="step-mark"><span class="step-num">1</span><span class="step-run">Local</span></span>
+          <span class="step-num">1</span>
           <strong>Initial Project</strong>
         </button>
         <button class="step-tab local" type="button" data-step="2">
-          <span class="step-mark"><span class="step-num">2</span><span class="step-run">Local</span></span>
-          <strong>Prepare &amp; Validate Inputs</strong>
+          <span class="step-num">2</span>
+          <strong>Validate Inputs</strong>
         </button>
         <button class="step-tab local" type="button" data-step="3">
-          <span class="step-mark"><span class="step-num">3</span><span class="step-run">Local</span></span>
+          <span class="step-num">3</span>
           <strong>Pipeline Configure</strong>
         </button>
         <button class="step-tab local" type="button" data-step="4">
-          <span class="step-mark"><span class="step-num">4</span><span class="step-run">Local</span></span>
+          <span class="step-num">4</span>
           <strong>Upload to HPC</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="5">
-          <span class="step-mark"><span class="step-num">5</span><span class="step-run">HPC</span></span>
+          <span class="step-num">5</span>
           <strong>Preflight Validation</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="6">
-          <span class="step-mark"><span class="step-num">6</span><span class="step-run">HPC</span></span>
+          <span class="step-num">6</span>
           <strong>Run &amp; Monitor</strong>
         </button>
         <button class="step-tab local" type="button" data-step="7">
-          <span class="step-mark"><span class="step-num">7</span><span class="step-run">Local</span></span>
+          <span class="step-num">7</span>
           <strong>Download Results</strong>
         </button>
       </div>
       <div class="sidebar-downloads" aria-label="Download project files">
         <h2>Downloads</h2>
-        <a class="demo-button" href="demo/template_project.zip" download><span aria-hidden="true">□</span> Template ZIP</a>
-        <a class="demo-button" href="demo/demo_project.zip" download><span aria-hidden="true">✦</span> Demo Project ZIP</a>
+        <a class="demo-button" href="demo/template_project.zip" download>
+          <span class="dl-title">Template ZIP</span>
+          <span class="dl-sub">Empty project for your own data</span>
+        </a>
+        <a class="demo-button" href="demo/demo_project.zip" download>
+          <span class="dl-title">Demo Project ZIP</span>
+          <span class="dl-sub">Small example to try the workflow</span>
+        </a>
       </div>
     </section>
 
@@ -73,10 +79,11 @@
           </div>
           <p class="step-purpose">Download a ready-to-use template, confirm HPC access, and record the local folder path before preparing inputs.</p>
           <div class="action-notes-grid">
-            <div class="action-block">
-                <p><strong>What You Do:</strong></p>
-                <ol>
-                  <li>Before upload or running the project, confirm you have University of Adelaide Phoenix HPC access: <a class="script-tag strong" href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a>.
+            <div class="action-stack">
+            <details class="action-block prereq-block" open>
+                <summary><strong>Prerequisites</strong></summary>
+                <ul>
+                  <li>Confirm you have Phoenix HPC access: <a href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a>.
                     <div class="simple-path-box">
                       <div class="simple-path-row">
                         <label for="hpcUser"><strong>HPC username</strong></label>
@@ -87,21 +94,26 @@
                           <option value="p2-log-2.hpc.adelaide.edu.au">p2-log-2.hpc.adelaide.edu.au</option>
                         </select>
                       </div>
-                      <p>These values are only used to fill the command boxes below.</p>
+                      <p>Used only to fill the command boxes below.</p>
                     </div>
                   </li>
+                  <li>Use a local bash-style terminal for all local commands.</li>
+                </ul>
+            </details>
+            <div class="action-block">
+                <p><strong>What You Do:</strong></p>
+                <ol>
                   <li>Download <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet.</li>
                   <li>Or download <strong>Demo Project ZIP</strong> when you want a small example project to try the workflow.</li>
-                  <li>Unzip the project on your local computer.</li>
-                  <li>Check the folder structure and put the folder path below.
+                  <li>Unzip the project on your local computer, check the folder structure, and put the folder path below.
                     <div class="simple-path-box">
                       <label for="localPath"><strong>Local working folder</strong></label>
                       <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
                       <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
                     </div>
                   </li>
-                  <li>This workflow is written for bash-style shell commands. Before running local commands, confirm you are using a local bash-style terminal.</li>
                 </ol>
+            </div>
             </div>
             <div class="pipeline-side">
               <details class="notes-block template-structure-block">
@@ -119,21 +131,18 @@
 
         <article class="step-detail" data-step-panel="2">
           <div class="step-title-row">
-            <h2>Step 2 — Prepare &amp; Validate Inputs</h2>
+            <h2>Step 2 — Validate Inputs</h2>
             <span class="context-pill local-pill">Local</span>
           </div>
           <p class="step-purpose">Place FASTQ, reference genome, and annotation files in the project, then generate and validate the samplesheet before upload.</p>
           <div class="action-notes-grid">
             <div class="action-block step2-action-block">
-              <figure class="step2-inline-visual">
-                <img src="assets/step2-input-files.png" alt="FASTQ file, reference genome, and GFF3 annotation inputs for Step 2.">
-              </figure>
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Add or link FASTQ files in <code>input/fastq/</code>.</li>
-            <li>Add or link the reference genome in <code>input/reference/</code>.</li>
-            <li>Add or link the annotation file in <code>input/annotation/</code>.</li>
-            <li>Open your terminal and move into your local project folder:
+            <li>Add FASTQ files in <code>input/fastq/</code>.</li>
+            <li>Add the reference genome to <code>input/reference/</code>.</li>
+            <li>Add the annotation file to <code>input/annotation/</code>.</li>
+            <li>Open your local terminal and move into your local project folder:
               <pre data-command="local-cd"></pre>
             </li>
             <li>Generate <code>input/samplesheet.csv</code>:
@@ -318,20 +327,21 @@ fi
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal and move into your local project folder:
-              <pre data-command="local-cd"></pre>
+            <li>Open your local terminal and move into your local project folder:
+              <pre data-command="local-context"></pre>
             </li>
-            <li>Choose the pipeline mode <a href="documents.html#choose-pipeline-mode">how to decide</a>:
-              <ul>
-                <li><strong>STAR + Salmon</strong>: align reads to the genome and quantify transcripts.</li>
-                <li><strong>Salmon only</strong>: quantify without genome alignment.</li>
-              </ul>
+            <li>Choose the aligner (<a href="documents.html#choose-pipeline-mode">how to decide</a>):
+              <div class="simple-path-box aligner-choice-box">
+                <label for="alignerMode"><strong>Aligner mode</strong></label>
+                <select id="alignerMode">
+                  <option value="star">STAR + Salmon</option>
+                  <option value="salmon">Salmon only</option>
+                </select>
+                <p id="alignerModeHelp">STAR + Salmon aligns reads to the genome and quantifies transcripts.</p>
+              </div>
             </li>
-            <li>4a. Generate <code>configs/configure.yaml</code> with STAR + Salmon:
-              <pre data-command="step3-star"></pre>
-            </li>
-            <li>4b. Or generate <code>configs/configure.yaml</code> with Salmon only:
-              <pre data-command="step3-salmon"></pre>
+            <li>Generate <code>configs/configure.yaml</code> for the selected mode:
+              <pre data-command="step3-configure"></pre>
             </li>
               </ol>
             </div>
@@ -373,6 +383,13 @@ cache_dir: /scratch/your_username/apptainer_cache
 memory: 64G
 cpu: 16
 walltime: 24.h</pre>
+            <ul class="config-field-notes">
+              <li><code>run_mode</code>, <code>aligner</code>, <code>pseudo_aligner</code>, and <code>skip_alignment</code> record the selected aligner mode.</li>
+              <li><code>fastq_dir</code>, <code>samplesheet</code>, <code>reference</code>, and <code>annotation</code> point to the local project inputs prepared in Step 2.</li>
+              <li><code>hpc_user</code>, <code>hpc_host</code>, and <code>hpc_project_dir</code> define where the project will be uploaded and run on HPC.</li>
+              <li><code>outdir</code>, <code>workdir</code>, and <code>cache_dir</code> separate final results, Nextflow work files, and container/cache files.</li>
+              <li><code>memory</code>, <code>cpu</code>, and <code>walltime</code> are estimated settings that can be adjusted for the cluster if validation reports a resource problem.</li>
+            </ul>
           </details>
             <details class="notes-block notes-bottom">
               <summary>Notes</summary>
@@ -417,7 +434,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Usage: bash scripts/configure.sh [--star-salmon|--salmon]" &gt;&amp;2
+      echo "Usage: scripts/configure.sh [--star-salmon|--salmon]" &gt;&amp;2
       exit 2
       ;;
   esac
@@ -610,16 +627,14 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
           <div class="step-title-row">
             <h2>Step 4 — Upload to HPC</h2>
             <span class="context-pill local-pill">Local</span>
+            <span class="context-pill hpc-pill">HPC</span>
           </div>
           <p class="step-purpose">Transfer the prepared project to HPC.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal and move into your local project folder:
-              <pre data-command="local-cd"></pre>
-            </li>
-            <li>Log in to your HPC using the Phoenix account and host selected in Step 1:
+            <li>Open your local terminal and log in to your HPC account:
               <pre data-command="hpc-ssh"></pre>
             </li>
             <li>Enter the HPC project folder path, then either locate an existing folder or create a new one:
@@ -632,8 +647,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
               <p>If it does not exist yet, create it:</p>
               <pre data-command="hpc-folder-check"></pre>
             </li>
-            <li>Exit back to your local terminal after the login check.</li>
-            <li>Upload the initialized project folder with resume-safe rsync:
+            <li>Open another local terminal and upload the initialized project folder with resume-safe rsync:
               <pre data-command="upload-rsync2"></pre>
             </li>
               </ol>
@@ -694,6 +708,7 @@ echo "Upload log: $LOG"
         <article class="step-detail" data-step-panel="5">
           <div class="step-title-row">
             <h2>Step 5 — Preflight Validation</h2>
+            <span class="context-pill local-pill">Local</span>
             <span class="context-pill hpc-pill">HPC</span>
           </div>
           <p class="step-purpose">Validate the HPC environment and the current project configuration before the full analysis.</p>
@@ -701,16 +716,13 @@ echo "Upload log: $LOG"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal and log in to your HPC using your Phoenix account:
-              <pre data-command="hpc-ssh"></pre>
+            <li>Log in to HPC and enter your project folder:
+              <pre data-command="hpc-connect"></pre>
             </li>
-            <li>Move into the uploaded HPC project folder:
-              <pre data-command="hpc-cd"></pre>
-            </li>
-            <li>Run the Smoke Test to check the nf-core / Nextflow / HPC environment:
+            <li>Run the Smoke Test (optional):
               <pre data-command="step5-smoke"></pre>
             </li>
-            <li>Run the One Sample Run to check this project configuration and resource settings:
+            <li>Run the One Sample Run:
               <pre data-command="step5-one-sample"></pre>
             </li>
             <li>Continue to the full run only after preflight validation passes.</li>
@@ -1025,6 +1037,7 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"
         <article class="step-detail" data-step-panel="6">
           <div class="step-title-row">
             <h2>Step 6 — Run &amp; Monitor</h2>
+            <span class="context-pill local-pill">Local</span>
             <span class="context-pill hpc-pill">HPC</span>
           </div>
           <p class="step-purpose">Launch the full <code>nf-core/rnaseq</code> workflow after validation passes and keep the run understandable while it is executing.</p>
@@ -1032,19 +1045,16 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal and log in to your HPC using your Phoenix account:
-              <pre data-command="hpc-ssh"></pre>
+            <li>Log in to HPC and enter your project folder:
+              <pre data-command="hpc-connect"></pre>
             </li>
-            <li>Move into the uploaded HPC project folder:
-              <pre data-command="hpc-cd"></pre>
-            </li>
-            <li>Launch the workflow:
+            <li>Launch the full run:
               <pre data-command="step6-run"></pre>
             </li>
-            <li>Monitor job status, current stage, failed tasks, disk usage, and recent logs. Press <code>Ctrl+C</code> to stop the monitor without stopping the pipeline run itself:
+            <li>Check progress:
               <pre data-command="step6-monitor"></pre>
             </li>
-            <li>If the run fails, debug the issue first, then resume from completed Nextflow tasks instead of starting from scratch:
+            <li>If a safe fix was applied after a failure, resume the run instead of starting from scratch:
               <pre data-command="step6-resume"></pre>
             </li>
               </ol>
@@ -1190,11 +1200,7 @@ echo "Suggested actions: check memory, walltime, scratch space, container cache,
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your terminal on your local computer.</li>
-            <li>Move into your local project folder:
-              <pre data-command="local-cd"></pre>
-            </li>
-            <li>Download results from HPC:
+            <li>Open your local terminal, move into your local project folder, and download results from HPC:
               <pre data-command="download-rsync"></pre>
             </li>
               </ol>
@@ -1337,6 +1343,8 @@ echo "Download log: $LOG"
       hpcUser: document.getElementById('hpcUser'),
       hpcHost: document.getElementById('hpcHost')
     };
+    const alignerMode = document.getElementById('alignerMode');
+    const alignerModeHelp = document.getElementById('alignerModeHelp');
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -1411,40 +1419,45 @@ echo "Download log: $LOG"
       const target = sshTarget();
       const qLocal = shellQuote(local);
       const qHpc = shellQuote(hpc);
-      const star = 'bash scripts/configure.sh --star-salmon';
-      const salmon = 'bash scripts/configure.sh --salmon';
+      const star = 'scripts/configure.sh --star-salmon';
+      const salmon = 'scripts/configure.sh --salmon';
 
       const commands = {
         'local-mkdir': `mkdir -p ${qLocal}`,
         'local-cd': `cd ${qLocal}`,
+        'local-context': `cd ${qLocal}`,
         'local-chmod': `chmod -R u+rwX ${qLocal}`,
         'hpc-ssh': `ssh ${target}`,
+        'hpc-connect': `ssh ${target}\ncd ${qHpc}`,
         'hpc-mkdir': `mkdir -p ${qHpc}`,
         'hpc-cd': `cd ${qHpc}`,
+        'hpc-context': `cd ${qHpc}`,
         'hpc-chmod': `chmod -R u+rwX ${qHpc}`,
         'hpc-chmod-group': `chmod -R u+rwX,g+rwX,o-rwx ${qHpc}`,
         'hpc-folder-locate': `ls -ld ${qHpc}`,
         'hpc-folder-check': `mkdir -p ${qHpc}\nls -ld ${qHpc}`,
         'upload-rsync': `rsync -avh --progress \\\n  ${shellQuote(trailingSlash(local))} \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}`)}`,
-        'upload-rsync2': `cd ${qLocal}\nbash scripts/upload_to_hpc.sh`,
-        'download-rsync': `cd ${qLocal}\nbash scripts/download_results.sh`,
-        'step2-make': `cd ${qLocal}\nbash scripts/make_samplesheet.sh`,
-        'step2-validate': `cd ${qLocal}\nbash scripts/input_validate.sh`,
-        'step3-star': `cd ${qLocal}\n${star}`,
-        'step3-salmon': `cd ${qLocal}\n${salmon}`,
-        'step5-smoke': `ssh ${target}\ncd ${qHpc}\nbash scripts/smoke_run.sh`,
-        'step5-one-sample': `ssh ${target}\ncd ${qHpc}\nbash scripts/one_sample_run.sh`,
-        'step6-run': `ssh ${target}\ncd ${qHpc}\nbash scripts/run.sh`,
-        'step6-monitor': `ssh ${target}\ncd ${qHpc}\nbash scripts/monitor_run.sh`,
-        'step6-resume': `ssh ${target}\ncd ${qHpc}\nbash scripts/run.sh`
+        'upload-rsync2': `cd ${qLocal}\nscripts/upload_to_hpc.sh`,
+        'download-rsync': `cd ${qLocal}\nscripts/download_results.sh`,
+        'step2-make': `scripts/make_samplesheet.sh`,
+        'step2-validate': `scripts/input_validate.sh`,
+        'step3-configure': alignerMode?.value === 'salmon' ? salmon : star,
+        'step3-star': star,
+        'step3-salmon': salmon,
+        'step5-smoke': `scripts/smoke_run.sh`,
+        'step5-one-sample': `scripts/one_sample_run.sh`,
+        'step6-run': `scripts/run.sh`,
+        'step6-monitor': `scripts/monitor_run.sh`,
+        'step6-resume': `scripts/run.sh`
       };
 
       return commands[key] || '';
     }
 
-    const localBashCommands = new Set([
+    const localCommandBoxes = new Set([
       'local-mkdir',
       'local-cd',
+      'local-context',
       'local-chmod',
       'hpc-ssh',
       'upload-rsync2',
@@ -1452,19 +1465,45 @@ echo "Download log: $LOG"
       'download-rsync',
       'step2-make',
       'step2-validate',
+      'step3-configure',
       'step3-star',
       'step3-salmon'
+    ]);
+
+    const hpcCommandBoxes = new Set([
+      'hpc-connect',
+      'hpc-mkdir',
+      'hpc-cd',
+      'hpc-context',
+      'hpc-chmod',
+      'hpc-chmod-group',
+      'hpc-folder-locate',
+      'hpc-folder-check',
+      'step5-smoke',
+      'step5-one-sample',
+      'step6-run',
+      'step6-monitor',
+      'step6-resume'
     ]);
 
     function updateCommands() {
       document.querySelectorAll('pre[data-command]').forEach((pre) => {
         pre.textContent = commandFor(pre.dataset.command);
-        if (localBashCommands.has(pre.dataset.command)) {
-          pre.dataset.shell = 'bash';
+        if (localCommandBoxes.has(pre.dataset.command)) {
+          pre.dataset.shell = 'local';
+        } else if (hpcCommandBoxes.has(pre.dataset.command)) {
+          pre.dataset.shell = 'hpc';
         } else {
           delete pre.dataset.shell;
         }
       });
+    }
+
+    function updateAlignerHelp() {
+      if (!alignerMode || !alignerModeHelp) return;
+      alignerModeHelp.textContent = alignerMode.value === 'salmon'
+        ? 'Salmon only quantifies without genome alignment.'
+        : 'STAR + Salmon aligns reads to the genome and quantifies transcripts.';
     }
 
     function hydratePathInputs() {
@@ -1511,12 +1550,33 @@ echo "Download log: $LOG"
       });
     }
 
+    function installCommandCopyButtons() {
+      document.querySelectorAll('.step-detail pre[data-command]').forEach((pre) => {
+        if (pre.closest('.pre-copy-wrap')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'pre-copy-wrap';
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.type = 'button';
+        btn.textContent = 'Copy';
+        btn.setAttribute('aria-label', 'Copy command');
+        wrap.appendChild(btn);
+      });
+    }
+
     function attachCopyButtons() {
       document.querySelectorAll('.copy-btn').forEach((btn) => {
+        if (btn.dataset.copyReady === 'true') return;
+        btn.dataset.copyReady = 'true';
         btn.addEventListener('click', () => {
+          const wrap = btn.closest('.pre-copy-wrap');
+          const pre = wrap?.querySelector('pre') || btn.parentElement.querySelector('pre');
           const code = btn.parentElement.querySelector('pre code');
-          if (!code) return;
-          navigator.clipboard.writeText(code.textContent).then(() => {
+          const text = pre ? pre.textContent : code?.textContent;
+          if (!text) return;
+          navigator.clipboard.writeText(text).then(() => {
             const original = btn.textContent;
             btn.textContent = 'Copied!';
             btn.classList.add('copied');
@@ -1529,7 +1589,13 @@ echo "Download log: $LOG"
       });
     }
 
+    alignerMode?.addEventListener('change', () => {
+      updateAlignerHelp();
+      updateCommands();
+    });
     hydratePathInputs();
+    updateAlignerHelp();
+    installCommandCopyButtons();
     runIntro();
     attachCopyButtons();
   </script>
