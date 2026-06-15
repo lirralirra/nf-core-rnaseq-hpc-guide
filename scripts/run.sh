@@ -5,7 +5,8 @@ CONFIG="${CONFIG:-configs/configure.yaml}"
 mkdir -p logs
 
 get_config() {
-  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\\'']//; s/["'\\'']$//'
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
 PROFILE="$(get_config profile)"
@@ -23,10 +24,12 @@ CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
 
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
+  shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.GFF|*.GFF3) ANNOTATION_TYPE="gff" ;;
+    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
+  shopt -u nocasematch
 fi
 
 cmd=(nextflow run nf-core/rnaseq

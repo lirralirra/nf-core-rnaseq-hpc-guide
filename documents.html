@@ -114,11 +114,12 @@
       <p>Resource settings are estimated from the chosen mode, species, genome size, and sample count. Large genomes and many samples generally need more memory, CPU, and walltime, especially for STAR-based alignment.</p>
     </section>
 
-    <section class="content-card">
+    <section class="content-card" id="smoke-test">
       <h2>Smoke Test</h2>
       <p>The Smoke Test checks whether the HPC environment can run nf-core/rnaseq at all. It uses tiny built-in test data, not user samples.</p>
       <p>It checks Nextflow, Apptainer/Singularity, container downloads, cache paths, permissions, modules, work directory, and scratch directory.</p>
       <p>Question answered: <strong>Can this HPC + nf-core environment run?</strong></p>
+      <p><strong>When to run it:</strong> generally only the first time you run on a new HPC environment. Once the smoke test passes on that cluster, you can skip it on later projects and go straight to the One Sample Run.</p>
     </section>
 
     <section class="content-card">

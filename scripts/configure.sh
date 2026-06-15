@@ -90,7 +90,10 @@ infer_genome_size_gb() {
     return
   fi
   if [[ -f "$REFERENCE" ]]; then
-    awk 'BEGIN {n=0} /^>/ {next} {gsub(/[[:space:]]/, ""); n += length($0)} END {printf "%.2f", n/1000000000}' "$REFERENCE"
+    case "$REFERENCE" in
+      *.gz) zcat "$REFERENCE" 2>/dev/null || gzip -dc "$REFERENCE" ;;
+      *) cat "$REFERENCE" ;;
+    esac | awk 'BEGIN {n=0} /^>/ {next} {gsub(/[[:space:]]/, ""); n += length($0)} END {printf "%.2f", n/1000000000}'
     return
   fi
   echo 0
@@ -106,10 +109,12 @@ if [[ -z "$SAMPLE_COUNT" ]]; then
   SAMPLE_COUNT="$(infer_sample_count)"
 fi
 if [[ "$ANNOTATION_TYPE" == "auto" ]]; then
+  shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.GFF|*.GFF3) ANNOTATION_TYPE="gff" ;;
+    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
+  shopt -u nocasematch
 fi
 
 estimate_memory() {

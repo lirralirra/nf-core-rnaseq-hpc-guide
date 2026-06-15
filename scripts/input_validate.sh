@@ -7,7 +7,7 @@ mkdir -p reports logs
 
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
-  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\\'']//; s/["'\\'']$//'
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
 SAMPLESHEET="${SAMPLESHEET:-$(get_config samplesheet)}"
@@ -31,6 +31,14 @@ check_path() {
   fi
 }
 
+# Read a plain or gzipped text file.
+read_text() {
+  case "$1" in
+    *.gz) zcat "$1" 2>/dev/null || gzip -dc "$1" ;;
+    *) cat "$1" ;;
+  esac
+}
+
 {
   echo "# Input Validation Report"
   echo
@@ -45,26 +53,69 @@ check_path() {
   echo
   echo "## Samplesheet checks"
   if [[ -f "$SAMPLESHEET" ]]; then
-    if head -n 1 "$SAMPLESHEET" | grep -q 'sample,fastq_1,fastq_2,strandedness'; then
+    if head -n 1 "$SAMPLESHEET" | tr -d '\r' | grep -q '^sample,fastq_1,fastq_2,strandedness$'; then
       echo "- OK: header"
     else
       echo "- ERROR: unexpected header"
       errors=$((errors + 1))
     fi
-    duplicates="$(awk -F, 'NR>1 {print $1}' "$SAMPLESHEET" | sort | uniq -d || true)"
+    duplicates="$(awk -F, 'NR>1 {print $1}' "$SAMPLESHEET" | tr -d '\r' | sort | uniq -d || true)"
     if [[ -n "$duplicates" ]]; then
       printf '%s\n' "$duplicates" | sed 's/^/- DUPLICATE SAMPLE: /'
       errors=$((errors + 1))
     fi
-    while read -r fq; do
-      [[ -z "$fq" ]] && continue
-      if [[ -f "$fq" ]]; then
-        echo "- OK FASTQ: $fq"
-      else
-        echo "- MISSING FASTQ: $fq"
+
+    # Per-row checks: sample-name charset, strandedness whitelist, FASTQ existence.
+    # CR is stripped on the stream so CRLF samplesheets validate correctly.
+    while IFS=, read -r sample fastq_1 fastq_2 strandedness _rest; do
+      [[ -z "$sample" ]] && continue
+
+      if [[ ! "$sample" =~ ^[A-Za-z0-9._-]+$ ]]; then
+        echo "- BAD SAMPLE NAME: '$sample' (use only letters, numbers, dot, underscore, hyphen; no spaces or commas)"
         errors=$((errors + 1))
       fi
-    done < <(awk -F, 'NR>1 {print $2"\n"$3}' "$SAMPLESHEET")
+
+      case "$strandedness" in
+        auto|forward|reverse|unstranded) : ;;
+        *) echo "- BAD STRANDEDNESS: '$strandedness' for sample '$sample' (allowed: auto, forward, reverse, unstranded)"
+           errors=$((errors + 1)) ;;
+      esac
+
+      for fq in "$fastq_1" "$fastq_2"; do
+        [[ -z "$fq" ]] && continue
+        if [[ -f "$fq" ]]; then
+          echo "- OK FASTQ: $fq"
+        else
+          echo "- MISSING FASTQ: $fq"
+          errors=$((errors + 1))
+        fi
+      done
+    done < <(tail -n +2 "$SAMPLESHEET" | tr -d '\r')
+  fi
+  echo
+  echo "## Annotation contig check"
+  if [[ -f "$REFERENCE" && -f "$ANNOTATION" ]]; then
+    fasta_ids="$(read_text "$REFERENCE" | awk '/^>/ {print substr($1, 2)}' | sort -u)"
+    anno_ids="$(read_text "$ANNOTATION" | awk '$0 !~ /^#/ && NF > 0 {print $1}' | sort -u)"
+    if [[ -z "$fasta_ids" || -z "$anno_ids" ]]; then
+      echo "- INFO: could not read contig IDs; skipping contig match."
+    else
+      missing=0
+      while IFS= read -r contig; do
+        [[ -z "$contig" ]] && continue
+        if ! grep -qxF "$contig" <<< "$fasta_ids"; then
+          echo "- CONTIG NOT IN FASTA: $contig"
+          missing=$((missing + 1))
+        fi
+      done <<< "$anno_ids"
+      if [[ "$missing" -gt 0 ]]; then
+        echo "- WARNING: $missing annotation contig ID(s) not found in FASTA headers; confirm the genome and annotation match (not a blocking error)."
+      else
+        echo "- OK: annotation contig IDs are present in the FASTA."
+      fi
+    fi
+  else
+    echo "- INFO: reference or annotation missing; skipping contig match."
   fi
   echo
   echo "## Upload size estimate"

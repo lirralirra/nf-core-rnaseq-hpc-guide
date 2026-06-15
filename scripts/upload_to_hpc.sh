@@ -6,7 +6,8 @@ LOG="logs/upload_to_hpc.log"
 mkdir -p logs
 
 get_config() {
-  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\\'']//; s/["'\\'']$//'
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
 HPC_USER="$(get_config hpc_user)"

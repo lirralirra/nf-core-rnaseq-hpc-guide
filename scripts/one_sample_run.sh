@@ -18,7 +18,8 @@ mkdir -p reports logs work
 
 CONFIG="${CONFIG:-configs/configure.yaml}"
 get_config() {
-  awk -F': *' -v key="$1" '$1 == key {print $2; exit}' "$CONFIG" | sed 's/^["'\\'']//; s/["'\\'']$//'
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 SAMPLESHEET="$(get_config samplesheet)"
 REFERENCE="$(get_config reference)"
@@ -85,10 +86,12 @@ echo "$selected_line" >> "$ONE_SAMPLE_SHEET"
 echo "Selected sample: $(printf '%s\n' "$selected_line" | cut -d, -f1)" >> "$REPORT"
 
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
+  shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.GFF|*.GFF3) ANNOTATION_TYPE="gff" ;;
+    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
+  shopt -u nocasematch
 fi
 
 add_resource_limits() {

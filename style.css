@@ -2411,7 +2411,7 @@ footer {
   right: 8px;
   bottom: 18px;
   width: 1px;
-  background: repeating-linear-gradient(to bottom, rgba(141, 117, 76, 0.35) 0 8px, transparent 8px 16px);
+  background: repeating-linear-gradient(to bottom, rgba(214, 184, 110, 0.3) 0 8px, transparent 8px 16px);
   pointer-events: none;
 }
 
@@ -3231,8 +3231,8 @@ footer {
 .step-detail-card {
   position: relative;
   background:
-    linear-gradient(90deg, rgba(90, 174, 97, 0.055) 1px, transparent 1px) 0 0 / 32px 32px,
-    linear-gradient(180deg, rgba(90, 174, 97, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgba(157, 191, 142, 0.055) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(180deg, rgba(157, 191, 142, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
     repeating-linear-gradient(180deg, transparent 0 30px, rgba(79, 97, 80, 0.045) 30px 31px),
     #fffdf6;
   border: 1px solid #d8ccb4;
@@ -3249,7 +3249,7 @@ footer {
   bottom: 18px;
   left: 20px;
   width: 2px;
-  background: repeating-linear-gradient(to bottom, rgba(153, 112, 171, 0.35) 0 9px, transparent 9px 18px);
+  background: repeating-linear-gradient(to bottom, rgba(168, 145, 199, 0.35) 0 9px, transparent 9px 18px);
   border-radius: 99px;
   pointer-events: none;
 }
@@ -3280,7 +3280,7 @@ footer {
   width: 12px;
   height: 38px;
   background:
-    linear-gradient(180deg, rgba(90, 174, 97, 0.78), rgba(217, 240, 211, 0.92));
+    linear-gradient(180deg, rgba(157, 191, 142, 0.78), rgba(217, 240, 211, 0.92));
   border-radius: 8px 11px 9px 7px;
   transform: rotate(-1deg);
   box-shadow: 0 2px 0 rgba(27, 120, 55, 0.12);
@@ -3309,7 +3309,7 @@ footer {
   padding: 9px 12px;
   color: #55645d;
   background: rgba(255, 253, 246, 0.64);
-  border-left: 3px solid rgba(90, 174, 97, 0.38);
+  border-left: 3px solid rgba(157, 191, 142, 0.38);
   border-radius: 0 12px 12px 0;
 }
 
@@ -3331,7 +3331,7 @@ footer {
   left: 0;
   width: 8px;
   background:
-    linear-gradient(180deg, rgba(90, 174, 97, 0.7), rgba(217, 240, 211, 0.95));
+    linear-gradient(180deg, rgba(157, 191, 142, 0.7), rgba(217, 240, 211, 0.95));
   border-radius: 0 8px 8px 0;
   transform: skewY(-2deg);
 }
@@ -3363,9 +3363,9 @@ footer {
 
 .compact-workflow {
   background:
-    linear-gradient(90deg, rgba(139, 111, 76, 0.04) 1px, transparent 1px) 0 0 / 22px 22px,
-    linear-gradient(180deg, #f2eadb 0%, #e6ddca 100%);
-  border-right-color: #c4b79a;
+    linear-gradient(90deg, rgba(150, 140, 120, 0.025) 1px, transparent 1px) 0 0 / 22px 22px,
+    #f7f1e3;
+  border-right-color: #e7ddca;
 }
 
 .step-tabs {
@@ -3390,7 +3390,7 @@ footer {
   top: 12px;
   bottom: 12px;
   width: 1px;
-  background: rgba(116, 103, 74, 0.16);
+  background: rgba(214, 184, 110, 0.22);
 }
 
 .step-tab.active {
@@ -3413,9 +3413,8 @@ footer {
 
 .sidebar-downloads {
   position: relative;
-  background:
-    linear-gradient(180deg, rgba(255,253,246,0.82), rgba(242,234,219,0.9));
-  border-color: #c9bea2;
+  background: #fff9ec;
+  border-color: #ece1c9;
   border-radius: 18px 0 0 18px;
 }
 
@@ -3531,32 +3530,32 @@ pre[data-command="hpc-context"]::before {
 /* Local/HPC command labels: keep code boxes clear without showing a bash tag. */
 .step-detail pre[data-shell="local"],
 .step-detail pre[data-command="local-context"] {
-  background: #f4fbf1;
-  border-color: rgba(90, 174, 97, 0.38);
-  box-shadow: inset 4px 0 0 rgba(90, 174, 97, 0.58);
+  background: #f1f6ec;
+  border-color: rgba(157, 191, 142, 0.55);
+  box-shadow: inset 4px 0 0 #9dbf8e;
 }
 
 .step-detail pre[data-shell="hpc"],
 .step-detail pre[data-command="hpc-context"] {
-  background: #fbf7fc;
-  border-color: rgba(153, 112, 171, 0.38);
-  box-shadow: inset 4px 0 0 rgba(153, 112, 171, 0.58);
+  background: #f4f1f8;
+  border-color: rgba(168, 145, 199, 0.55);
+  box-shadow: inset 4px 0 0 #a891c7;
 }
 
 .step-detail pre[data-shell="local"]::before,
 .step-detail pre[data-command="local-context"]::before {
   content: "local" !important;
   background: #d9f0d3;
-  color: #1b7837;
-  border-color: rgba(90, 174, 97, 0.42);
+  color: #4f7a47;
+  border-color: rgba(157, 191, 142, 0.42);
 }
 
 .step-detail pre[data-shell="hpc"]::before,
 .step-detail pre[data-command="hpc-context"]::before {
   content: "HPC" !important;
   background: #e7d4e8;
-  color: #762a83;
-  border-color: rgba(153, 112, 171, 0.42);
+  color: #6a5494;
+  border-color: rgba(168, 145, 199, 0.42);
 }
 
 
@@ -3588,14 +3587,14 @@ pre[data-command="hpc-context"]::before {
 
 .pre-copy-wrap pre[data-shell="local"] + .copy-btn,
 .pre-copy-wrap pre[data-command="local-context"] + .copy-btn {
-  border-color: rgba(90, 174, 97, 0.38);
-  color: #1b7837;
+  border-color: rgba(157, 191, 142, 0.38);
+  color: #4f7a47;
 }
 
 .pre-copy-wrap pre[data-shell="hpc"] + .copy-btn,
 .pre-copy-wrap pre[data-command="hpc-context"] + .copy-btn {
-  border-color: rgba(153, 112, 171, 0.42);
-  color: #762a83;
+  border-color: rgba(168, 145, 199, 0.42);
+  color: #6a5494;
 }
 
 
@@ -3644,12 +3643,12 @@ pre[data-command="hpc-context"]::before {
   border-color: #e0d9ca !important;
 }
 
-/* Action cards — neutral left bar, heading, and list markers */
+/* Action cards — light-cyan left bar, neutral heading and markers */
 .action-block {
-  border-left-color: #d8ccb4 !important;
+  border-left-color: #d8b45d !important;
 }
 .action-block::before {
-  background: #d8ccb4 !important;
+  background: #d8b45d !important;
 }
 .action-block > p:first-child > strong {
   color: #4a4640 !important;
@@ -3659,20 +3658,20 @@ pre[data-command="hpc-context"]::before {
 }
 .step-detail[data-step-panel="5"] .action-block,
 .step-detail[data-step-panel="6"] .action-block {
-  border-left-color: #d8ccb4 !important;
+  border-left-color: #d8b45d !important;
 }
 
-/* Step title — neutral text and underline (was green) */
+/* Step title — charcoal text, gold underline */
 .step-detail h2 {
-  color: #2f2b25 !important;
-  text-decoration-color: #d8ccb4 !important;
+  color: #3d3842 !important;
+  text-decoration-color: #d8b45d !important;
 }
 
-/* Step title accent bar */
+/* Step title accent bar (light cyan) */
 .step-title-row::before,
 .step-detail[data-step-panel="5"] .step-title-row::before,
 .step-detail[data-step-panel="6"] .step-title-row::before {
-  background: #d8ccb4 !important;
+  background: #d8b45d !important;
 }
 
 /* Secondary cards — notes / pipeline / source / template structure */
@@ -3721,15 +3720,15 @@ pre[data-command="hpc-context"]::before {
 }
 .pre-copy-wrap pre[data-shell="local"] + .copy-btn,
 .pre-copy-wrap pre[data-command="local-context"] + .copy-btn {
-  border-color: rgba(90, 174, 97, 0.42) !important;
+  border-color: rgba(157, 191, 142, 0.42) !important;
   background: #f4fbf1 !important;
-  color: #1b7837 !important;
+  color: #4f7a47 !important;
 }
 .pre-copy-wrap pre[data-shell="hpc"] + .copy-btn,
 .pre-copy-wrap pre[data-command="hpc-context"] + .copy-btn {
-  border-color: rgba(153, 112, 171, 0.46) !important;
+  border-color: rgba(168, 145, 199, 0.46) !important;
   background: #fbf7fc !important;
-  color: #762a83 !important;
+  color: #6a5494 !important;
 }
 
 /* Bottom step navigation buttons — neutral */
@@ -3808,14 +3807,14 @@ pre[data-command="hpc-context"]::before {
    (the context pills). Everything else stays neutral; the command
    code boxes keep their own local/HPC tint. */
 .context-pill.local-pill {
-  color: #1b7837 !important;
-  background: #e9f6ea !important;
-  border-color: #a6dba0 !important;
+  color: #426b3b !important;
+  background: #eef5ea !important;
+  border-color: #9dbf8e !important;
 }
 .context-pill.hpc-pill {
-  color: #762a83 !important;
-  background: #f4eeff !important;
-  border-color: #c2a5cf !important;
+  color: #574a72 !important;
+  background: #f1edf6 !important;
+  border-color: #a891c7 !important;
 }
 
 
@@ -3886,16 +3885,17 @@ pre[data-command="hpc-context"]::before {
 
 /* Light neutral paper: fine fibrous grain + soft large-scale mottle */
 body {
-  background-color: #fbfaf6 !important;
+  background-color: #f7f1e3 !important;
+  color: #3d3842 !important;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.035'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.014' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.03'/%3E%3C/svg%3E") !important;
   background-size: 180px 180px, 520px 520px !important;
 }
 
-/* Main reading surface = near-white sheet on a faint neutral grid */
+/* Main reading surface = ivory sheet on a faint neutral grid */
 .step-detail-card {
-  background-color: #ffffff !important;
+  background-color: #fff9ec !important;
   background-image:
     linear-gradient(rgba(120, 122, 120, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(120, 122, 120, 0.045) 1px, transparent 1px),
@@ -3918,7 +3918,7 @@ body {
   display: inline-block;
   text-decoration: none !important;
   padding-bottom: 9px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='8' viewBox='0 0 120 8'%3E%3Cpath d='M1 5 Q 15 1 30 5 T 60 5 T 90 5 T 119 5' fill='none' stroke='%23b6b3aa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='8' viewBox='0 0 120 8'%3E%3Cpath d='M1 5 Q 15 1 30 5 T 60 5 T 90 5 T 119 5' fill='none' stroke='%23d8b45d' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: left calc(100% - 1px);
   background-size: 100% 7px;
@@ -3935,7 +3935,7 @@ body {
 /* Script source viewer — keep dark background with light text legible
    (a later .step-detail pre rule was lightening the background) */
 .script-source .code-block pre {
-  background: #1e242a !important;
+  background: #536b78 !important;
   border: 0 !important;
   box-shadow: none !important;
 }
@@ -3958,36 +3958,86 @@ body {
   border-radius: 10px;
 }
 
-/* De-brown: neutralize remaining warm/tan chrome */
+/* Homepage scope / boundary note */
+.scope-note {
+  margin: 26px auto 0;
+  max-width: 760px;
+  padding: 0 18px;
+  color: #6b6a63;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Step tabs: luminous light-cyan cards on cream, uniform for local and
+   HPC (green/purple stay reserved for the command boxes). Active tab is
+   brighter with a gentle pulsing cyan "gem" glow. */
 .step-tab,
 .step-tab.local,
 .step-tab.hpc,
 .step-tab[data-step="4"],
 .step-tab[data-step="7"] {
-  background: #fcfcf9 !important;
-  border-color: #e5e3d9 !important;
+  background: #fff9ec !important;
+  border-color: #e9dcc1 !important;
+  color: #3d3842 !important;
+}
+.step-tab:hover,
+.step-tab.hpc:hover {
+  background: #fffdf6 !important;
+  border-color: #e0cf9f !important;
 }
 .step-tab .step-num {
-  border-color: #e1dfd5 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(251, 250, 246, 0.9) !important;
+  color: #9a7d2e !important;
+  border-color: #e6d4a6 !important;
+  background: #fffdf6 !important;
+  box-shadow: 0 0 0 4px rgba(255, 249, 236, 0.9) !important;
 }
 .step-tab.active,
 .step-tab.hpc.active {
-  background: linear-gradient(90deg, #6a6a64, #4c4c47) !important;
-  border-color: #4c4c47 !important;
+  color: #3d3842 !important;
+  background: linear-gradient(135deg, #fffdf6, #fbf1d8) !important;
+  border-color: #d8b45d !important;
+  animation: tabGlow 2.6s ease-in-out infinite;
 }
 .step-tab.active::before,
 .step-tab.hpc.active::before {
-  background: #4c4c47 !important;
+  background: #d8b45d !important;
+}
+.step-tab.active .step-num,
+.step-tab.hpc.active .step-num,
+.step-tab.active .step-run,
+.step-tab.hpc.active .step-run {
+  color: #5c4d22 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(214, 184, 110, 0.5) !important;
+}
+@keyframes tabGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(214, 184, 110, 0.28), 0 6px 18px rgba(214, 184, 110, 0.16);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(214, 184, 110, 0.55), 0 10px 30px rgba(214, 184, 110, 0.36);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-tab.active,
+  .step-tab.hpc.active {
+    animation: none;
+  }
 }
 .sidebar-downloads {
-  background: #fcfcf8 !important;
-  border-color: #e6e4da !important;
+  background: #fff9ec !important;
+  border-color: #ece1c9 !important;
+}
+.sidebar-downloads .demo-button {
+  background: #fffdf6 !important;
+}
+.action-block {
+  background: #fff9ec !important;
 }
 .sidebar-downloads::before {
-  background: rgba(236, 236, 229, 0.6) !important;
-  border-color: rgba(208, 206, 197, 0.5) !important;
+  background: rgba(244, 232, 196, 0.6) !important;
+  border-color: rgba(214, 184, 110, 0.42) !important;
 }
 .sidebar-downloads .demo-button,
 .sidebar-downloads .demo-button:nth-of-type(2) {

@@ -2,8 +2,18 @@
 set -euo pipefail
 
 ALLOW_FIXES="${ALLOW_FIXES:-false}"
+CONFIG="${CONFIG:-configs/configure.yaml}"
 REPORT="reports/smoke_test_report.md"
 mkdir -p reports logs work
+
+get_config() {
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
+}
+
+# Use the configured profile (e.g. singularity, docker) with the built-in test data.
+PROFILE="${PROFILE:-$(get_config profile)}"
+PROFILE="${PROFILE:-singularity}"
 
 {
   echo "# Smoke Test Report"
@@ -12,6 +22,9 @@ mkdir -p reports logs work
   echo
   echo "## Purpose"
   echo "Validate nf-core / Nextflow / HPC environment using tiny built-in test data."
+  echo
+  echo "## Profile"
+  echo "test,${PROFILE}"
   echo
   echo "## Automatic fixes allowed"
   echo "${ALLOW_FIXES}"
@@ -26,7 +39,7 @@ fi
 
 run_smoke_test() {
   nextflow run nf-core/rnaseq \
-    -profile test,singularity \
+    -profile "test,${PROFILE}" \
     -resume 2>&1 | tee logs/smoke_run.log
 }
 

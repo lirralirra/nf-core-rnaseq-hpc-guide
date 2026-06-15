@@ -1,0 +1,2 @@
+upload_to_hpc.sh: line 28: unexpected EOF while looking for matching `"'
+upload_to_hpc.sh: line 29: syntax error: unexpected end of file
