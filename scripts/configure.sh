@@ -6,6 +6,8 @@ RUN_MODE="${RUN_MODE:-star_salmon}"
 ALIGNER="${ALIGNER:-star_salmon}"
 PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
 SKIP_ALIGNMENT="${SKIP_ALIGNMENT:-false}"
+GC_BIAS="${GC_BIAS:-true}"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 SPECIES="${SPECIES:-unknown}"
 GENOME_SIZE_GB="${GENOME_SIZE_GB:-}"
 SAMPLE_COUNT="${SAMPLE_COUNT:-}"
@@ -195,6 +197,7 @@ samplesheet: $(yaml_quote "$SAMPLESHEET")
 reference: $(yaml_quote "$REFERENCE")
 annotation: $(yaml_quote "$ANNOTATION")
 annotation_type: $(yaml_quote "$ANNOTATION_TYPE")
+pipeline_version: $(yaml_quote "$PIPELINE_VERSION")
 species: $(yaml_quote "$SPECIES")
 genome_size_gb: ${GENOME_SIZE_GB:-unknown}
 sample_count: ${SAMPLE_COUNT:-unknown}
@@ -202,6 +205,7 @@ run_mode: $(yaml_quote "$RUN_MODE")
 aligner: $(yaml_quote "$ALIGNER")
 pseudo_aligner: $(yaml_quote "$PSEUDO_ALIGNER")
 skip_alignment: ${SKIP_ALIGNMENT}
+gc_bias: ${GC_BIAS}
 profile: $(yaml_quote "$PROFILE")
 memory: $(yaml_quote "$MEMORY")
 cpu: ${CPU}

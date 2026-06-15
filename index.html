@@ -434,10 +434,12 @@ fi
           </div>
           <details class="notes-block notes-bottom">
             <summary>Example <code>configs/configure.yaml</code> fields</summary>
-            <pre>run_mode: star_salmon
+            <pre>pipeline_version: 3.26.0
+run_mode: star_salmon
 aligner: star_salmon
 pseudo_aligner: salmon
 skip_alignment: false
+gc_bias: true
 fastq_dir: input/fastq
 samplesheet: input/samplesheet.csv
 reference: input/reference/genome.fa
@@ -449,6 +451,7 @@ sample_count: 30
 hpc_user: your_username
 hpc_host: your.cluster.edu
 hpc_project_dir: /scratchdata1/your_project/rnaseq_projects/my_project
+profile: singularity
 outdir: results
 workdir: work
 cache_dir: /scratch/your_username/apptainer_cache
@@ -456,11 +459,13 @@ memory: 64G
 cpu: 16
 walltime: 24.h</pre>
             <ul class="config-field-notes">
+              <li><code>pipeline_version</code> pins <code>nf-core/rnaseq</code> (run with <code>-r</code>) so every run is reproducible.</li>
               <li><code>run_mode</code>, <code>aligner</code>, <code>pseudo_aligner</code>, and <code>skip_alignment</code> record the selected aligner mode.</li>
+              <li><code>gc_bias</code> enables Salmon GC bias correction (<code>--extra_salmon_quant_args=--gcBias</code>), recommended by the DESeq2 authors; set to <code>false</code> to disable.</li>
               <li><code>fastq_dir</code>, <code>samplesheet</code>, <code>reference</code>, and <code>annotation</code> point to the local project inputs prepared in Step 2.</li>
               <li><code>hpc_user</code>, <code>hpc_host</code>, and <code>hpc_project_dir</code> define where the project will be uploaded and run on HPC.</li>
               <li><code>outdir</code>, <code>workdir</code>, and <code>cache_dir</code> separate final results, Nextflow work files, and container/cache files.</li>
-              <li><code>memory</code>, <code>cpu</code>, and <code>walltime</code> are estimated settings that can be adjusted for the cluster if validation reports a resource problem.</li>
+              <li><code>memory</code>, <code>cpu</code>, and <code>walltime</code> are written into a Nextflow <code>process.resourceLimits</code> config (the old <code>--max_*</code> flags were removed in recent nf-core/rnaseq); adjust if validation reports a resource problem.</li>
             </ul>
           </details>
             <details class="notes-block notes-bottom">
@@ -469,6 +474,7 @@ walltime: 24.h</pre>
             <li>The script writes <code>configs/configure.yaml</code> automatically.</li>
             <li><code>configure.sh</code> scans project files to infer species, genome size, and sample count, then estimates memory, CPU, and walltime.</li>
             <li>Review <code>configs/configure.yaml</code> and quickly check the paths before opening it for editing.</li>
+            <li>Salmon GC bias correction is enabled by default (<a href="documents.html#gc-bias">why</a>); set <code>gc_bias: false</code> to disable.</li>
             <li>Only override memory, CPU, walltime, scratch, and profile values if your HPC needs different settings.</li>
               </ul>
             </details>
@@ -485,6 +491,8 @@ RUN_MODE="${RUN_MODE:-star_salmon}"
 ALIGNER="${ALIGNER:-star_salmon}"
 PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
 SKIP_ALIGNMENT="${SKIP_ALIGNMENT:-false}"
+GC_BIAS="${GC_BIAS:-true}"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 SPECIES="${SPECIES:-unknown}"
 GENOME_SIZE_GB="${GENOME_SIZE_GB:-}"
 SAMPLE_COUNT="${SAMPLE_COUNT:-}"
@@ -674,6 +682,7 @@ samplesheet: $(yaml_quote "$SAMPLESHEET")
 reference: $(yaml_quote "$REFERENCE")
 annotation: $(yaml_quote "$ANNOTATION")
 annotation_type: $(yaml_quote "$ANNOTATION_TYPE")
+pipeline_version: $(yaml_quote "$PIPELINE_VERSION")
 species: $(yaml_quote "$SPECIES")
 genome_size_gb: ${GENOME_SIZE_GB:-unknown}
 sample_count: ${SAMPLE_COUNT:-unknown}
@@ -681,6 +690,7 @@ run_mode: $(yaml_quote "$RUN_MODE")
 aligner: $(yaml_quote "$ALIGNER")
 pseudo_aligner: $(yaml_quote "$PSEUDO_ALIGNER")
 skip_alignment: ${SKIP_ALIGNMENT}
+gc_bias: ${GC_BIAS}
 profile: $(yaml_quote "$PROFILE")
 memory: $(yaml_quote "$MEMORY")
 cpu: ${CPU}
@@ -819,7 +829,7 @@ echo "Upload log: $LOG"
               <ul>
                 <li>Run one real sample (largest by default) to validate the current project configuration and estimate real resource requirements</li>
                 <li>Workflow: Dry Run → Run one real sample</li>
-                <li>When automatic fixes are allowed, adjust safe infrastructure/resource settings for common failures such as missing container images, STAR/BEDTOOLS memory failures, walltime limits, TMPDIR/scratch problems, storage/quota issues, then resume when possible</li>
+                <li>When automatic fixes are allowed, adjust safe infrastructure/resource settings for common failures such as missing container images, STAR/BEDTOOLS memory failures, walltime limits, and TMPDIR/scratch permission or workdir issues, then resume when possible; storage/quota problems are reported but must be resolved manually</li>
                 <li>Write <code>reports/one_sample_validation_report.md</code></li>
               </ul>
             </details>
@@ -856,6 +866,8 @@ get_config() {
 # Use the configured profile (e.g. singularity, docker) with the built-in test data.
 PROFILE="${PROFILE:-$(get_config profile)}"
 PROFILE="${PROFILE:-singularity}"
+PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 
 {
   echo "# Smoke Test Report"
@@ -881,6 +893,7 @@ fi
 
 run_smoke_test() {
   nextflow run nf-core/rnaseq \
+    -r "${PIPELINE_VERSION}" \
     -profile "test,${PROFILE}" \
     -resume 2&gt;&amp;1 | tee logs/smoke_run.log
 }
@@ -946,6 +959,8 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
+GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
+PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 PROFILE="$(get_config profile)"
 OUTDIR="$(get_config outdir)"
 WORKDIR="$(get_config workdir)"
@@ -1012,15 +1027,18 @@ if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -u nocasematch
 fi
 
+# nf-core/rnaseq removed --max_cpus/--max_memory/--max_time (template v3+);
+# set process.resourceLimits via a generated config instead (Nextflow 24.04+).
 add_resource_limits() {
-  if [[ -n "$MEMORY" &amp;&amp; "$MEMORY" != "auto" &amp;&amp; "$MEMORY" != "unknown" ]]; then
-    cmd+=(--max_memory "$MEMORY")
-  fi
-  if [[ -n "$CPU" &amp;&amp; "$CPU" != "auto" &amp;&amp; "$CPU" != "unknown" ]]; then
-    cmd+=(--max_cpus "$CPU")
-  fi
-  if [[ -n "$WALLTIME" &amp;&amp; "$WALLTIME" != "auto" &amp;&amp; "$WALLTIME" != "unknown" ]]; then
-    cmd+=(--max_time "$WALLTIME")
+  local res=() mem_gb conf="configs/resource_limits.config"
+  mem_gb="$(printf '%s' "$MEMORY" | grep -oE '^[0-9]+(\.[0-9]+)?' || true)"
+  [[ -n "$CPU" &amp;&amp; "$CPU" != "auto" &amp;&amp; "$CPU" != "unknown" ]] &amp;&amp; res+=("cpus: ${CPU}")
+  [[ -n "$mem_gb" ]] &amp;&amp; res+=("memory: ${mem_gb}.GB")
+  [[ -n "$WALLTIME" &amp;&amp; "$WALLTIME" != "auto" &amp;&amp; "$WALLTIME" != "unknown" ]] &amp;&amp; res+=("time: ${WALLTIME}")
+  if [[ ${#res[@]} -gt 0 ]]; then
+    mkdir -p configs
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" &gt; "$conf"
+    cmd+=(-c "$conf")
   fi
 }
 
@@ -1072,6 +1090,7 @@ prepare_runtime_dirs() {
 run_one_sample() {
   local run_workdir="${WORKDIR%/}/one_sample_validation"
   cmd=(nextflow run nf-core/rnaseq
+    -r "$PIPELINE_VERSION"
     -profile "$PROFILE"
     --input "$ONE_SAMPLE_SHEET"
     --outdir "${OUTDIR%/}/one_sample_validation"
@@ -1092,6 +1111,9 @@ run_one_sample() {
   fi
   if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
     cmd+=(--skip_alignment)
+  fi
+  if [[ "$GC_BIAS" == "true" ]]; then
+    cmd+=("--extra_salmon_quant_args=--gcBias")
   fi
   add_resource_limits
   "${cmd[@]}" -resume 2&gt;&amp;1 | tee logs/one_sample_run.log
@@ -1188,6 +1210,7 @@ get_config() {
 }
 
 PROFILE="$(get_config profile)"
+PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 SAMPLESHEET="$(get_config samplesheet)"
 OUTDIR="$(get_config outdir)"
 REFERENCE="$(get_config reference)"
@@ -1196,10 +1219,27 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
+GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
+
+# Write resource limits as a Nextflow config. nf-core/rnaseq removed the
+# --max_cpus/--max_memory/--max_time params (template v3+), so we set
+# process.resourceLimits instead (Nextflow 24.04+; ignored on older versions).
+write_resource_config() {
+  local res=() mem_gb conf="configs/resource_limits.config"
+  mem_gb="$(printf '%s' "$MEMORY" | grep -oE '^[0-9]+(\.[0-9]+)?' || true)"
+  [[ -n "$CPU" &amp;&amp; "$CPU" != "auto" &amp;&amp; "$CPU" != "unknown" ]] &amp;&amp; res+=("cpus: ${CPU}")
+  [[ -n "$mem_gb" ]] &amp;&amp; res+=("memory: ${mem_gb}.GB")
+  [[ -n "$WALLTIME" &amp;&amp; "$WALLTIME" != "auto" &amp;&amp; "$WALLTIME" != "unknown" ]] &amp;&amp; res+=("time: ${WALLTIME}")
+  if [[ ${#res[@]} -gt 0 ]]; then
+    mkdir -p configs
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" &gt; "$conf"
+    printf '%s' "$conf"
+  fi
+}
 
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
@@ -1211,6 +1251,7 @@ if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
 fi
 
 cmd=(nextflow run nf-core/rnaseq
+  -r "$PIPELINE_VERSION"
   -profile "$PROFILE"
   --input "$SAMPLESHEET"
   --outdir "$OUTDIR"
@@ -1232,14 +1273,13 @@ fi
 if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
   cmd+=(--skip_alignment)
 fi
-if [[ -n "$MEMORY" &amp;&amp; "$MEMORY" != "auto" &amp;&amp; "$MEMORY" != "unknown" ]]; then
-  cmd+=(--max_memory "$MEMORY")
+# DESeq2 authors recommend Salmon GC bias correction; off by default in the pipeline.
+if [[ "$GC_BIAS" == "true" ]]; then
+  cmd+=("--extra_salmon_quant_args=--gcBias")
 fi
-if [[ -n "$CPU" &amp;&amp; "$CPU" != "auto" &amp;&amp; "$CPU" != "unknown" ]]; then
-  cmd+=(--max_cpus "$CPU")
-fi
-if [[ -n "$WALLTIME" &amp;&amp; "$WALLTIME" != "auto" &amp;&amp; "$WALLTIME" != "unknown" ]]; then
-  cmd+=(--max_time "$WALLTIME")
+RES_CONF="$(write_resource_config)"
+if [[ -n "$RES_CONF" ]]; then
+  cmd+=(-c "$RES_CONF")
 fi
 
 extra_args=("$@")

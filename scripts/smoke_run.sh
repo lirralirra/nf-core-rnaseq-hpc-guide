@@ -14,6 +14,8 @@ get_config() {
 # Use the configured profile (e.g. singularity, docker) with the built-in test data.
 PROFILE="${PROFILE:-$(get_config profile)}"
 PROFILE="${PROFILE:-singularity}"
+PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 
 {
   echo "# Smoke Test Report"
@@ -39,6 +41,7 @@ fi
 
 run_smoke_test() {
   nextflow run nf-core/rnaseq \
+    -r "${PIPELINE_VERSION}" \
     -profile "test,${PROFILE}" \
     -resume 2>&1 | tee logs/smoke_run.log
 }

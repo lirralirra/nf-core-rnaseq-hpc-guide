@@ -28,6 +28,8 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
+GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
+PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 PROFILE="$(get_config profile)"
 OUTDIR="$(get_config outdir)"
 WORKDIR="$(get_config workdir)"
@@ -94,15 +96,18 @@ if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -u nocasematch
 fi
 
+# nf-core/rnaseq removed --max_cpus/--max_memory/--max_time (template v3+);
+# set process.resourceLimits via a generated config instead (Nextflow 24.04+).
 add_resource_limits() {
-  if [[ -n "$MEMORY" && "$MEMORY" != "auto" && "$MEMORY" != "unknown" ]]; then
-    cmd+=(--max_memory "$MEMORY")
-  fi
-  if [[ -n "$CPU" && "$CPU" != "auto" && "$CPU" != "unknown" ]]; then
-    cmd+=(--max_cpus "$CPU")
-  fi
-  if [[ -n "$WALLTIME" && "$WALLTIME" != "auto" && "$WALLTIME" != "unknown" ]]; then
-    cmd+=(--max_time "$WALLTIME")
+  local res=() mem_gb conf="configs/resource_limits.config"
+  mem_gb="$(printf '%s' "$MEMORY" | grep -oE '^[0-9]+(\.[0-9]+)?' || true)"
+  [[ -n "$CPU" && "$CPU" != "auto" && "$CPU" != "unknown" ]] && res+=("cpus: ${CPU}")
+  [[ -n "$mem_gb" ]] && res+=("memory: ${mem_gb}.GB")
+  [[ -n "$WALLTIME" && "$WALLTIME" != "auto" && "$WALLTIME" != "unknown" ]] && res+=("time: ${WALLTIME}")
+  if [[ ${#res[@]} -gt 0 ]]; then
+    mkdir -p configs
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" > "$conf"
+    cmd+=(-c "$conf")
   fi
 }
 
@@ -154,6 +159,7 @@ prepare_runtime_dirs() {
 run_one_sample() {
   local run_workdir="${WORKDIR%/}/one_sample_validation"
   cmd=(nextflow run nf-core/rnaseq
+    -r "$PIPELINE_VERSION"
     -profile "$PROFILE"
     --input "$ONE_SAMPLE_SHEET"
     --outdir "${OUTDIR%/}/one_sample_validation"
@@ -174,6 +180,9 @@ run_one_sample() {
   fi
   if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
     cmd+=(--skip_alignment)
+  fi
+  if [[ "$GC_BIAS" == "true" ]]; then
+    cmd+=("--extra_salmon_quant_args=--gcBias")
   fi
   add_resource_limits
   "${cmd[@]}" -resume 2>&1 | tee logs/one_sample_run.log
