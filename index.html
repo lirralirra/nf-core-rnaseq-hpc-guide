@@ -28,8 +28,12 @@
 
   <main class="hands-page">
     <section class="workflow-panel compact-workflow" aria-label="Interactive workflow">
+      <button class="prereq-tab active" type="button" aria-selected="true">
+        <span class="prereq-tab-icon" aria-hidden="true">★</span>
+        <strong>Before You Start — Prerequisites</strong>
+      </button>
       <div class="step-tabs" role="tablist" aria-label="Workflow steps">
-        <button class="step-tab local active" type="button" data-step="1" aria-selected="true">
+        <button class="step-tab local" type="button" data-step="1" aria-selected="false">
           <span class="step-num">1</span>
           <strong>Initial Project</strong>
         </button>
@@ -71,7 +75,41 @@
 
     <section class="hands-lower">
       <section class="step-detail-card" aria-live="polite">
-        <article class="step-detail active" data-step-panel="1">
+        <article class="step-detail active" data-step-panel="prereq">
+          <div class="step-title-row">
+            <h2>Before You Start — Prerequisites</h2>
+            <span class="context-pill local-pill">Local</span>
+          </div>
+          <p class="step-purpose">Set these up once before working through the steps below.</p>
+          <ul class="prereq-list">
+            <li>Confirm you have Phoenix access from Adelaide Uni: <a href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix Access</a>.
+              <div class="simple-path-box">
+                <div class="simple-path-row">
+                  <label for="hpcUser"><strong>Phoenix username</strong></label>
+                  <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
+                  <label for="hpcHost"><strong>Phoenix login host</strong></label>
+                  <select id="hpcHost">
+                    <option value="p2-log-1.hpc.adelaide.edu.au">p2-log-1.hpc.adelaide.edu.au</option>
+                    <option value="p2-log-2.hpc.adelaide.edu.au" selected>p2-log-2.hpc.adelaide.edu.au</option>
+                  </select>
+                </div>
+                <label for="hpcPath"><strong>Phoenix working folder</strong></label>
+                <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
+                <p>This is the project folder on Phoenix (it should be the folder itself, not a shared parent). Used to fill the command boxes and written into <code>configure.yaml</code> so the upload/download scripts target it.</p>
+              </div>
+            </li>
+            <li>Use a local bash-style terminal for all local commands.</li>
+            <li><strong>Basic terminal (linux) skills.</strong> For this workflow, you only need to know:
+              <ul>
+                <li><code>cd</code> &mdash; go to a folder</li>
+                <li><code>scripts/make_samplesheet.sh</code> &mdash; run a script (here <code>make_samplesheet.sh</code> in the <code>scripts</code> folder)</li>
+                <li>Less important: <code>ls</code> list files, <code>pwd</code> show the current folder path, <code>mkdir</code> create a folder</li>
+              </ul>
+            </li>
+            <li>Get a basic understanding of how the nf-core/rnaseq pipeline works first &mdash; see the <a href="documents.html#nf-core-pipeline">Documents</a> page.</li>
+          </ul>
+        </article>
+        <article class="step-detail" data-step-panel="1">
           <div class="step-title-row">
             <h2>Step 1 — Initial Project</h2>
             <span class="context-pill local-pill">Local</span>
@@ -79,29 +117,6 @@
           <p class="step-purpose">Download a ready-to-use template, confirm Phoenix access, and record the local folder path before preparing inputs.</p>
           <div class="action-notes-grid has-structure">
             <div class="action-stack">
-            <details class="action-block prereq-block" open>
-                <summary><strong>Prerequisites</strong></summary>
-                <ul>
-                  <li>Confirm you have Phoenix access from Adelaide Uni: <a href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix Access</a>.
-                    <div class="simple-path-box">
-                      <div class="simple-path-row">
-                        <label for="hpcUser"><strong>Phoenix username</strong></label>
-                        <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
-                        <label for="hpcHost"><strong>Phoenix login host</strong></label>
-                        <select id="hpcHost">
-                          <option value="p2-log-1.hpc.adelaide.edu.au">p2-log-1.hpc.adelaide.edu.au</option>
-                          <option value="p2-log-2.hpc.adelaide.edu.au" selected>p2-log-2.hpc.adelaide.edu.au</option>
-                        </select>
-                      </div>
-                      <label for="hpcPath"><strong>Phoenix working folder</strong></label>
-                      <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
-                      <p>This is the project folder on Phoenix (it should be the folder itself, not a shared parent). Used to fill the command boxes and written into <code>configure.yaml</code> so the upload/download scripts target it.</p>
-                    </div>
-                  </li>
-                  <li>Use a local bash-style terminal for all local commands.</li>
-                  <li>Get a basic understanding of how the nf-core/rnaseq pipeline works first &mdash; see the <a href="documents.html#nf-core-pipeline">Documents</a> page.</li>
-                </ul>
-            </details>
             <div class="action-block">
                 <p><strong>What You Do:</strong></p>
                 <ol>
@@ -171,14 +186,14 @@
             <li>Add FASTQ files in <code>input/fastq/</code>.</li>
             <li>Add the reference genome to <code>input/reference/</code>.</li>
             <li>Add the annotation file to <code>input/annotation/</code>.</li>
-            <li>Open your local terminal and move into your local project folder:
+            <li>Open your local terminal and move into your local project folder, run:
               <pre data-command="local-cd"></pre>
             </li>
-            <li>Generate <code>input/samplesheet.csv</code>:
+            <li>Generate <code>input/samplesheet.csv</code>, run:
               <pre data-command="step2-make"></pre>
             </li>
             <li>Open <code>input/samplesheet.csv</code> and manually check it matches the nf-core/rnaseq format (<a href="documents.html#samplesheet-format">samplesheet spec</a>).</li>
-            <li>Validate files, pairs, sample names, references, annotation, scripts, and upload size:
+            <li>Validate files, pairs, sample names, references, annotation, scripts, and upload size, run:
               <pre data-command="step2-validate"></pre>
             </li>
               </ol>
@@ -437,20 +452,20 @@ fi
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal and move into your local project folder:
+            <li>Open your local terminal and move into your local project folder, run:
               <pre data-command="local-context"></pre>
             </li>
             <li>Choose the aligner (<a href="documents.html#choose-pipeline-mode">how to decide</a>):
               <div class="simple-path-box aligner-choice-box">
                 <label for="alignerMode"><strong>Aligner mode</strong></label>
                 <select id="alignerMode">
-                  <option value="star">STAR + Salmon</option>
+                  <option value="star">STAR + Salmon (recommended, default)</option>
                   <option value="salmon">Salmon only</option>
                 </select>
-                <p id="alignerModeHelp">STAR + Salmon aligns reads to the genome and quantifies transcripts.</p>
+                <p id="alignerModeHelp">STAR + Salmon (recommended, default) aligns reads to the genome and quantifies transcripts.</p>
               </div>
             </li>
-            <li>Generate <code>configs/configure.yaml</code> for the selected mode:
+            <li>Generate <code>configs/configure.yaml</code> for the selected mode, run:
               <pre data-command="step3-configure"></pre>
             </li>
               </ol>
@@ -880,15 +895,15 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal and log in to your Phoenix account:
+            <li>Open your local terminal and log in to your Phoenix account, run:
               <pre data-command="hpc-ssh"></pre>
             </li>
-            <li>Using the <strong>Phoenix working folder</strong> you set in Step 1, either locate the existing folder or create it. If it already exists, locate it:
+            <li>Using the <strong>Phoenix working folder</strong> you set in Step 1, either locate the existing folder or create it. If it already exists, locate it, run:
               <pre data-command="hpc-folder-locate"></pre>
-              <p>If it does not exist yet, create it:</p>
+              <p>If it does not exist yet, create it, run:</p>
               <pre data-command="hpc-folder-check"></pre>
             </li>
-            <li>Open another local terminal and upload the initialized project folder with resume-safe rsync:
+            <li>Open another local terminal and upload the initialized project folder with resume-safe rsync, run:
               <pre data-command="upload-rsync2"></pre>
             </li>
               </ol>
@@ -957,16 +972,16 @@ echo "Upload log: $LOG"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal and log in to Phoenix:
+            <li>Open your local terminal and log in to Phoenix, run:
               <pre data-command="hpc-ssh"></pre>
             </li>
-            <li>Enter your project folder:
+            <li>Enter your project folder, run:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>Run the Smoke Test (<a href="documents.html#smoke-test">optional</a>):
+            <li>Run the Smoke Test (<a href="documents.html#smoke-test">optional</a>), run:
               <pre data-command="step5-smoke"></pre>
             </li>
-            <li>Run the One Sample Run:
+            <li>Run the One Sample Run, run:
               <pre data-command="step5-one-sample"></pre>
             </li>
             <li>Continue to the full run only after preflight validation passes.</li>
@@ -1329,19 +1344,19 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal and log in to Phoenix:
+            <li>Open your local terminal and log in to Phoenix, run:
               <pre data-command="hpc-ssh"></pre>
             </li>
-            <li>Enter your project folder:
+            <li>Enter your project folder, run:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>Launch the full run:
+            <li>Launch the full run, run:
               <pre data-command="step6-run"></pre>
             </li>
-            <li>Check progress:
+            <li>Check progress, run:
               <pre data-command="step6-monitor"></pre>
             </li>
-            <li>If a safe fix was applied after a failure, resume the run instead of starting from scratch:
+            <li>If a safe fix was applied after a failure, resume the run instead of starting from scratch, run:
               <pre data-command="step6-resume"></pre>
             </li>
               </ol>
@@ -1537,10 +1552,10 @@ echo "- After a safe fix, resume with: bash scripts/run.sh -resume"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal, move into your local project folder, and download results from Phoenix:
+            <li>Open your local terminal, move into your local project folder, and download results from Phoenix, run:
               <pre data-command="download-rsync"></pre>
             </li>
-            <li>Optionally build a combined project report (project info + MultiQC summary):
+            <li>Optionally build a combined project report (project info + MultiQC summary), run:
               <pre data-command="step7-report"></pre>
             </li>
             <li>Next step: review your QC and plan downstream analysis &mdash; see <a href="documents.html#after-results">Documents &rarr; After Downloading Results</a>.</li>
@@ -1834,9 +1849,27 @@ cat("Wrote", out_file, "\n")
     const alignerMode = document.getElementById('alignerMode');
     const alignerModeHelp = document.getElementById('alignerModeHelp');
 
+    const prereqTab = document.querySelector('.prereq-tab');
+    if (prereqTab) {
+      prereqTab.addEventListener('click', () => {
+        tabs.forEach((item) => {
+          item.classList.remove('active');
+          item.setAttribute('aria-selected', 'false');
+        });
+        prereqTab.classList.add('active');
+        prereqTab.setAttribute('aria-selected', 'true');
+        panels.forEach((panel) => {
+          panel.classList.toggle('active', panel.dataset.stepPanel === 'prereq');
+        });
+        document.querySelector('.step-detail-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
         const step = tab.dataset.step;
+        prereqTab?.classList.remove('active');
+        prereqTab?.setAttribute('aria-selected', 'false');
         tabs.forEach((item) => {
           item.classList.toggle('active', item === tab);
           item.setAttribute('aria-selected', item === tab ? 'true' : 'false');
@@ -1848,6 +1881,7 @@ cat("Wrote", out_file, "\n")
     });
 
     panels.forEach((panel) => {
+      if (panel.dataset.stepPanel === 'prereq') return;
       if (panel.querySelector('.step-bottom-nav')) return;
       const current = Number(panel.dataset.stepPanel);
       const nav = document.createElement('nav');
@@ -2121,7 +2155,7 @@ cat("Wrote", out_file, "\n")
       if (!alignerMode || !alignerModeHelp) return;
       alignerModeHelp.textContent = alignerMode.value === 'salmon'
         ? 'Salmon only quantifies without genome alignment.'
-        : 'STAR + Salmon aligns reads to the genome and quantifies transcripts.';
+        : 'STAR + Salmon (recommended, default) aligns reads to the genome and quantifies transcripts.';
     }
 
     function hydratePathInputs() {

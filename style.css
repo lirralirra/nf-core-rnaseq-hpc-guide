@@ -746,6 +746,64 @@ h1 {
   border: 1px solid var(--accent-line);
 }
 
+.prereq-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 14px;
+  margin-bottom: 14px;
+  color: #3d3842;
+  background: #fffdf6;
+  border: 1px solid #e9dcc1;
+  border-radius: 14px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.prereq-tab strong {
+  line-height: 1.2;
+  font-size: 14px;
+}
+
+.prereq-tab-icon {
+  flex: 0 0 auto;
+  font-size: 16px;
+  color: #9a7d2e;
+}
+
+.prereq-tab:hover,
+.prereq-tab:focus-visible {
+  transform: translateY(-2px);
+  border-color: #e0cf9f;
+  background: #fffdf6;
+  box-shadow: 0 10px 24px rgba(33, 51, 42, 0.08);
+}
+
+.prereq-tab.active {
+  color: #3d3842;
+  background: linear-gradient(135deg, #fffdf6, #fbf1d8);
+  border-color: #d8b45d;
+  box-shadow: 0 6px 18px rgba(214, 184, 110, 0.18);
+}
+
+.prereq-tab.active .prereq-tab-icon {
+  color: #5c4d22;
+}
+
+.prereq-tab::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -8px;
+  height: 1px;
+  background: #dbe7de;
+}
+
 .step-tabs {
   position: relative;
   display: grid;
@@ -897,9 +955,7 @@ h1 {
 }
 
 .step-detail-card {
-  background:
-    linear-gradient(180deg, rgba(247, 251, 244, 0.92) 0, rgba(255, 255, 255, 0) 150px),
-    #fff;
+  background: #f4f9f2;
   border: 1px solid #d5e1d8;
   border-radius: 20px;
   box-shadow: 0 14px 34px rgba(33, 51, 42, 0.07);
@@ -909,6 +965,35 @@ h1 {
   position: relative;
   min-height: 330px;
   padding: 34px 38px 38px;
+}
+
+.prereq-card {
+  background: #f4f9f2;
+  border: 1px solid #d5e1d8;
+  border-radius: 20px;
+  box-shadow: 0 14px 34px rgba(33, 51, 42, 0.07);
+  position: relative;
+  padding: 30px 38px 32px;
+  margin-bottom: 24px;
+  scroll-margin-top: 16px;
+}
+
+.prereq-card .step-purpose {
+  margin-top: 6px;
+}
+
+.prereq-list {
+  margin: 16px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.prereq-list ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
 }
 
 .step-detail {
@@ -1669,7 +1754,7 @@ h1 {
 .content-card {
   margin: 18px 0;
   padding: 30px 34px;
-  background: #fff;
+  background: #f4f9f2;
   border: 1px solid var(--line);
   border-radius: 16px;
   box-shadow: 0 8px 22px rgba(33, 51, 42, 0.06);
@@ -4192,4 +4277,38 @@ body {
 }
 .step-detail-card {
   border-color: #e7e4da !important;
+}
+
+/* ============================================================
+   Lighter, uniform card surfaces (per request): every card uses
+   the same pale ivory as the Prerequisites panel.
+   ============================================================ */
+.step-detail-card {
+  background-color: #fffdf6 !important;
+}
+.content-card {
+  background: #fffdf6 !important;
+  border-color: #e7e4da !important;
+}
+.step-tab,
+.step-tab.local,
+.step-tab.hpc,
+.step-tab[data-step="4"],
+.step-tab[data-step="7"],
+.sidebar-downloads,
+.action-block {
+  background: #fffdf6 !important;
+}
+
+/* Inline command chips in the Prerequisites list — boxed and tinted
+   so they read like the command boxes used in the steps. */
+.prereq-list code {
+  display: inline-block;
+  padding: 1px 7px;
+  background: #eef6ea !important;
+  color: #2f6d3a !important;
+  border: 1px solid #c7ddc4 !important;
+  border-radius: 6px;
+  font-size: 0.92em;
+  line-height: 1.5;
 }
