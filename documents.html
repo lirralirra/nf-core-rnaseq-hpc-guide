@@ -10,7 +10,7 @@
   <nav class="site-nav product-nav" aria-label="Site navigation">
     <div class="nav-brand">
       <div class="nav-title">🧬 Happy RNA-seq</div>
-      <div class="nav-subtitle">A friendly nf-core RNA-seq runner for local setup, HPC validation, auto-fix, resume, and result download.</div>
+      <div class="nav-subtitle">A friendly nf-core RNA-seq runner for local setup, Phoenix validation, auto-fix, resume, and result download.</div>
     </div>
     <div class="nav-links">
       <a href="index.html">Workflow</a>
@@ -32,8 +32,9 @@
         <li><strong>What Each Step Does:</strong> how the seven workflow steps connect from project setup to downloaded results.</li>
         <li><strong>Choose Pipeline Mode:</strong> when STAR + Salmon is the safer default and when Salmon-only may be enough.</li>
         <li><strong>Salmon GC Bias Correction:</strong> why this guide enables Salmon <code>--gcBias</code> by default, following the DESeq2 recommendation.</li>
+        <li><strong>Samplesheet Format:</strong> the exact nf-core/rnaseq CSV format, columns, and an example.</li>
         <li><strong>Validation and recovery:</strong> what Smoke Test, One Sample Run, auto-fix, logs, and resume are meant to protect.</li>
-        <li><strong>Troubleshooting and next steps:</strong> common HPC issues, which output files to open first, and where downstream analysis begins.</li>
+        <li><strong>Troubleshooting and next steps:</strong> common Phoenix issues, which output files to open first, and where downstream analysis begins.</li>
         <li><strong>FAQ:</strong> short answers to beginner questions, collected at the end of this page.</li>
       </ul>
     </section>
@@ -93,7 +94,7 @@
         <a href="https://github.com/nf-core/rnaseq">GitHub repository</a>
       </div>
 
-      <p class="reference-note">This guide is not a replacement for the official nf-core/rnaseq documentation. It is a beginner-friendly HPC wrapper that helps users prepare inputs, validate configuration, run safely on HPC, resume failed jobs, and download results.</p>
+      <p class="reference-note">This guide is not a replacement for the official nf-core/rnaseq documentation. It is a beginner-friendly Phoenix wrapper that helps users prepare inputs, validate configuration, run safely on Phoenix, resume failed jobs, and download results.</p>
     </section>
 
     <section class="content-card">
@@ -102,8 +103,8 @@
         <li><strong>Initial Project:</strong> start from one reusable project template.</li>
         <li><strong>Prepare &amp; Validate Inputs:</strong> create samplesheet and validate FASTQ, reference, annotation, and project files locally.</li>
         <li><strong>Pipeline Configure:</strong> set simple run choices in <code>configs/configure.yaml</code>.</li>
-        <li><strong>Upload to HPC:</strong> transfer the prepared project folder with resume-safe rsync.</li>
-        <li><strong>Preflight Validation:</strong> run Smoke Test and One Sample Run on HPC before the full analysis.</li>
+        <li><strong>Upload to Phoenix:</strong> transfer the prepared project folder with resume-safe rsync.</li>
+        <li><strong>Preflight Validation:</strong> run Smoke Test and One Sample Run on Phoenix before the full analysis.</li>
         <li><strong>Run &amp; Monitor:</strong> launch the full nf-core/rnaseq workflow and monitor progress.</li>
         <li><strong>Download Results:</strong> retrieve results, reports, logs, MultiQC outputs, and summaries locally.</li>
       </ol>
@@ -124,12 +125,30 @@
       <p>Reference: <a href="https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html" target="_blank" rel="noopener">DESeq2 vignette — Salmon/tximport quantification</a>.</p>
     </section>
 
+    <section class="content-card" id="samplesheet-format">
+      <h2>Samplesheet Format (nf-core/rnaseq)</h2>
+      <p>nf-core/rnaseq reads a CSV samplesheet with this <strong>exact</strong> header:</p>
+      <pre>sample,fastq_1,fastq_2,strandedness</pre>
+      <ul>
+        <li><strong>sample</strong> &mdash; sample name. Use only letters, numbers, dot, underscore, or hyphen (no spaces or commas). Rows that share the same <code>sample</code> are treated as technical replicates and are concatenated by the pipeline.</li>
+        <li><strong>fastq_1</strong> &mdash; path to the R1 FASTQ. Must be <strong>gzipped</strong> (<code>.fastq.gz</code> or <code>.fq.gz</code>).</li>
+        <li><strong>fastq_2</strong> &mdash; path to the R2 FASTQ (gzipped). Leave empty for single-end data.</li>
+        <li><strong>strandedness</strong> &mdash; one of <code>forward</code>, <code>reverse</code>, <code>unstranded</code>, or <code>auto</code> (with <code>auto</code>, Salmon infers strandedness per sample).</li>
+      </ul>
+      <p>Example &mdash; the second row is a technical replicate of the first (same sample name), and the third row is single-end (empty <code>fastq_2</code>):</p>
+      <pre>sample,fastq_1,fastq_2,strandedness
+CONTROL_REP1,input/fastq/AEG588A1_S1_L002_R1_001.fastq.gz,input/fastq/AEG588A1_S1_L002_R2_001.fastq.gz,auto
+CONTROL_REP1,input/fastq/AEG588A1_S1_L003_R1_001.fastq.gz,input/fastq/AEG588A1_S1_L003_R2_001.fastq.gz,auto
+TREATMENT_REP1,input/fastq/AEG588A4_S4_L003_R1_001.fastq.gz,,auto</pre>
+      <p>Step 2 generates this file with <code>make_samplesheet.sh</code> and checks it with <code>input_validate.sh</code> (header, unique/valid sample names, paired FASTQ existence, strandedness whitelist). Still open the file and confirm sample names and R1/R2 pairing look correct before uploading. Full details: <a href="https://nf-co.re/rnaseq/3.26.0/docs/usage/" target="_blank" rel="noopener">official nf-core/rnaseq usage docs</a>.</p>
+    </section>
+
     <section class="content-card" id="smoke-test">
       <h2>Smoke Test</h2>
-      <p>The Smoke Test checks whether the HPC environment can run nf-core/rnaseq at all. It uses tiny built-in test data, not user samples.</p>
+      <p>The Smoke Test checks whether the Phoenix environment can run nf-core/rnaseq at all. It uses tiny built-in test data, not user samples.</p>
       <p>It checks Nextflow, Apptainer/Singularity, container downloads, cache paths, permissions, modules, work directory, and scratch directory.</p>
-      <p>Question answered: <strong>Can this HPC + nf-core environment run?</strong></p>
-      <p><strong>When to run it:</strong> generally only the first time you run on a new HPC environment. Once the smoke test passes on that cluster, you can skip it on later projects and go straight to the One Sample Run.</p>
+      <p>Question answered: <strong>Can this Phoenix + nf-core environment run?</strong></p>
+      <p><strong>When to run it:</strong> generally only the first time you run on a new Phoenix environment. Once the smoke test passes on Phoenix, you can skip it on later projects and go straight to the One Sample Run.</p>
     </section>
 
     <section class="content-card">
@@ -174,7 +193,7 @@
       <h3>What is a samplesheet?</h3>
       <p>A CSV file that maps sample IDs to FASTQ files and strandedness.</p>
       <h3>What is Apptainer?</h3>
-      <p>A container runtime commonly used on HPC clusters.</p>
+      <p>A container runtime commonly used on Phoenix clusters.</p>
       <h3>Can I resume a failed run?</h3>
       <p>Yes. Keep the work directory and use Nextflow resume.</p>
       <h3>What should I keep after the run?</h3>

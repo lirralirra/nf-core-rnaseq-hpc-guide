@@ -1508,11 +1508,24 @@ h1 {
 }
 
 .simple-path-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto 1fr;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
+  gap: 8px 14px;
   margin-top: 10px;
+}
+.simple-path-row label {
+  white-space: nowrap;
+}
+.simple-path-row #hpcUser {
+  width: 12ch;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.simple-path-row #hpcHost {
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
 }
 
 .context-pill {
@@ -3867,6 +3880,20 @@ pre[data-command="hpc-context"]::before {
   letter-spacing: 0;
   text-transform: none;
 }
+/* Small tip at the bottom of a step */
+.step-tip {
+  margin: 18px 24px 4px;
+  padding: 10px 14px;
+  color: #4a4640;
+  background: #fdfbf4;
+  border: 1px dashed #e0cf9f;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.step-tip .tip-local { color: #3f7a47; font-weight: 800; }
+.step-tip .tip-hpc { color: #6a5494; font-weight: 800; }
+
 /* In-step download buttons (moved out of the sidebar into Step 1) */
 .step-download-row {
   margin: 8px 0 2px;

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RNA-seq Made Easy</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
   <div class="intro-overlay" id="introOverlay" aria-hidden="true">
@@ -17,7 +18,7 @@
   <nav class="site-nav product-nav" aria-label="Site navigation">
     <div class="nav-brand">
       <div class="nav-title">RNA-seq Made Easy</div>
-      <div class="nav-subtitle">From FASTQ to count matrix using the nf-core RNA-seq pipeline on HPC.</div>
+      <div class="nav-subtitle">From FASTQ to count matrix using the nf-core RNA-seq pipeline on Phoenix.</div>
     </div>
     <div class="nav-links">
       <a class="active" href="index.html">Workflow</a>
@@ -42,7 +43,7 @@
         </button>
         <button class="step-tab local" type="button" data-step="4">
           <span class="step-num">4</span>
-          <strong>Upload to HPC</strong>
+          <strong>Upload to Phoenix</strong>
         </button>
         <button class="step-tab hpc" type="button" data-step="5">
           <span class="step-num">5</span>
@@ -75,24 +76,26 @@
             <h2>Step 1 — Initial Project</h2>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p class="step-purpose">Download a ready-to-use template, confirm HPC access, and record the local folder path before preparing inputs.</p>
+          <p class="step-purpose">Download a ready-to-use template, confirm Phoenix access, and record the local folder path before preparing inputs.</p>
           <div class="action-notes-grid">
             <div class="action-stack">
             <details class="action-block prereq-block" open>
                 <summary><strong>Prerequisites</strong></summary>
                 <ul>
-                  <li>Confirm you have Phoenix HPC access: <a href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix HPC Access</a>.
+                  <li>Confirm you have Phoenix access: <a href="https://staff.adelaide.edu.au/research-and-innovation/access-research-infrastructure/hpc-and-digital-infrastructure/phoenix-hpc/" target="_blank" rel="noopener">Request Phoenix Access</a>.
                     <div class="simple-path-box">
                       <div class="simple-path-row">
-                        <label for="hpcUser"><strong>HPC username</strong></label>
+                        <label for="hpcUser"><strong>Phoenix username</strong></label>
                         <input id="hpcUser" type="text" autocomplete="off" placeholder="a1234567">
-                        <label for="hpcHost"><strong>HPC login host</strong></label>
+                        <label for="hpcHost"><strong>Phoenix login host</strong></label>
                         <select id="hpcHost">
                           <option value="p2-log-1.hpc.adelaide.edu.au">p2-log-1.hpc.adelaide.edu.au</option>
-                          <option value="p2-log-2.hpc.adelaide.edu.au">p2-log-2.hpc.adelaide.edu.au</option>
+                          <option value="p2-log-2.hpc.adelaide.edu.au" selected>p2-log-2.hpc.adelaide.edu.au</option>
                         </select>
                       </div>
-                      <p>Used only to fill the command boxes below.</p>
+                      <label for="hpcPath"><strong>Phoenix working folder</strong></label>
+                      <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
+                      <p>This is the project folder on Phoenix (it should be the folder itself, not a shared parent). Used to fill the command boxes and written into <code>configure.yaml</code> so the upload/download scripts target it.</p>
                     </div>
                   </li>
                   <li>Use a local bash-style terminal for all local commands.</li>
@@ -101,9 +104,20 @@
             <div class="action-block">
                 <p><strong>What You Do:</strong></p>
                 <ol>
+                  <li>Enter your project details (optional):
+                    <div class="simple-path-box">
+                      <label for="projectName"><strong>Project name</strong></label>
+                      <input id="projectName" type="text" autocomplete="off" placeholder="MY_RNASEQ_PROJECT_202601">
+                      <label for="projectDescription"><strong>Project description</strong></label>
+                      <input id="projectDescription" type="text" autocomplete="off" placeholder="Short one-line description of this RNA-seq study">
+                      <label for="projectOwner"><strong>Project owner</strong></label>
+                      <input id="projectOwner" type="text" autocomplete="off" placeholder="Your name">
+                      <p>Identification only &mdash; written to <code>configure.yaml</code> and <code>PROJECT_INFO.md</code>; does not affect the pipeline run. The project name is used to name the download below (and the unzipped folder); if left blank, the download keeps a versioned name. Tip: use English letters, numbers, <code>_</code> or <code>-</code>, since this becomes a folder name used on Phoenix.</p>
+                    </div>
+                  </li>
                   <li>Download the <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet:
                     <div class="step-download-row">
-                      <a class="demo-button" href="demo/template_project.zip" download>
+                      <a id="dlTemplate" class="demo-button" href="demo/template_project_v1.0.0.zip" download="template_project_v1.0.0.zip">
                         <span class="dl-title">Download Template v1.0.0</span>
                         <span class="dl-sub">Empty project for your own data</span>
                       </a>
@@ -111,8 +125,8 @@
                   </li>
                   <li>Or download the <strong>Demo Project ZIP</strong> to try the workflow on a small example:
                     <div class="step-download-row">
-                      <a class="demo-button" href="demo/demo_project.zip" download>
-                        <span class="dl-title">Demo Project ZIP</span>
+                      <a id="dlDemo" class="demo-button" href="demo/demo_project_v1.0.0.zip" download="demo_project_v1.0.0.zip">
+                        <span class="dl-title">Download Demo Project v1.0.0</span>
                         <span class="dl-sub">Small example to try the workflow</span>
                       </a>
                     </div>
@@ -122,16 +136,6 @@
                       <label for="localPath"><strong>Local working folder</strong></label>
                       <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
                       <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
-                    </div>
-                  </li>
-                  <li>Optionally record project details for identification. These are written to <code>configure.yaml</code> and <code>PROJECT_INFO.md</code> only &mdash; they do <strong>not</strong> affect nf-core/rnaseq execution.
-                    <div class="simple-path-box">
-                      <label for="projectName"><strong>Project name</strong></label>
-                      <input id="projectName" type="text" autocomplete="off" placeholder="MY_RNASEQ_PROJECT_202601">
-                      <label for="projectDescription"><strong>Project description</strong></label>
-                      <input id="projectDescription" type="text" autocomplete="off" placeholder="Short one-line description of this RNA-seq study">
-                      <label for="projectOwner"><strong>Project owner</strong></label>
-                      <input id="projectOwner" type="text" autocomplete="off" placeholder="Your name">
                     </div>
                   </li>
                 </ol>
@@ -149,6 +153,7 @@
               </details>
             </div>
           </div>
+          <p class="step-tip"><strong>Tip:</strong> this project runs in two places &mdash; on your local computer and on Phoenix (the HPC). The colour of each command box tells you where to run it: <span class="tip-local">green</span> means run it locally, and <span class="tip-hpc">purple</span> means run it on Phoenix.</p>
         </article>
 
         <article class="step-detail" data-step-panel="2">
@@ -170,6 +175,7 @@
             <li>Generate <code>input/samplesheet.csv</code>:
               <pre data-command="step2-make"></pre>
             </li>
+            <li>Open <code>input/samplesheet.csv</code> and manually check it matches the nf-core/rnaseq format (<a href="documents.html#samplesheet-format">samplesheet spec</a>): the exact header, unique and valid sample names, correctly paired gzipped R1/R2 paths, and a valid strandedness value.</li>
             <li>Validate files, pairs, sample names, references, annotation, scripts, and upload size:
               <pre data-command="step2-validate"></pre>
             </li>
@@ -454,7 +460,7 @@ fi
               <ul>
                 <li>Create <code>configs/configure.yaml</code> from the selected mode</li>
                 <li>Use <code>--aligner star_salmon</code> for STAR + Salmon, or <code>--pseudo_aligner salmon</code> with <code>--skip_alignment</code> for Salmon-only mode</li>
-                <li>Record local paths, HPC destination, output directory, work directory, and cache path</li>
+                <li>Record local paths, Phoenix destination, output directory, work directory, and cache path</li>
                 <li>Scan project metadata, reference files, and samplesheet information</li>
                 <li>Estimate memory, CPU, and walltime from project metadata where possible</li>
                 <li>Keep biological choices explicit so they can be reviewed before upload</li>
@@ -500,7 +506,7 @@ walltime: 24.h</pre>
               <li><code>run_mode</code>, <code>aligner</code>, <code>pseudo_aligner</code>, and <code>skip_alignment</code> record the selected aligner mode.</li>
               <li><code>gc_bias</code> enables Salmon GC bias correction (<code>--extra_salmon_quant_args=--gcBias</code>), recommended by the DESeq2 authors; set to <code>false</code> to disable.</li>
               <li><code>fastq_dir</code>, <code>samplesheet</code>, <code>reference</code>, and <code>annotation</code> point to the local project inputs prepared in Step 2.</li>
-              <li><code>hpc_user</code>, <code>hpc_host</code>, and <code>hpc_project_dir</code> define where the project will be uploaded and run on HPC.</li>
+              <li><code>hpc_user</code>, <code>hpc_host</code>, and <code>hpc_project_dir</code> define where the project will be uploaded and run on Phoenix.</li>
               <li><code>outdir</code>, <code>workdir</code>, and <code>cache_dir</code> separate final results, Nextflow work files, and container/cache files.</li>
               <li><code>memory</code>, <code>cpu</code>, and <code>walltime</code> are written into a Nextflow <code>process.resourceLimits</code> config (the old <code>--max_*</code> flags were removed in recent nf-core/rnaseq); adjust if validation reports a resource problem.</li>
             </ul>
@@ -512,7 +518,7 @@ walltime: 24.h</pre>
             <li><code>configure.sh</code> scans project files to infer species, genome size, and sample count, then estimates memory, CPU, and walltime.</li>
             <li>Review <code>configs/configure.yaml</code> and quickly check the paths before opening it for editing.</li>
             <li>Salmon GC bias correction is enabled by default (<a href="documents.html#gc-bias">why</a>); set <code>gc_bias: false</code> to disable.</li>
-            <li>Only override memory, CPU, walltime, scratch, and profile values if your HPC needs different settings.</li>
+            <li>Only override memory, CPU, walltime, scratch, and profile values if Phoenix needs different settings.</li>
               </ul>
             </details>
           <div class="script-source">
@@ -853,24 +859,19 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
 
         <article class="step-detail" data-step-panel="4">
           <div class="step-title-row">
-            <h2>Step 4 — Upload to HPC</h2>
+            <h2>Step 4 — Upload to Phoenix</h2>
             <span class="context-pill local-pill">Local</span>
-            <span class="context-pill hpc-pill">HPC</span>
+            <span class="context-pill hpc-pill">Phoenix</span>
           </div>
-          <p class="step-purpose">Transfer the prepared project to HPC.</p>
+          <p class="step-purpose">Transfer the prepared project to Phoenix.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal and log in to your HPC account:
+            <li>Open your local terminal and log in to your Phoenix account:
               <pre data-command="hpc-ssh"></pre>
             </li>
-            <li>Enter the HPC project folder path, then either locate an existing folder or create a new one:
-              <div class="simple-path-box">
-                <label for="hpcPath"><strong>HPC working folder</strong></label>
-                <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
-              </div>
-              <p>If the folder already exists, locate it:</p>
+            <li>Using the <strong>Phoenix working folder</strong> you set in Step 1, either locate the existing folder or create it. If it already exists, locate it:
               <pre data-command="hpc-folder-locate"></pre>
               <p>If it does not exist yet, create it:</p>
               <pre data-command="hpc-folder-check"></pre>
@@ -885,7 +886,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
               <summary>What Scripts Will Do</summary>
               <p><code>upload_to_hpc.sh</code></p>
               <ul>
-                <li>Read HPC destination from <code>configure.yaml</code></li>
+                <li>Read Phoenix destination from <code>configure.yaml</code></li>
                 <li>Upload the prepared project folder using resume-safe <code>rsync</code></li>
                 <li>Skip local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs</li>
                 <li>Write an upload log (<code>logs/upload_to_hpc.log</code>) to review the transfer</li>
@@ -937,14 +938,14 @@ echo "Upload log: $LOG"
           <div class="step-title-row">
             <h2>Step 5 — Preflight Validation</h2>
             <span class="context-pill local-pill">Local</span>
-            <span class="context-pill hpc-pill">HPC</span>
+            <span class="context-pill hpc-pill">Phoenix</span>
           </div>
-          <p class="step-purpose">Validate the HPC environment and the current project configuration before the full analysis.</p>
+          <p class="step-purpose">Validate the Phoenix environment and the current project configuration before the full analysis.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Log in to HPC and enter your project folder:
+            <li>Log in to Phoenix and enter your project folder:
               <pre data-command="hpc-connect"></pre>
             </li>
             <li>Run the Smoke Test (<a href="documents.html#smoke-test">optional</a>):
@@ -961,7 +962,7 @@ echo "Upload log: $LOG"
               <summary>What Scripts Will Do</summary>
               <p><code>smoke_run.sh</code></p>
               <ul>
-                <li>Run a tiny built-in nf-core test dataset to check the HPC environment</li>
+                <li>Run a tiny built-in nf-core test dataset to check the Phoenix environment</li>
                 <li>Check Nextflow, Apptainer/Singularity, container downloads, cache configuration, permissions, modules, work directory, and scratch directory</li>
                 <li>When automatic fixes are allowed, prepare cache and temporary directories, retry/resume after container image or cache problems, and report unresolved infrastructure issues</li>
                 <li>Write <code>reports/smoke_test_report.md</code></li>
@@ -1306,14 +1307,14 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"
           <div class="step-title-row">
             <h2>Step 6 — Run &amp; Monitor</h2>
             <span class="context-pill local-pill">Local</span>
-            <span class="context-pill hpc-pill">HPC</span>
+            <span class="context-pill hpc-pill">Phoenix</span>
           </div>
           <p class="step-purpose">Launch the full <code>nf-core/rnaseq</code> workflow after validation passes and keep the run understandable while it is executing.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Log in to HPC and enter your project folder:
+            <li>Log in to Phoenix and enter your project folder:
               <pre data-command="hpc-connect"></pre>
             </li>
             <li>Launch the full run:
@@ -1512,12 +1513,12 @@ echo "- After a safe fix, resume with: bash scripts/run.sh -resume"
             <h2>Step 7 — Download Results</h2>
             <span class="context-pill local-pill">Local</span>
           </div>
-          <p class="step-purpose">Transfer final results from HPC back to local storage using rsync.</p>
+          <p class="step-purpose">Transfer final results from Phoenix back to local storage using rsync.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Open your local terminal, move into your local project folder, and download results from HPC:
+            <li>Open your local terminal, move into your local project folder, and download results from Phoenix:
               <pre data-command="download-rsync"></pre>
             </li>
             <li>Optionally build a combined project report (project info + MultiQC summary):
@@ -1533,6 +1534,12 @@ echo "- After a safe fix, resume with: bash scripts/run.sh -resume"
                 <li>Download <code>results/</code>, <code>reports/</code>, and <code>logs/</code> with resume-safe <code>rsync</code></li>
                 <li>Also bring back the reproducibility files: <code>configs/</code>, <code>scripts/</code>, <code>README.md</code>, reference metadata, and the samplesheet</li>
                 <li>Write a download log and report how many files were received</li>
+              </ul>
+              <p><code>make_report.R</code> (optional)</p>
+              <ul>
+                <li>Read project info from <code>configs/configure.yaml</code> and the MultiQC general statistics</li>
+                <li>Write <code>reports/project_report.md</code> combining project metadata, versions, run settings, and a per-sample QC summary table</li>
+                <li>Uses base R only (no extra packages); skips gracefully if MultiQC output is not present yet</li>
               </ul>
             </details>
             </div>
@@ -1628,7 +1635,7 @@ if [[ "$INCLUDE_BAM" != "true" ]]; then
 fi
 
 # Bring back analysis outputs plus the reproducibility files shown on the page.
-# --ignore-missing-args skips any source that does not exist on HPC.
+# --ignore-missing-args skips any source that does not exist on Phoenix.
 rsync -avh --partial --progress --ignore-missing-args \
   "${EXCLUDES[@]}" \
   "${HPC_SOURCE%/}/results" \
@@ -1780,7 +1787,7 @@ cat("Wrote", out_file, "\n")
     </section>
   </main>
 
-  <p class="scope-note">This guide targets <strong>nf-core/rnaseq v3.26.0</strong> (pinned with <code>-r 3.26.0</code>). It focuses on running the pipeline on HPC, not downstream DESeq2/WGCNA interpretation.</p>
+  <p class="scope-note">This guide targets <strong>nf-core/rnaseq v3.26.0</strong> (pinned with <code>-r 3.26.0</code>). It focuses on running the pipeline on Phoenix, not downstream DESeq2/WGCNA interpretation.</p>
   <footer>Reproducible · Secure · Resumable · Shareable</footer>
   <script>
     const tabs = document.querySelectorAll('.step-tab');
@@ -1790,7 +1797,7 @@ cat("Wrote", out_file, "\n")
       localPath: '/Users/yourname/rnaseq_projects/my_project',
       hpcPath: '/scratchdata1/your_project/rnaseq_projects/my_project',
       hpcUser: 'a1234567',
-      hpcHost: 'p2-log-1.hpc.adelaide.edu.au',
+      hpcHost: 'p2-log-2.hpc.adelaide.edu.au',
       projectName: '',
       projectDescription: '',
       projectOwner: ''
@@ -1882,12 +1889,15 @@ cat("Wrote", out_file, "\n")
       const qHpc = shellQuote(hpc);
       // Optional project metadata is passed to configure.sh as env vars
       // (identification only; does not affect the pipeline run).
-      const projectEnv = ['projectName', 'projectDescription', 'projectOwner']
+      const envMap = {
+        projectName: 'PROJECT_NAME', projectDescription: 'PROJECT_DESCRIPTION', projectOwner: 'PROJECT_OWNER',
+        hpcUser: 'HPC_USER', hpcHost: 'HPC_HOST', hpcPath: 'HPC_PROJECT_DIR', localPath: 'LOCAL_PROJECT_DIR'
+      };
+      const projectEnv = Object.keys(envMap)
         .map((key) => {
           const value = pathInputs[key] ? pathInputs[key].value.trim() : '';
           if (!value) return '';
-          const envName = { projectName: 'PROJECT_NAME', projectDescription: 'PROJECT_DESCRIPTION', projectOwner: 'PROJECT_OWNER' }[key];
-          return `${envName}=${shellQuote(value)}`;
+          return `${envMap[key]}=${shellQuote(value)}`;
         })
         .filter(Boolean)
         .join(' ');
@@ -1914,7 +1924,7 @@ cat("Wrote", out_file, "\n")
         'download-rsync': `cd ${qLocal}\nscripts/download_results.sh`,
         'step2-make': `scripts/make_samplesheet.sh`,
         'step2-validate': `scripts/input_validate.sh`,
-        'step7-report': `Rscript scripts/make_report.R`,
+        'step7-report': `Rscript scripts/make_report.R downloaded_results`,
         'step3-configure': alignerMode?.value === 'salmon' ? salmon : star,
         'step3-star': star,
         'step3-salmon': salmon,
@@ -1972,6 +1982,93 @@ cat("Wrote", out_file, "\n")
           delete pre.dataset.shell;
         }
       });
+      updateDownloadNames();
+    }
+
+    // Name the downloaded ZIP after the project (if entered); otherwise keep
+    // a versioned default. The folder inside the ZIP is set later from
+    // project_name in configure.yaml.
+    function updateDownloadNames() {
+      const tmpl = document.getElementById('dlTemplate');
+      const demo = document.getElementById('dlDemo');
+      if (tmpl) tmpl.setAttribute('download', downloadNameFor('template'));
+      if (demo) demo.setAttribute('download', downloadNameFor('demo'));
+    }
+
+    function safeProjectName() {
+      const raw = pathInputs.projectName ? pathInputs.projectName.value.trim() : '';
+      // Keep Unicode (e.g. Chinese) letters/numbers; only replace characters
+      // that are unsafe in a filename, and collapse whitespace to underscores.
+      return raw
+        .replace(/[\/\\:*?"<>|\x00-\x1f]+/g, '_')
+        .replace(/\s+/g, '_')
+        .replace(/^[._]+|[._]+$/g, '')
+        .slice(0, 150);
+    }
+
+    // Base top-level folder inside each shipped ZIP.
+    const baseFolderFor = { template: 'template_project', demo: 'demo_project' };
+
+    // The folder the user gets after unzipping (and the .zip filename stem).
+    // Template uses the entered project name; the demo always keeps its name.
+    function folderNameFor(kind) {
+      if (kind === 'demo') return 'demo_project_v1.0.0';
+      const safe = safeProjectName();
+      return safe || 'template_project_v1.0.0';
+    }
+
+    function downloadNameFor(kind) {
+      return `${folderNameFor(kind)}.zip`;
+    }
+
+    function triggerBlobDownload(blob, filename) {
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 1500);
+    }
+
+    // Rewrite the ZIP's top-level folder to the target name so the extracted
+    // folder matches the .zip filename, then save it.
+    async function downloadRenamedZip(url, baseFolder, targetFolder) {
+      const buf = await (await fetch(url)).arrayBuffer();
+      const zip = await JSZip.loadAsync(buf);
+      const out = new JSZip();
+      const prefix = `${baseFolder}/`;
+      for (const path of Object.keys(zip.files)) {
+        const entry = zip.files[path];
+        let newPath = path;
+        if (path === prefix) newPath = `${targetFolder}/`;
+        else if (path.startsWith(prefix)) newPath = `${targetFolder}/${path.slice(prefix.length)}`;
+        if (entry.dir) {
+          out.folder(newPath.replace(/\/$/, ''));
+        } else {
+          out.file(newPath, await entry.async('uint8array'), { date: entry.date });
+        }
+      }
+      const blob = await out.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+      triggerBlobDownload(blob, `${targetFolder}.zip`);
+    }
+
+    // The `download` attribute is ignored in some preview contexts, so we
+    // rebuild the ZIP client-side (renaming the inner folder) and save it.
+    // Falls back to a normal navigation if fetch/JSZip is unavailable.
+    function wireDownloads() {
+      [['dlTemplate', 'template'], ['dlDemo', 'demo']].forEach(([id, kind]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', (event) => {
+          const url = el.getAttribute('href');
+          if (!url || !window.fetch || !window.JSZip) return; // let the browser handle it
+          event.preventDefault();
+          downloadRenamedZip(url, baseFolderFor[kind], folderNameFor(kind))
+            .catch(() => { window.location.href = url; });
+        });
+      });
     }
 
     function updateAlignerHelp() {
@@ -1984,7 +2081,12 @@ cat("Wrote", out_file, "\n")
     function hydratePathInputs() {
       Object.entries(pathInputs).forEach(([key, input]) => {
         if (!input) return;
-        input.value = localStorage.getItem(`${storagePrefix}${key}`) || '';
+        const stored = localStorage.getItem(`${storagePrefix}${key}`);
+        if (input.tagName === 'SELECT') {
+          if (stored) input.value = stored;            // else keep the HTML default (p2-log-2)
+        } else {
+          input.value = stored || '';                  // text inputs show their placeholder
+        }
         input.addEventListener('input', () => {
           localStorage.setItem(`${storagePrefix}${key}`, input.value);
           updateCommands();
@@ -2073,6 +2175,7 @@ cat("Wrote", out_file, "\n")
     installCommandCopyButtons();
     runIntro();
     attachCopyButtons();
+    wireDownloads();
   </script>
 </body>
 </html>

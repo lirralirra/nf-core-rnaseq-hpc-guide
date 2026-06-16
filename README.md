@@ -10,8 +10,8 @@ Small static GitHub Pages workflow page for a template-based local-to-HPC `nf-co
 - `style.css` - page styling
 - `scripts/` - editable local and HPC runner script templates
 - `templates/` - reproducibility/config templates
-- `demo/template_project.zip` - empty reusable project template
-- `demo/demo_project.zip` - small demo project skeleton
+- `demo/template_project_v1.0.0.zip` - empty reusable project template
+- `demo/demo_project_v1.0.0.zip` - small demo project skeleton
 
 ## Visual Assets
 
