@@ -1,6 +1,6 @@
-# Happy RNA-seq
+# RNA-seq Made Easy
 
-Small static GitHub Pages workflow page for a template-based local-to-HPC `nf-core/rnaseq` runner.
+A beginner-friendly 7-step guide and project template for running `nf-core/rnaseq` on the University of Adelaide Phoenix HPC, from local input preparation to results download.
 
 ## Files
 

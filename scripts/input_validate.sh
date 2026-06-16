@@ -61,8 +61,8 @@ read_text() {
     fi
     duplicates="$(awk -F, 'NR>1 {print $1}' "$SAMPLESHEET" | tr -d '\r' | sort | uniq -d || true)"
     if [[ -n "$duplicates" ]]; then
-      printf '%s\n' "$duplicates" | sed 's/^/- DUPLICATE SAMPLE: /'
-      errors=$((errors + 1))
+      printf '%s\n' "$duplicates" | sed 's/^/- DUPLICATE SAMPLE ID: /'
+      echo "- WARNING: Duplicate sample IDs detected. This is OK for multiple lanes of the same sample, but check carefully."
     fi
 
     # Per-row checks: sample-name charset, strandedness whitelist, FASTQ existence.
