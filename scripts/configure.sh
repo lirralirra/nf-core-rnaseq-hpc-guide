@@ -2,6 +2,14 @@
 set -euo pipefail
 
 CONFIG="${CONFIG:-configs/configure.yaml}"
+
+# Read a value from an existing configure.yaml (used as a fallback so details
+# entered once are remembered without re-typing them on the command line).
+get_config() {
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
+}
+
 RUN_MODE="${RUN_MODE:-star_salmon}"
 ALIGNER="${ALIGNER:-star_salmon}"
 PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
@@ -15,9 +23,10 @@ TEMPLATE_VERSION="${TEMPLATE_VERSION:-v1.0.0}"
 CREATED_DATE="${CREATED_DATE:-$(date +%Y-%m-%d)}"
 
 # Project metadata (identification only; does not affect nf-core/rnaseq execution).
-PROJECT_NAME="${PROJECT_NAME:-}"
-PROJECT_DESCRIPTION="${PROJECT_DESCRIPTION:-}"
-PROJECT_OWNER="${PROJECT_OWNER:-}"
+# Precedence: environment variable > value saved in configure.yaml > empty.
+PROJECT_NAME="${PROJECT_NAME:-$(get_config project_name)}"
+PROJECT_DESCRIPTION="${PROJECT_DESCRIPTION:-$(get_config project_description)}"
+PROJECT_OWNER="${PROJECT_OWNER:-$(get_config project_owner)}"
 
 SPECIES="${SPECIES:-unknown}"
 GENOME_SIZE_GB="${GENOME_SIZE_GB:-}"
@@ -47,9 +56,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 LOCAL_PROJECT_DIR="${LOCAL_PROJECT_DIR:-$(pwd)}"
-HPC_USER="${HPC_USER:-your_username}"
-HPC_HOST="${HPC_HOST:-your.cluster.edu}"
-HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
+# Precedence: environment variable > value saved in configure.yaml > placeholder.
+HPC_USER="${HPC_USER:-$(get_config hpc_user)}"; HPC_USER="${HPC_USER:-your_username}"
+HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"; HPC_HOST="${HPC_HOST:-your.cluster.edu}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"; HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
 FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
 SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="${REFERENCE:-input/reference/genome.fa}"

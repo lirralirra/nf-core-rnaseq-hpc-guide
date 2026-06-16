@@ -12,9 +12,9 @@ get_config() {
   awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
-HPC_USER="$(get_config hpc_user)"
-HPC_HOST="$(get_config hpc_host)"
-HPC_PROJECT_DIR="$(get_config hpc_project_dir)"
+HPC_USER="${HPC_USER:-$(get_config hpc_user)}"
+HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
 HPC_SOURCE="${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR%/}"
 
 EXCLUDES=(--exclude 'work/' --exclude '.nextflow*')

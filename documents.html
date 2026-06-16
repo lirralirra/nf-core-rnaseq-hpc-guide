@@ -34,12 +34,12 @@
         <li><strong>Salmon GC Bias Correction:</strong> why this guide enables Salmon <code>--gcBias</code> by default, following the DESeq2 recommendation.</li>
         <li><strong>Samplesheet Format:</strong> the exact nf-core/rnaseq CSV format, columns, and an example.</li>
         <li><strong>Validation and recovery:</strong> what Smoke Test, One Sample Run, auto-fix, logs, and resume are meant to protect.</li>
-        <li><strong>Troubleshooting and next steps:</strong> common Phoenix issues, which output files to open first, and where downstream analysis begins.</li>
+        <li><strong>Next steps:</strong> which output files to open first, and where downstream analysis begins.</li>
         <li><strong>FAQ:</strong> short answers to beginner questions, collected at the end of this page.</li>
       </ul>
     </section>
 
-    <section class="content-card pipeline-reference-card">
+    <section class="content-card pipeline-reference-card" id="nf-core-pipeline">
       <h2>nf-core/rnaseq Pipeline</h2>
       <p><strong>This guide targets nf-core/rnaseq v3.26.0.</strong> Every run is pinned to this version with <code>nextflow run nf-core/rnaseq -r 3.26.0</code> (set via <code>pipeline_version</code> in <code>configs/configure.yaml</code>), so the commands, parameters, and outputs described here match the official 3.26.0 documentation.</p>
       <p>nf-core/rnaseq is the official nf-core RNA-seq analysis pipeline. It is built with Nextflow and is designed for RNA-seq data from organisms with a reference genome and annotation. It can start from FASTQ files or compatible BAM inputs, then run quality control, trimming, alignment or pseudo-alignment, quantification, MultiQC reporting, and pipeline metadata capture.</p>
@@ -165,18 +165,7 @@ TREATMENT_REP1,input/fastq/AEG588A4_S4_L003_R1_001.fastq.gz,,auto</pre>
     </section>
 
     <section class="content-card">
-      <h2>Troubleshooting Notes</h2>
-      <ul>
-        <li><strong>STAR killed:</strong> check memory and walltime; use One Sample Run to estimate resources.</li>
-        <li><strong>Container download failure:</strong> check Apptainer/Singularity cache path and permissions.</li>
-        <li><strong>Disk quota issue:</strong> move workdir to scratch or clean old work/results folders.</li>
-        <li><strong>Samplesheet error:</strong> rerun make_samplesheet and input validation.</li>
-        <li><strong>Pipeline stuck:</strong> run monitor_run.sh and inspect recent Nextflow logs.</li>
-      </ul>
-    </section>
-
-    <section class="content-card">
-      <h2>After Downloading Results</h2>
+      <h2 id="after-results">After Downloading Results</h2>
       <p>Downloading results finishes the nf-core/rnaseq run, but it is usually the start of biological analysis.</p>
       <p><strong>What next?</strong> Review QC first, then use the count or quantification outputs for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
       <ul>

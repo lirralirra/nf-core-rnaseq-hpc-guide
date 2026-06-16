@@ -8,7 +8,7 @@ A beginner-friendly 7-step guide and project template for running `nf-core/rnase
 - `hands-on.html` - redirect kept for older links
 - `documents.html` - detailed documentation, FAQ, and troubleshooting page
 - `style.css` - page styling
-- `scripts/` - editable local and HPC runner script templates
+- `scripts/` - editable local and Phoenix HPC step scripts
 - `templates/` - reproducibility/config templates
 - `demo/template_project_v1.0.0.zip` - empty reusable project template
 - `demo/demo_project_v1.0.0.zip` - small demo project skeleton
@@ -17,7 +17,7 @@ A beginner-friendly 7-step guide and project template for running `nf-core/rnase
 
 The opening illustration is an AI-generated project image made for this guide. It should stay generic: do not replace it with third-party characters, logos, or copyrighted artwork unless you have permission to use them.
 
-## Runner Principle
+## Workflow Principle
 
 Keep the user journey simple with seven steps:
 
