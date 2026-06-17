@@ -1,15 +1,35 @@
 #!/usr/bin/env bash
+#SBATCH --job-name=rnaseq_full
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1         # Nextflow driver only; pipeline steps run as their own SLURM jobs
+#SBATCH --mem=8GB                 # driver memory (per-step CPU/memory come from nextflow.config)
+#SBATCH --time=72:00:00           # driver must outlast the whole pipeline
+#SBATCH -p batch                  # default Phoenix partition for the driver job
+# #SBATCH --account=<account>          # uncomment/set if Phoenix requires an account
+# #SBATCH --mail-type=ALL
+# #SBATCH --mail-user=you@adelaide.edu.au
 set -euo pipefail
 
 CONFIG="${CONFIG:-configs/configure.yaml}"
 mkdir -p logs
+
+# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
+# Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
+#   nextflow pull nf-core/rnaseq -r <version>
+module purge 2>/dev/null || true
+module load Nextflow/25.10.2 2>/dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2>/dev/null || true
+export NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_OFFLINE='true'
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR"
 
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
   awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
-PROFILE="$(get_config profile)"
+PROFILE="$(get_config profile)"; PROFILE="${PROFILE:-apptainer}"
 PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 SAMPLESHEET="$(get_config samplesheet)"
 OUTDIR="$(get_config outdir)"
@@ -58,6 +78,9 @@ echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
 
 cmd=(nextflow run nf-core/rnaseq
   -r "$PIPELINE_VERSION"
+  -offline
+  --igenomes_ignore
+  --bam_csi_index
   -profile "$PROFILE"
   --input "$SAMPLESHEET"
   --outdir "$OUTDIR"

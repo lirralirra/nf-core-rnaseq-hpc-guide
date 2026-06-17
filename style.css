@@ -4300,6 +4300,48 @@ body {
   background: #fffdf6 !important;
 }
 
+/* Save buttons under input groups */
+.save-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.save-inputs-btn {
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f6d3a;
+  background: #eef6ea;
+  border: 1px solid #c7ddc4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.save-inputs-btn:hover {
+  background: #e2efdd;
+  border-color: #a9cda4;
+}
+.save-inputs-btn.saved {
+  color: #fff;
+  background: #4f9a57;
+  border-color: #4f9a57;
+}
+.save-inputs-note {
+  font-size: 12.5px;
+  color: #6b7a66;
+}
+
+/* SLURM bash/sbatch tip callout */
+.slurm-tip {
+  background: #fbf3e0;
+  border: 1px solid #e6d4a6;
+  border-left: 4px solid #d8b45d;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
 /* Inline command chips in the Prerequisites list — boxed and tinted
    so they read like the command boxes used in the steps. */
 .prereq-list code {

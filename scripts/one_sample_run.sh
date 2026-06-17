@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#SBATCH --job-name=rnaseq_one_sample
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1         # Nextflow driver only; pipeline steps run as their own SLURM jobs
+#SBATCH --mem=8GB                 # driver memory
+#SBATCH --time=24:00:00           # driver must outlast the one-sample run
+#SBATCH -p batch                  # default Phoenix partition for the driver job
+# #SBATCH --account=<account>          # uncomment/set if Phoenix requires an account
 set -euo pipefail
 
 ALLOW_FIXES="${ALLOW_FIXES:-false}"
@@ -6,6 +13,17 @@ SAMPLE_MODE="${SAMPLE_MODE:-largest}"
 SAMPLE_ID="${SAMPLE_ID:-}"
 REPORT="reports/one_sample_validation_report.md"
 mkdir -p reports logs work
+
+# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
+# Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
+#   nextflow pull nf-core/rnaseq -r <version>
+module purge 2>/dev/null || true
+module load Nextflow/25.10.2 2>/dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2>/dev/null || true
+export NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_OFFLINE='true'
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR"
 
 {
   echo "# One Sample Validation Report"
@@ -30,7 +48,7 @@ PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
 GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
 PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
-PROFILE="$(get_config profile)"
+PROFILE="$(get_config profile)"; PROFILE="${PROFILE:-apptainer}"
 OUTDIR="$(get_config outdir)"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
@@ -160,6 +178,9 @@ run_one_sample() {
   local run_workdir="${WORKDIR%/}/one_sample_validation"
   cmd=(nextflow run nf-core/rnaseq
     -r "$PIPELINE_VERSION"
+    -offline
+    --igenomes_ignore
+    --bam_csi_index
     -profile "$PROFILE"
     --input "$ONE_SAMPLE_SHEET"
     --outdir "${OUTDIR%/}/one_sample_validation"

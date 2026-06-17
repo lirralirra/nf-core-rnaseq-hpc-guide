@@ -9,6 +9,7 @@ A beginner-friendly 7-step guide and project template for running `nf-core/rnase
 - `documents.html` - detailed documentation, FAQ, and troubleshooting page
 - `style.css` - page styling
 - `scripts/` - editable local and Phoenix HPC step scripts
+- `nextflow.config` - SLURM executor settings and job limits used on Phoenix (shipped inside the project template)
 - `templates/` - reproducibility/config templates
 - `demo/template_project_v1.0.0.zip` - empty reusable project template
 - `demo/demo_project_v1.0.0.zip` - small demo project skeleton

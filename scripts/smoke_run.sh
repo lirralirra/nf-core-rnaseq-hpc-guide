@@ -1,10 +1,26 @@
 #!/usr/bin/env bash
+#SBATCH --job-name=rnaseq_smoke
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1         # Nextflow driver only; pipeline steps run as their own SLURM jobs
+#SBATCH --mem=8GB                 # driver memory
+#SBATCH --time=08:00:00           # driver must outlast the smoke test
+#SBATCH -p batch                  # default Phoenix partition for the driver job
+# #SBATCH --account=<account>          # uncomment/set if Phoenix requires an account
 set -euo pipefail
 
 ALLOW_FIXES="${ALLOW_FIXES:-false}"
 CONFIG="${CONFIG:-configs/configure.yaml}"
 REPORT="reports/smoke_test_report.md"
 mkdir -p reports logs work
+
+# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
+# The smoke test downloads tiny test data, so it needs internet access.
+module purge 2>/dev/null || true
+module load Nextflow/25.10.2 2>/dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2>/dev/null || true
+export NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR"
 
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
@@ -13,7 +29,7 @@ get_config() {
 
 # Use the configured profile (e.g. singularity, docker) with the built-in test data.
 PROFILE="${PROFILE:-$(get_config profile)}"
-PROFILE="${PROFILE:-singularity}"
+PROFILE="${PROFILE:-apptainer}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 

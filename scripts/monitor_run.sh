@@ -38,4 +38,4 @@ echo
 echo "Tips:"
 echo "- 'nextflow log <run_name>' lists each task's work directory."
 echo "- In a task work dir, inspect .command.err, .command.log and .command.out."
-echo "- After a safe fix, resume with: bash scripts/run.sh -resume"
+echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"
