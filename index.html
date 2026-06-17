@@ -1536,7 +1536,7 @@ apptainer {
 }</pre>
               <p>Nextflow loads <code>nextflow.config</code> automatically from the project folder, so all run scripts pick it up. If Phoenix requires a partition or account, uncomment and set <code>queue</code> / <code>clusterOptions</code> here.</p>
           </details>
-          <p class="step-tip slurm-tip"><strong>Submit with sbatch:</strong> the full run is started with <code>sbatch scripts/run.sh</code>, which sends it to SLURM as a compute-node job. Do not run <code>bash scripts/run.sh</code> on the login node. <code>monitor_run.sh</code> stays a lightweight helper you run with <code>bash</code> to check <code>squeue</code> and the logs.</p>
+          <p class="step-tip slurm-tip"><strong>Submit with sbatch:</strong> the full run is started with <code>sbatch scripts/run.sh</code>, which sends it to SLURM as a compute-node job. Do not run <code>bash scripts/run.sh</code> on the login node. <code>monitor_run.sh</code> stays a lightweight helper you run directly on the login node (not via <code>sbatch</code>) to check <code>squeue</code> and the logs.</p>
           <div class="script-source">
             <details>
               <summary>View <code>scripts/run.sh</code> source</summary>
@@ -2154,7 +2154,7 @@ cat("Wrote", out_file, "\n")
         'step5-smoke': `sbatch scripts/smoke_run.sh`,
         'step5-one-sample': `sbatch scripts/one_sample_run.sh`,
         'step6-run': `sbatch scripts/run.sh`,
-        'step6-monitor': `bash scripts/monitor_run.sh`,
+        'step6-monitor': `scripts/monitor_run.sh`,
         'step6-resume': `sbatch scripts/run.sh`
       };
 

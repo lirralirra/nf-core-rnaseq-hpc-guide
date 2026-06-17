@@ -24,13 +24,13 @@ HPC system: `<cluster_name>`
 ## Main Command
 
 ```bash
-bash scripts/run.sh
+sbatch scripts/run.sh
 ```
 
 ## Resume Command
 
 ```bash
-bash scripts/run.sh
+sbatch scripts/run.sh -resume
 ```
 
 ## Outputs To Archive
