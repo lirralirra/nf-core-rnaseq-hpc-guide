@@ -175,6 +175,60 @@ TREATMENT_REP1,input/fastq/AEG588A4_S4_L003_R1_001.fastq.gz,,auto</pre>
         <li>Move into enrichment, co-expression, visualisation, Shiny, or reporting only after QC looks reasonable.</li>
       </ul>
     </section>
+
+    <section class="content-card" id="hpc-preflight">
+      <h2>Preflight: dry run and sign-off checklist</h2>
+      <p><code>scripts/smoke_run.sh</code> already runs these preflight checks and the <code>-preview</code> dry run automatically at its start (before the tiny test run), so you normally do not run them by hand. This section documents what it checks, and the manual commands if you want to verify anything yourself.</p>
+      <p>Before committing a long, expensive run (the oat run was ~12&nbsp;h and ~530 CPU-hours), do a cheap dry run and a quick sign-off. The simplest manual dry run is Nextflow's <code>-preview</code>, which builds the workflow and validates inputs without submitting any heavy jobs:</p>
+      <pre># quick check on a login node — no heavy jobs submitted
+nextflow run nf-core/rnaseq -r 3.26.0 -profile apptainer -preview \
+  -c nextflow.config \
+  --input samplesheets/samplesheet.csv --outdir results/preview_test \
+  --fasta genome.fasta.gz --gff genes.gff3.gz --aligner star_salmon --igenomes_ignore</pre>
+      <p>Then run these on the HPC before launching or resuming, and confirm each item:</p>
+      <pre>module list
+echo $NXF_APPTAINER_CACHEDIR &amp;&amp; du -sh $NXF_APPTAINER_CACHEDIR 2>/dev/null
+du -sh work results references fastq 2>/dev/null
+df -h .
+squeue -u $USER
+du -sh references/prebuilt_indexes/* 2>/dev/null</pre>
+      <ul>
+        <li>STAR index plan is clear &mdash; reuse the existing index, or rebuild intentionally with <code>--save_reference</code>.</li>
+        <li>Apptainer cache variable is set and populated.</li>
+        <li>Storage has enough free space (keep <code>work/</code> on <code>/scratchdata1</code>).</li>
+        <li>STAR memory is high enough (&ge;130&nbsp;GB for a large genome).</li>
+        <li>A <code>BEDTOOLS_GENOMECOV_COMBINED</code> memory override is present.</li>
+        <li>Library type (strandedness) is correct &mdash; keep it stable between runs.</li>
+        <li><code>work/</code> is kept if you intend to <code>-resume</code>.</li>
+        <li>Logs are saved before any major change.</li>
+        <li>Final outputs will be checked before any cleanup (see Troubleshooting #8).</li>
+      </ul>
+    </section>
+
+    <section class="content-card" id="reference-indexes">
+      <h2>Reusing reference indexes (large genomes)</h2>
+      <p>For a large genome (e.g. hexaploid oat), building the STAR and Salmon indexes is the most expensive part of the run &mdash; STAR's index can be ~100&nbsp;GB and needs the high-memory queue (~300&nbsp;GB RAM). You do not need to rebuild it every run. If you already have prebuilt indexes, point the pipeline at them so they are reused instead of regenerated:</p>
+      <pre>--star_index   /path/to/references/prebuilt_indexes/star \
+--salmon_index /path/to/references/prebuilt_indexes/salmon</pre>
+      <p>Rebuild only when the FASTA or annotation changed, the index is missing or possibly corrupted, or you want a fully clean run. When you do rebuild, pass <code>--save_reference</code> so the new index is written into the results and can be reused next time, and record which FASTA and GFF3/GTF were used. Indexes are large and easy to leave behind in a random work folder, so decide reuse-vs-rebuild deliberately and check <code>du -sh references/prebuilt_indexes/*</code> first.</p>
+    </section>
+
+    <section class="content-card" id="troubleshooting">
+      <h2>Troubleshooting: known issues on large-genome HPC runs</h2>
+      <p>These are real failures hit on a large-genome (oat) nf-core/rnaseq run on Phoenix, with the fix for each. They are the most likely things to go wrong on a similar run.</p>
+      <ol>
+        <li><strong>STAR index rebuilt by accident.</strong> Huge and slow. Reuse via <code>--star_index</code>/<code>--salmon_index</code>, or rebuild on purpose with <code>--save_reference</code>; check <code>du -sh references/*</code> first.</li>
+        <li><strong>Container download timed out</strong> (often the Salmon image). Check the cache before running (<code>echo $NXF_APPTAINER_CACHEDIR</code>, <code>du -sh</code> it); if a run fails while pulling, fix the cache &mdash; don't start editing the pipeline command.</li>
+        <li><strong>Storage / quota filled mid-run.</strong> Big consumers are <code>work/</code>, the STAR index, BAMs. Check <code>df -h .</code> and <code>du -sh work results references</code> before starting/resuming; keep <code>work/</code> on <code>/scratchdata1</code>.</li>
+        <li><strong>STAR ran out of memory.</strong> Observed ~112&ndash;114&nbsp;GB MaxRSS; request ~130&ndash;200&nbsp;GB. Confirm a kill with <code>sstat -j JOBID.batch --format=JobID,MaxRSS,MaxVMSize</code> before rerunning everything.</li>
+        <li><strong>BEDTOOLS_GENOMECOV_COMBINED out of memory.</strong> Needs a process-specific memory override (well above default). Confirm the override is in your config; if it fails again it is almost certainly the same issue.</li>
+        <li><strong>Strandedness.</strong> The oat run was unstranded (with Salmon/RSeQC evidence). Don't switch to forward/reverse without new evidence &mdash; it changes the counts and the DESeq2 results.</li>
+        <li><strong><code>work/</code> and <code>-resume</code>.</strong> Keep <code>work/</code> to resume; add <code>-resume</code> only when inputs are unchanged (same samplesheet, FASTA, annotation, config logic, work dir). If anything changed, treat it as a new run.</li>
+        <li><strong>SLURM going quiet &ne; finished.</strong> An empty <code>squeue</code> does not mean all outputs are written. Verify the real outputs &mdash; e.g. <code>find results -name "quant.sf" | wc -l</code> (expect one per sample) &mdash; before deleting anything.</li>
+      </ol>
+      <p>Before editing configs, deleting files, or resuming, snapshot the state first: <code>cp .nextflow.log logs/nextflow_$(date +%Y%m%d_%H%M).log</code> and <code>squeue -u $USER &gt; logs/squeue_$(date +%Y%m%d_%H%M).txt</code>, then triage with <code>grep -i "error\|killed" .nextflow.log | tail</code>.</p>
+    </section>
+
     <section class="content-card">
       <h2>FAQ</h2>
       <h3>Why use <code>sbatch</code> instead of <code>bash</code>?</h3>

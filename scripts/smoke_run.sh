@@ -32,6 +32,13 @@ PROFILE="${PROFILE:-$(get_config profile)}"
 PROFILE="${PROFILE:-apptainer}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+SAMPLESHEET="$(get_config samplesheet)"; SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
+REFERENCE="$(get_config reference)"
+ANNOTATION="$(get_config annotation)"
+ANNOTATION_TYPE="$(get_config annotation_type)"
+ALIGNER="$(get_config aligner)"; ALIGNER="${ALIGNER:-star_salmon}"
+WORKDIR="$(get_config workdir)"; WORKDIR="${WORKDIR:-work}"
+OUTDIR="$(get_config outdir)"; OUTDIR="${OUTDIR:-results}"
 
 if ! command -v nextflow >/dev/null 2>&1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." >&2
@@ -45,7 +52,8 @@ echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
   echo "Generated: $(date)"
   echo
   echo "## Purpose"
-  echo "Validate nf-core / Nextflow / HPC environment using tiny built-in test data."
+  echo "Preflight checks + a tiny built-in test run that validates the nf-core / Nextflow / HPC"
+  echo "environment, warms the Apptainer container cache, and can auto-fix known issues."
   echo
   echo "## Profile"
   echo "test,${PROFILE}"
@@ -53,6 +61,43 @@ echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
   echo "## Automatic fixes allowed"
   echo "${ALLOW_FIXES}"
 } > "$REPORT"
+
+# ---------------------------------------------------------------------------
+# Preflight (runs first): environment, cache, disk, inputs, and a Nextflow
+# -preview dry run on YOUR real inputs. Quick, submits no heavy jobs, and
+# fails fast before the tiny test run below warms the container cache.
+# ---------------------------------------------------------------------------
+{
+  echo
+  echo "## Preflight"
+  echo '```'
+  echo "# modules"; module list 2>&1 || true
+  echo "NXF_APPTAINER_CACHEDIR=$NXF_APPTAINER_CACHEDIR"; du -sh "$NXF_APPTAINER_CACHEDIR" 2>/dev/null || true
+  echo "# disk"; df -h . 2>/dev/null || true
+  du -sh "$WORKDIR" "$OUTDIR" references fastq 2>/dev/null || true
+  du -sh references/prebuilt_indexes/* 2>/dev/null || true
+  echo '```'
+} >> "$REPORT"
+
+if [[ -f "$SAMPLESHEET" && -n "$REFERENCE" ]]; then
+  ann_flag="--gtf"
+  case "${ANNOTATION_TYPE:-}" in
+    gff*) ann_flag="--gff" ;;
+    *) [[ "$ANNOTATION" == *.gff || "$ANNOTATION" == *.gff3 || "$ANNOTATION" == *.gff.gz || "$ANNOTATION" == *.gff3.gz ]] && ann_flag="--gff" ;;
+  esac
+  echo "Preflight: running a Nextflow -preview dry run on your inputs..."
+  if nextflow run nf-core/rnaseq -r "$PIPELINE_VERSION" -profile "$PROFILE" -preview \
+       --input "$SAMPLESHEET" --outdir "${OUTDIR%/}/preview" \
+       --fasta "$REFERENCE" "$ann_flag" "$ANNOTATION" --aligner "$ALIGNER" --igenomes_ignore \
+       2>&1 | tee logs/preflight_preview.log; then
+    echo "Preflight -preview: OK (workflow builds, inputs validate)" >> "$REPORT"
+  else
+    echo "Preflight -preview: FAILED — review logs/preflight_preview.log" | tee -a "$REPORT"
+    exit 1
+  fi
+else
+  echo "Preflight -preview: skipped (samplesheet/reference not set in $CONFIG)" >> "$REPORT"
+fi
 
 if [[ "$ALLOW_FIXES" == "true" ]]; then
   export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"

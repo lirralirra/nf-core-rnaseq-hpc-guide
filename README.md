@@ -38,7 +38,7 @@ The initialized project folder is uploaded to HPC with all scripts included from
 - `input_validate.sh` - local
 - `configure.sh` - local
 - `upload_to_hpc.sh` - local
-- `smoke_run.sh` - HPC
+- `smoke_run.sh` - HPC (preflight checks + `-preview` dry run, then a tiny test run that warms the container cache and can auto-fix known issues)
 - `one_sample_run.sh` - HPC
 - `run.sh` - HPC
 - `monitor_run.sh` - HPC

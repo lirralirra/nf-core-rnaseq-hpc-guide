@@ -983,7 +983,6 @@ echo "Upload log: $LOG"
             <span class="context-pill hpc-pill">Phoenix</span>
           </div>
           <p class="step-purpose">Validate the Phoenix environment and the current project configuration before the full analysis.</p>
-          <p class="step-tip slurm-tip"><strong>bash vs sbatch:</strong> small checks and helpers run on the login node with <code>bash</code> (for example <code>bash scripts/input_validate.sh</code>). Anything that launches <code>nf-core/rnaseq</code> through Nextflow &mdash; <code>smoke_run.sh</code>, <code>one_sample_run.sh</code>, and <code>run.sh</code> &mdash; must be submitted to SLURM with <code>sbatch</code> so it runs on a compute node, never directly on the login node. Phoenix compute nodes have no internet, so pre-pull the pipeline once on a login node first: <code>nextflow pull nf-core/rnaseq -r 3.26.0</code>.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
@@ -994,8 +993,9 @@ echo "Upload log: $LOG"
             <li>Enter your project folder, run:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>Run the Smoke Test (<a href="documents.html#smoke-test">optional</a>), run:
+            <li>Run the smoke test &mdash; it first does preflight checks and a Nextflow <code>-preview</code> on your inputs, then a tiny built-in test run that warms the Apptainer container cache and can auto-fix known issues (writes <code>reports/smoke_test_report.md</code>), run:
               <pre data-command="step5-smoke"></pre>
+              See the <a href="documents.html#hpc-preflight">preflight checklist</a> and <a href="documents.html#troubleshooting">known issues</a>. Needs internet to download the tiny test data and pull containers.
             </li>
             <li>Run the One Sample Run, run:
               <pre data-command="step5-one-sample"></pre>
@@ -1008,7 +1008,8 @@ echo "Upload log: $LOG"
               <summary>What Scripts Will Do</summary>
               <p><code>smoke_run.sh</code></p>
               <ul>
-                <li>Run a tiny built-in nf-core test dataset to check the Phoenix environment</li>
+                <li>First run preflight checks (modules, Apptainer cache, disk space, prebuilt indexes) and a Nextflow <code>-preview</code> dry run on your real inputs &mdash; fails fast if something is wrong</li>
+                <li>Then run a tiny built-in nf-core test dataset to check the Phoenix environment and warm the container cache</li>
                 <li>Check Nextflow, Apptainer/Singularity, container downloads, cache configuration, permissions, modules, work directory, and scratch directory</li>
                 <li>When automatic fixes are allowed, prepare cache and temporary directories, retry/resume after container image or cache problems, and report unresolved infrastructure issues</li>
                 <li>Write <code>reports/smoke_test_report.md</code></li>
@@ -1026,6 +1027,7 @@ echo "Upload log: $LOG"
             <details class="notes-block notes-bottom">
               <summary>Notes</summary>
               <ul>
+            <li><strong>bash vs sbatch:</strong> small checks and helpers run on the login node with <code>bash</code> (for example <code>bash scripts/input_validate.sh</code>). Anything that launches <code>nf-core/rnaseq</code> through Nextflow &mdash; <code>smoke_run.sh</code>, <code>one_sample_run.sh</code>, and <code>run.sh</code> &mdash; must be submitted to SLURM with <code>sbatch</code> so it runs on a compute node, never directly on the login node. Phoenix compute nodes have no internet, so pre-pull the pipeline once on a login node first: <code>nextflow pull nf-core/rnaseq -r 3.26.0</code>.</li>
             <li><strong>☑ Allow limited safe fixes and resume during validation:</strong> The validation step can suggest or apply limited safe infrastructure/resource fixes — creating cache/temporary directories, adjusting the work directory, raising memory or walltime, and retrying with resume. It does not automatically fix storage quotas, container-registry access, or other cluster-level issues; those are reported for you to resolve. Biological settings are never changed automatically.</li>
             <li>Review <code>reports/smoke_test_report.md</code>.</li>
             <li>Use the largest sample by default when the goal is resource validation.</li>
@@ -1072,6 +1074,13 @@ PROFILE="${PROFILE:-$(get_config profile)}"
 PROFILE="${PROFILE:-apptainer}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+SAMPLESHEET="$(get_config samplesheet)"; SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
+REFERENCE="$(get_config reference)"
+ANNOTATION="$(get_config annotation)"
+ANNOTATION_TYPE="$(get_config annotation_type)"
+ALIGNER="$(get_config aligner)"; ALIGNER="${ALIGNER:-star_salmon}"
+WORKDIR="$(get_config workdir)"; WORKDIR="${WORKDIR:-work}"
+OUTDIR="$(get_config outdir)"; OUTDIR="${OUTDIR:-results}"
 
 if ! command -v nextflow &gt;/dev/null 2&gt;&amp;1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." &gt;&amp;2
@@ -1085,7 +1094,8 @@ echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
   echo "Generated: $(date)"
   echo
   echo "## Purpose"
-  echo "Validate nf-core / Nextflow / HPC environment using tiny built-in test data."
+  echo "Preflight checks + a tiny built-in test run that validates the nf-core / Nextflow / HPC"
+  echo "environment, warms the Apptainer container cache, and can auto-fix known issues."
   echo
   echo "## Profile"
   echo "test,${PROFILE}"
@@ -1093,6 +1103,43 @@ echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
   echo "## Automatic fixes allowed"
   echo "${ALLOW_FIXES}"
 } &gt; "$REPORT"
+
+# ---------------------------------------------------------------------------
+# Preflight (runs first): environment, cache, disk, inputs, and a Nextflow
+# -preview dry run on YOUR real inputs. Quick, submits no heavy jobs, and
+# fails fast before the tiny test run below warms the container cache.
+# ---------------------------------------------------------------------------
+{
+  echo
+  echo "## Preflight"
+  echo '```'
+  echo "# modules"; module list 2&gt;&amp;1 || true
+  echo "NXF_APPTAINER_CACHEDIR=$NXF_APPTAINER_CACHEDIR"; du -sh "$NXF_APPTAINER_CACHEDIR" 2&gt;/dev/null || true
+  echo "# disk"; df -h . 2&gt;/dev/null || true
+  du -sh "$WORKDIR" "$OUTDIR" references fastq 2&gt;/dev/null || true
+  du -sh references/prebuilt_indexes/* 2&gt;/dev/null || true
+  echo '```'
+} &gt;&gt; "$REPORT"
+
+if [[ -f "$SAMPLESHEET" &amp;&amp; -n "$REFERENCE" ]]; then
+  ann_flag="--gtf"
+  case "${ANNOTATION_TYPE:-}" in
+    gff*) ann_flag="--gff" ;;
+    *) [[ "$ANNOTATION" == *.gff || "$ANNOTATION" == *.gff3 || "$ANNOTATION" == *.gff.gz || "$ANNOTATION" == *.gff3.gz ]] &amp;&amp; ann_flag="--gff" ;;
+  esac
+  echo "Preflight: running a Nextflow -preview dry run on your inputs..."
+  if nextflow run nf-core/rnaseq -r "$PIPELINE_VERSION" -profile "$PROFILE" -preview \
+       --input "$SAMPLESHEET" --outdir "${OUTDIR%/}/preview" \
+       --fasta "$REFERENCE" "$ann_flag" "$ANNOTATION" --aligner "$ALIGNER" --igenomes_ignore \
+       2&gt;&amp;1 | tee logs/preflight_preview.log; then
+    echo "Preflight -preview: OK (workflow builds, inputs validate)" &gt;&gt; "$REPORT"
+  else
+    echo "Preflight -preview: FAILED — review logs/preflight_preview.log" | tee -a "$REPORT"
+    exit 1
+  fi
+else
+  echo "Preflight -preview: skipped (samplesheet/reference not set in $CONFIG)" &gt;&gt; "$REPORT"
+fi
 
 if [[ "$ALLOW_FIXES" == "true" ]]; then
   export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
@@ -1391,7 +1438,6 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"</code></pre>
             <span class="context-pill hpc-pill">Phoenix</span>
           </div>
           <p class="step-purpose">Launch the full <code>nf-core/rnaseq</code> workflow after validation passes and keep the run understandable while it is executing.</p>
-          <p class="step-tip slurm-tip"><strong>Submit with sbatch:</strong> the full run is started with <code>sbatch scripts/run.sh</code>, which sends it to SLURM as a compute-node job. Do not run <code>bash scripts/run.sh</code> on the login node. <code>monitor_run.sh</code> stays a lightweight helper you run with <code>bash</code> to check <code>squeue</code> and the logs.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
@@ -1431,7 +1477,9 @@ echo "One sample validation passed." &gt;&gt; "$REPORT"</code></pre>
                 <li>Provide suggested actions for known infrastructure or resource issues</li>
               </ul>
             </details>
-            <details class="notes-block">
+            </div>
+          </div>
+          <details class="notes-block slurm-config-block">
               <summary>SLURM job limits (<code>nextflow.config</code>)</summary>
               <p>Nextflow submits each pipeline step to SLURM as its own job. To avoid overloading the HPC scheduler, the project's <code>nextflow.config</code> sets conservative, beginner-friendly limits:</p>
               <ul>
@@ -1487,9 +1535,8 @@ apptainer {
     runOptions = '--bind /scratchdata1'   // so containers can see the scratch work dir
 }</pre>
               <p>Nextflow loads <code>nextflow.config</code> automatically from the project folder, so all run scripts pick it up. If Phoenix requires a partition or account, uncomment and set <code>queue</code> / <code>clusterOptions</code> here.</p>
-            </details>
-            </div>
-          </div>
+          </details>
+          <p class="step-tip slurm-tip"><strong>Submit with sbatch:</strong> the full run is started with <code>sbatch scripts/run.sh</code>, which sends it to SLURM as a compute-node job. Do not run <code>bash scripts/run.sh</code> on the login node. <code>monitor_run.sh</code> stays a lightweight helper you run with <code>bash</code> to check <code>squeue</code> and the logs.</p>
           <div class="script-source">
             <details>
               <summary>View <code>scripts/run.sh</code> source</summary>
