@@ -993,7 +993,7 @@ echo "Upload log: $LOG"
             <li>Enter your project folder, run:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>Run the smoke test &mdash; it first does preflight checks and a Nextflow <code>-preview</code> on your inputs, then a tiny built-in test run that warms the Apptainer container cache and can auto-fix known issues (writes <code>reports/smoke_test_report.md</code>), run:
+            <li>Run the smoke test (see <strong>What Scripts Will Do</strong>), run:
               <pre data-command="step5-smoke"></pre>
               See the <a href="documents.html#hpc-preflight">preflight checklist</a> and <a href="documents.html#troubleshooting">known issues</a>. Needs internet to download the tiny test data and pull containers.
             </li>
@@ -2356,9 +2356,9 @@ cat("Wrote", out_file, "\n")
     function installSaveButtons() {
       document.querySelectorAll('.simple-path-box').forEach((box) => {
         if (box.querySelector('.save-inputs-btn')) return;
-        if (!box.querySelector('input, select')) return;
-        const row = document.createElement('div');
-        row.className = 'save-inputs-row';
+        const fields = box.querySelectorAll('input, select');
+        if (!fields.length) return;
+        const last = fields[fields.length - 1];
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'save-inputs-btn';
@@ -2379,8 +2379,15 @@ cat("Wrote", out_file, "\n")
             note.textContent = '';
           }, 1800);
         });
-        row.append(btn, note);
-        box.appendChild(row);
+        // Place the Save button inline, beside the last input.
+        if (last.parentElement && last.parentElement.classList.contains('simple-path-row')) {
+          last.parentElement.append(btn, note);
+        } else {
+          const wrap = document.createElement('div');
+          wrap.className = 'save-inline';
+          last.parentNode.insertBefore(wrap, last);
+          wrap.append(last, btn, note);
+        }
       });
     }
 

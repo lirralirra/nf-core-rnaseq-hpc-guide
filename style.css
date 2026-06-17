@@ -4300,14 +4300,23 @@ body {
   background: #fffdf6 !important;
 }
 
-/* Save buttons under input groups */
-.save-inputs-row {
+/* Save button sits inline, beside the input */
+.save-inline {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+}
+.save-inline > input,
+.save-inline > select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.simple-path-row .save-inputs-btn {
+  margin-left: 4px;
 }
 .save-inputs-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
   padding: 6px 16px;
   font: inherit;
   font-size: 13px;
