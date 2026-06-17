@@ -15,6 +15,8 @@ ALIGNER="${ALIGNER:-star_salmon}"
 PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
 SKIP_ALIGNMENT="${SKIP_ALIGNMENT:-false}"
 GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="${TRIMMER:-trimgalore}"
+RIBO_REMOVAL_TOOL="${RIBO_REMOVAL_TOOL:-}"
 
 # Shared constants (keep in sync with the guide UI and templates).
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
@@ -41,6 +43,42 @@ while [[ $# -gt 0 ]]; do
       SKIP_ALIGNMENT="false"
       shift
       ;;
+    --aligner)
+      case "${2:-}" in
+        star_salmon|star_rsem|hisat2|bowtie2_salmon)
+          ALIGNER="$2"
+          RUN_MODE="$2"
+          PSEUDO_ALIGNER="salmon"
+          SKIP_ALIGNMENT="false"
+          ;;
+        *)
+          echo "Unknown --aligner '${2:-}'. Choose: star_salmon, star_rsem, hisat2, bowtie2_salmon." >&2
+          exit 2
+          ;;
+      esac
+      shift 2
+      ;;
+    --pseudo-aligner)
+      case "${2:-}" in
+        salmon|kallisto) PSEUDO_ALIGNER="$2" ;;
+        *) echo "Unknown --pseudo-aligner '${2:-}'. Choose: salmon, kallisto." >&2; exit 2 ;;
+      esac
+      shift 2
+      ;;
+    --trimmer)
+      case "${2:-}" in
+        trimgalore|fastp) TRIMMER="$2" ;;
+        *) echo "Unknown --trimmer '${2:-}'. Choose: trimgalore, fastp." >&2; exit 2 ;;
+      esac
+      shift 2
+      ;;
+    --ribo-removal-tool)
+      case "${2:-}" in
+        sortmerna|bowtie2|ribodetector) RIBO_REMOVAL_TOOL="$2" ;;
+        *) echo "Unknown --ribo-removal-tool '${2:-}'. Choose: sortmerna, bowtie2, ribodetector." >&2; exit 2 ;;
+      esac
+      shift 2
+      ;;
     --salmon)
       RUN_MODE="salmon_only"
       ALIGNER=""
@@ -49,7 +87,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Usage: bash scripts/configure.sh [--star-salmon|--salmon]" >&2
+      echo "Usage: bash scripts/configure.sh [--aligner star_salmon|star_rsem|hisat2|bowtie2_salmon | --salmon]" >&2
       exit 2
       ;;
   esac
@@ -233,6 +271,8 @@ aligner: $(yaml_quote "$ALIGNER")
 pseudo_aligner: $(yaml_quote "$PSEUDO_ALIGNER")
 skip_alignment: ${SKIP_ALIGNMENT}
 gc_bias: ${GC_BIAS}
+trimmer: $(yaml_quote "$TRIMMER")
+ribo_removal_tool: $(yaml_quote "$RIBO_REMOVAL_TOOL")
 profile: $(yaml_quote "$PROFILE")
 memory: $(yaml_quote "$MEMORY")
 cpu: ${CPU}
@@ -246,11 +286,14 @@ echo "Wrote $CONFIG"
 
 # Human-readable project summary at the project root.
 nv() { if [[ -n "${1:-}" ]]; then printf '%s' "$1"; else printf '(not set)'; fi; }
-if [[ "$RUN_MODE" == "salmon_only" ]]; then
-  MODE_LABEL="Salmon only"
-else
-  MODE_LABEL="STAR + Salmon"
-fi
+case "$RUN_MODE" in
+  salmon_only) MODE_LABEL="Salmon only" ;;
+  star_salmon) MODE_LABEL="STAR + Salmon" ;;
+  star_rsem) MODE_LABEL="STAR + RSEM" ;;
+  hisat2) MODE_LABEL="HISAT2" ;;
+  bowtie2_salmon) MODE_LABEL="Bowtie2 + Salmon" ;;
+  *) MODE_LABEL="$RUN_MODE" ;;
+esac
 if [[ "$GC_BIAS" == "true" ]]; then GC_LABEL="enabled"; else GC_LABEL="disabled"; fi
 
 cat > PROJECT_INFO.md <<INFO
@@ -286,6 +329,12 @@ nf-core/rnaseq $PIPELINE_VERSION
 Pipeline Mode:
 $MODE_LABEL
 
+Aligner:
+$(nv "$ALIGNER")
+
+Pseudo-aligner:
+$(nv "$PSEUDO_ALIGNER")
+
 Profile:
 $PROFILE
 
@@ -318,14 +367,14 @@ One Sample Validation
 ->
 Full Run
 
-For STAR + Salmon mode:
-- Genome alignment: STAR
-- Quantification: Salmon
-- Output includes gene/transcript expression matrices, Salmon quantification files, MultiQC report, and pipeline execution reports.
+For alignment modes:
+- Genome alignment uses the selected aligner above.
+- Pseudo-alignment/quantification uses the pseudo-aligner above when enabled by nf-core/rnaseq.
+- Output includes gene/transcript expression matrices, quantification files, MultiQC report, and pipeline execution reports.
 
-For Salmon only mode:
-- Genome alignment: skipped
-- Quantification: Salmon pseudoalignment
+For Salmon-only mode:
+- Genome alignment is skipped.
+- Quantification uses Salmon pseudo-alignment.
 - Output includes Salmon quantification files, expression matrices where generated, MultiQC report, and pipeline execution reports.
 INFO
 

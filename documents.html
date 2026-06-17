@@ -114,6 +114,13 @@
       <h2>Choose Pipeline Mode</h2>
       <p>Use <strong>STAR + Salmon</strong> (<code>star_salmon</code>) when you want genome alignment outputs, splice-aware mapping evidence, and the most complete nf-core/rnaseq run. This is usually the safer default for a new species project when a reference genome and annotation are available. <code>star_salmon</code> provides both expression quantification and genome-aligned BAM files for potential downstream analyses such as SNP calling.</p>
       <p>Use <strong>Salmon only</strong> when you mainly need transcript or gene quantification and want a faster, lighter run. In nf-core/rnaseq this uses <code>--pseudo_aligner salmon</code> with <code>--skip_alignment</code>, rather than <code>--aligner salmon</code>.</p>
+      <p>nf-core/rnaseq v3.26.0 offers four genome aligners via <code>--aligner</code>:</p>
+      <ul>
+        <li><code>star_salmon</code> &mdash; STAR (splice-aware) + Salmon quantification. The default and recommended choice for eukaryotes.</li>
+        <li><code>star_rsem</code> &mdash; STAR alignment + RSEM quantification.</li>
+        <li><code>hisat2</code> &mdash; HISAT2 splice-aware alignment.</li>
+        <li><code>bowtie2_salmon</code> &mdash; Bowtie2 + Salmon. <strong>Bowtie2 is splice-<em>unaware</em>: use this only for prokaryotic RNA-seq; it is not recommended for eukaryotic data.</strong></li>
+      </ul>
       <p>Resource settings are estimated from the chosen mode, species, genome size, and sample count. Large genomes and many samples generally need more memory, CPU, and walltime, especially for STAR-based alignment.</p>
     </section>
 

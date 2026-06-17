@@ -3629,7 +3629,9 @@ footer {
 
 /* Aligner choice dropdown and removed Step 2 art spacing */
 .aligner-choice-box {
-  max-width: 520px;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 .aligner-choice-box select {
