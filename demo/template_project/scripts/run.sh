@@ -40,6 +40,7 @@ ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
 GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="$(get_config trimmer)"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
@@ -98,6 +99,9 @@ if [[ -n "$ALIGNER" && "$SKIP_ALIGNMENT" != "true" ]]; then
 fi
 if [[ -n "$PSEUDO_ALIGNER" ]]; then
   cmd+=(--pseudo_aligner "$PSEUDO_ALIGNER")
+fi
+if [[ -n "$TRIMMER" ]]; then
+  cmd+=(--trimmer "$TRIMMER")
 fi
 if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
   cmd+=(--skip_alignment)

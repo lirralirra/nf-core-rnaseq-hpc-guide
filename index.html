@@ -453,14 +453,18 @@ fi
             <li>Open your local terminal and move into your local project folder, run:
               <pre data-command="local-context"></pre>
             </li>
-            <li>Choose the aligner (<a href="documents.html#choose-pipeline-mode">how to decide</a>):
+            <li>Choose the aligner (<a href="documents.html#choose-pipeline-mode">how to decide</a>). For most eukaryotic RNA-seq, keep the recommended default:
               <div class="simple-path-box aligner-choice-box">
-                <label for="alignerMode"><strong>Aligner mode</strong></label>
+                <label for="alignerMode"><strong>Aligner</strong> (<code>--aligner</code>)</label>
                 <select id="alignerMode">
-                  <option value="star">STAR + Salmon (recommended, default)</option>
-                  <option value="salmon">Salmon only</option>
+                  <option value="star_salmon">STAR + Salmon (recommended, default)</option>
+                  <option value="star_rsem">STAR + RSEM</option>
+                  <option value="hisat2">HISAT2</option>
+                  <option value="bowtie2_salmon">Bowtie2 + Salmon (prokaryotic only)</option>
+                  <option value="salmon">Salmon only (no genome alignment)</option>
                 </select>
-                <p id="alignerModeHelp">STAR + Salmon (recommended, default) aligns reads to the genome and quantifies transcripts.</p>
+                <p id="alignerModeHelp">STAR + Salmon (recommended, default): splice-aware genome alignment with STAR, quantification with Salmon.</p>
+                <p class="more-choices-note">All other nf-core/rnaseq options use the pipeline defaults; see the full <a href="https://nf-co.re/rnaseq/3.26.0/parameters/" target="_blank" rel="noopener">nf-core/rnaseq 3.26.0 parameters</a>. The one intentional exception in this guide is <a href="documents.html#gc-bias">Salmon GC bias correction</a>, which is enabled by default here.</p>
               </div>
             </li>
             <li>Generate <code>configs/configure.yaml</code> for the selected mode, run:
@@ -594,6 +598,21 @@ while [[ $# -gt 0 ]]; do
       SKIP_ALIGNMENT="false"
       shift
       ;;
+    --aligner)
+      case "${2:-}" in
+        star_salmon|star_rsem|hisat2|bowtie2_salmon)
+          ALIGNER="$2"
+          RUN_MODE="$2"
+          PSEUDO_ALIGNER="salmon"
+          SKIP_ALIGNMENT="false"
+          ;;
+        *)
+          echo "Unknown --aligner '${2:-}'. Choose: star_salmon, star_rsem, hisat2, bowtie2_salmon." &gt;&amp;2
+          exit 2
+          ;;
+      esac
+      shift 2
+      ;;
     --salmon)
       RUN_MODE="salmon_only"
       ALIGNER=""
@@ -602,7 +621,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Usage: bash scripts/configure.sh [--star-salmon|--salmon]" &gt;&amp;2
+      echo "Usage: bash scripts/configure.sh [--aligner star_salmon|star_rsem|hisat2|bowtie2_salmon | --salmon]" &gt;&amp;2
       exit 2
       ;;
   esac
@@ -903,7 +922,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Set your <strong>Phoenix working folder</strong> &mdash; the project folder on Phoenix (the folder itself, not a shared parent):
+            <li>Set your <strong>Phoenix working folder</strong> &mdash; the project folder on Phoenix:
               <div class="simple-path-box">
                 <label for="hpcPath"><strong>Phoenix working folder</strong></label>
                 <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
@@ -2026,6 +2045,9 @@ cat("Wrote", out_file, "\n")
     };
     const alignerMode = document.getElementById('alignerMode');
     const alignerModeHelp = document.getElementById('alignerModeHelp');
+    const pseudoAligner = document.getElementById('pseudoAligner');
+    const trimmer = document.getElementById('trimmer');
+    const riboTool = document.getElementById('riboTool');
 
     const prereqTab = document.querySelector('.prereq-tab');
     if (prereqTab) {
@@ -2055,6 +2077,7 @@ cat("Wrote", out_file, "\n")
         panels.forEach((panel) => {
           panel.classList.toggle('active', panel.dataset.stepPanel === step);
         });
+        if (step === '3') syncAlignerChoice();
       });
     });
 
@@ -2125,8 +2148,21 @@ cat("Wrote", out_file, "\n")
       // They are saved into the project's configs/configure.yaml when the
       // template is downloaded (see patchConfigYaml), so every command stays a
       // clean `scripts/...` call.
-      const star = `scripts/configure.sh --star-salmon`;
+      const alignerCmd = (a) => `scripts/configure.sh --aligner ${a}`;
+      const star = alignerCmd('star_salmon');
       const salmon = `scripts/configure.sh --salmon`;
+      const buildConfigure = () => {
+        const a = alignerMode?.value || 'star_salmon';
+        const parts = ['scripts/configure.sh'];
+        if (a === 'salmon') { parts.push('--salmon'); } else { parts.push('--aligner', a); }
+        const p = pseudoAligner?.value || 'salmon';
+        if (p && p !== 'salmon') parts.push('--pseudo-aligner', p);
+        const t = trimmer?.value || 'trimgalore';
+        if (t && t !== 'trimgalore') parts.push('--trimmer', t);
+        const r = riboTool?.value || '';
+        if (r) parts.push('--ribo-removal-tool', r);
+        return parts.join(' ');
+      };
 
       const commands = {
         'local-mkdir': `mkdir -p ${qLocal}`,
@@ -2148,7 +2184,7 @@ cat("Wrote", out_file, "\n")
         'step2-make': `scripts/make_samplesheet.sh`,
         'step2-validate': `scripts/input_validate.sh`,
         'step7-report': `Rscript scripts/make_report.R downloaded_results`,
-        'step3-configure': alignerMode?.value === 'salmon' ? salmon : star,
+        'step3-configure': buildConfigure(),
         'step3-star': star,
         'step3-salmon': salmon,
         'step5-smoke': `sbatch scripts/smoke_run.sh`,
@@ -2331,9 +2367,19 @@ cat("Wrote", out_file, "\n")
 
     function updateAlignerHelp() {
       if (!alignerMode || !alignerModeHelp) return;
-      alignerModeHelp.textContent = alignerMode.value === 'salmon'
-        ? 'Salmon only quantifies without genome alignment.'
-        : 'STAR + Salmon (recommended, default) aligns reads to the genome and quantifies transcripts.';
+      const help = {
+        star_salmon: 'STAR + Salmon (recommended, default): splice-aware genome alignment with STAR, quantification with Salmon.',
+        star_rsem: 'STAR + RSEM: splice-aware genome alignment with STAR, quantification with RSEM.',
+        hisat2: 'HISAT2: splice-aware genome alignment (graph-based).',
+        bowtie2_salmon: 'Bowtie2 + Salmon: splice-UNAWARE alignment — intended for prokaryotic RNA-seq only; not recommended for eukaryotic data.',
+        salmon: 'Salmon only: fast transcript/gene quantification without genome alignment (no BAM files).'
+      };
+      alignerModeHelp.textContent = help[alignerMode.value] || help.star_salmon;
+    }
+
+    function syncAlignerChoice() {
+      updateAlignerHelp();
+      updateCommands();
     }
 
     function hydratePathInputs() {
@@ -2354,7 +2400,7 @@ cat("Wrote", out_file, "\n")
     }
 
     function installSaveButtons() {
-      document.querySelectorAll('.simple-path-box').forEach((box) => {
+      document.querySelectorAll('.simple-path-box:not(.aligner-choice-box)').forEach((box) => {
         if (box.querySelector('.save-inputs-btn')) return;
         const fields = box.querySelectorAll('input, select');
         if (!fields.length) return;
@@ -2463,12 +2509,15 @@ cat("Wrote", out_file, "\n")
     }
 
     alignerMode?.addEventListener('change', () => {
-      updateAlignerHelp();
-      updateCommands();
+      syncAlignerChoice();
     });
+    alignerMode?.addEventListener('input', syncAlignerChoice);
+    [pseudoAligner, trimmer, riboTool].forEach((sel) => sel?.addEventListener('change', updateCommands));
     hydratePathInputs();
     installSaveButtons();
-    updateAlignerHelp();
+    syncAlignerChoice();
+    window.addEventListener('pageshow', syncAlignerChoice);
+    window.setTimeout(syncAlignerChoice, 0);
     installCommandCopyButtons();
     runIntro();
     attachCopyButtons();
