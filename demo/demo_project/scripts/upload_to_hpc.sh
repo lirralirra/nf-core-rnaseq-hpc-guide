@@ -15,6 +15,16 @@ HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
 HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
 HPC_TARGET="${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR%/}/"
 
+if [[ -z "$HPC_USER" || "$HPC_USER" == "your_username" || "$HPC_USER" == "your_user" ||
+  -z "$HPC_HOST" || "$HPC_HOST" == "your.cluster.edu" || "$HPC_HOST" == "hpc.example.edu" ||
+  -z "$HPC_PROJECT_DIR" || "$HPC_PROJECT_DIR" == /path/on/hpc/* || "$HPC_PROJECT_DIR" == /hpc/path/to/project ]]; then
+  echo "ERROR: Phoenix upload target is not configured." >&2
+  echo "Set HPC_USER, HPC_HOST, and HPC_PROJECT_DIR, or run Step 3 configure with the correct values." >&2
+  exit 2
+fi
+
+ssh "${HPC_USER}@${HPC_HOST}" mkdir -p -- "${HPC_PROJECT_DIR%/}"
+
 rsync -avh --partial --progress \
   --exclude '.git/' \
   --exclude '.DS_Store' \

@@ -11,17 +11,17 @@
   <div class="intro-overlay" id="introOverlay" aria-hidden="true">
     <button class="intro-skip" type="button" aria-label="Skip intro">×</button>
     <div class="intro-scene" role="button" tabindex="0" aria-label="Start">
-      <img class="intro-storyboard" src="assets/happy-rnaseq-intro-witch.jpg" alt="Illustrated Happy RNA-seq visual showing inputs, running the pipeline, and count matrix outputs.">
       <div class="intro-copy">
-        <p>RNA-seq Made Easy — A beginner-friendly step-by-step guide for running nf-core/rnaseq on HPC, from FASTQ files to downloadable results.</p>
+        <h1>RNA-seq Made Easy</h1>
+        <p>A beginner-friendly step-by-step guide for running nf-core/rnaseq on HPC</p>
+        <button class="intro-start" id="introStart" type="button" aria-label="Start">Start</button>
       </div>
-      <button class="intro-start" id="introStart" type="button" aria-label="Start">Start</button>
     </div>
   </div>
   <nav class="site-nav product-nav" aria-label="Site navigation">
     <div class="nav-brand">
       <div class="nav-title">RNA-seq Made Easy</div>
-      <div class="nav-subtitle">From FASTQ to count matrix using the nf-core RNA-seq pipeline on Phoenix.</div>
+      <div class="nav-subtitle">From FASTQ to transcript-level quantification using the nf-core RNA-seq pipeline on Phoenix.</div>
     </div>
     <div class="nav-links">
       <a class="active" href="index.html">Workflow</a>
@@ -256,8 +256,8 @@ tmp="$(mktemp)"
 echo "sample,fastq_1,fastq_2,strandedness" &gt; "$tmp"
 
 # Accept .fastq.gz, .fq.gz, .fastq and .fq, with R1/R2 or _1/_2 naming.
-find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) \
-  | sort | while IFS= read -r r1; do
+find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) |
+  sort | while IFS= read -r r1; do
   base="$(basename "$r1")"
   # Only start a pair from the read-1 file; derive its read-2 mate.
   if [[ "$base" == *_R1_* || "$base" == *_R1.* ]]; then
@@ -294,8 +294,7 @@ if grep -qE '\.(fastq|fq),' "$SAMPLESHEET"; then
   echo "- WARNING: uncompressed FASTQ in samplesheet; nf-core/rnaseq expects gzipped FASTQ (.fastq.gz / .fq.gz)." &gt;&gt; "$REPORT"
 fi
 
-echo "ACTION: open $SAMPLESHEET and check sample names, R1/R2 pairing, and strandedness before continuing."
-</code></pre>
+echo "ACTION: open $SAMPLESHEET and check sample names, R1/R2 pairing, and strandedness before continuing."</code></pre>
               </div>
             </details>
           </div>
@@ -340,7 +339,7 @@ check_path() {
 # Read a plain or gzipped text file.
 read_text() {
   case "$1" in
-    *.gz) zcat "$1" 2&gt;/dev/null || gzip -dc "$1" ;;
+    *.gz) zcat "$1" 2&gt; /dev/null || gzip -dc "$1" ;;
     *) cat "$1" ;;
   esac
 }
@@ -382,9 +381,11 @@ read_text() {
       fi
 
       case "$strandedness" in
-        auto|forward|reverse|unstranded) : ;;
-        *) echo "- BAD STRANDEDNESS: '$strandedness' for sample '$sample' (allowed: auto, forward, reverse, unstranded)"
-           errors=$((errors + 1)) ;;
+        auto | forward | reverse | unstranded) : ;;
+        *)
+          echo "- BAD STRANDEDNESS: '$strandedness' for sample '$sample' (allowed: auto, forward, reverse, unstranded)"
+          errors=$((errors + 1))
+          ;;
       esac
 
       for fq in "$fastq_1" "$fastq_2"; do
@@ -425,7 +426,7 @@ read_text() {
   fi
   echo
   echo "## Upload size estimate"
-  du -sh input configs scripts reports README.md 2&gt;/dev/null || true
+  du -sh input configs scripts reports README.md 2&gt; /dev/null || true
   echo
   if [[ "$errors" -eq 0 ]]; then
     echo "## Result"
@@ -439,8 +440,7 @@ read_text() {
 echo "Wrote $REPORT"
 if [[ "$errors" -ne 0 ]]; then
   exit 1
-fi
-</code></pre>
+fi</code></pre>
               </div>
             </details>
           </div>
@@ -516,12 +516,12 @@ species: oat
 genome_size_gb: 12
 sample_count: 30
 hpc_user: your_username
-hpc_host: your.cluster.edu
+hpc_host: p2-log-2.hpc.adelaide.edu.au
 hpc_project_dir: /scratchdata1/your_project/rnaseq_projects/my_project
 profile: apptainer
 outdir: results
 workdir: work
-cache_dir: /scratch/your_username/apptainer_cache
+cache_dir: /scratchdata1/your_username/apptainer_cache
 memory: 64G
 cpu: 16
 walltime: 24.h</pre>
@@ -578,6 +578,8 @@ ALIGNER="${ALIGNER:-star_salmon}"
 PSEUDO_ALIGNER="${PSEUDO_ALIGNER:-salmon}"
 SKIP_ALIGNMENT="${SKIP_ALIGNMENT:-false}"
 GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="${TRIMMER:-trimgalore}"
+RIBO_REMOVAL_TOOL="${RIBO_REMOVAL_TOOL:-}"
 
 # Shared constants (keep in sync with the guide UI and templates).
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
@@ -606,7 +608,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --aligner)
       case "${2:-}" in
-        star_salmon|star_rsem|hisat2|bowtie2_salmon)
+        star_salmon | star_rsem | hisat2 | bowtie2_salmon)
           ALIGNER="$2"
           RUN_MODE="$2"
           PSEUDO_ALIGNER="salmon"
@@ -614,6 +616,36 @@ while [[ $# -gt 0 ]]; do
           ;;
         *)
           echo "Unknown --aligner '${2:-}'. Choose: star_salmon, star_rsem, hisat2, bowtie2_salmon." &gt;&amp;2
+          exit 2
+          ;;
+      esac
+      shift 2
+      ;;
+    --pseudo-aligner)
+      case "${2:-}" in
+        salmon | kallisto) PSEUDO_ALIGNER="$2" ;;
+        *)
+          echo "Unknown --pseudo-aligner '${2:-}'. Choose: salmon, kallisto." &gt;&amp;2
+          exit 2
+          ;;
+      esac
+      shift 2
+      ;;
+    --trimmer)
+      case "${2:-}" in
+        trimgalore | fastp) TRIMMER="$2" ;;
+        *)
+          echo "Unknown --trimmer '${2:-}'. Choose: trimgalore, fastp." &gt;&amp;2
+          exit 2
+          ;;
+      esac
+      shift 2
+      ;;
+    --ribo-removal-tool)
+      case "${2:-}" in
+        sortmerna | bowtie2 | ribodetector) RIBO_REMOVAL_TOOL="$2" ;;
+        *)
+          echo "Unknown --ribo-removal-tool '${2:-}'. Choose: sortmerna, bowtie2, ribodetector." &gt;&amp;2
           exit 2
           ;;
       esac
@@ -635,9 +667,12 @@ done
 
 LOCAL_PROJECT_DIR="${LOCAL_PROJECT_DIR:-$(pwd)}"
 # Precedence: environment variable &gt; value saved in configure.yaml &gt; placeholder.
-HPC_USER="${HPC_USER:-$(get_config hpc_user)}"; HPC_USER="${HPC_USER:-your_username}"
-HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"; HPC_HOST="${HPC_HOST:-your.cluster.edu}"
-HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"; HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
+HPC_USER="${HPC_USER:-$(get_config hpc_user)}"
+HPC_USER="${HPC_USER:-your_username}"
+HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
+HPC_HOST="${HPC_HOST:-p2-log-2.hpc.adelaide.edu.au}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
 FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
 SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="${REFERENCE:-input/reference/genome.fa}"
@@ -646,7 +681,7 @@ ANNOTATION_TYPE="${ANNOTATION_TYPE:-auto}"
 PROFILE="${PROFILE:-apptainer}"
 WORKDIR="${WORKDIR:-work}"
 OUTDIR="${OUTDIR:-results}"
-CACHE_DIR="${CACHE_DIR:-/scratch/${HPC_USER}/apptainer_cache}"
+CACHE_DIR="${CACHE_DIR:-/scratchdata1/${HPC_USER}/apptainer_cache}"
 
 metadata_value() {
   local key="$1"
@@ -677,7 +712,7 @@ infer_sample_count() {
     return
   fi
   if [[ -d "$FASTQ_DIR" ]]; then
-    find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) 2&gt;/dev/null | sed -E 's/(_R?[12]|_1|_2)\.(fastq|fq)(\.gz)?$//' | sort -u | wc -l | tr -d ' '
+    find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) 2&gt; /dev/null | sed -E 's/(_R?[12]|_1|_2)\.(fastq|fq)(\.gz)?$//' | sort -u | wc -l | tr -d ' '
   else
     echo 0
   fi
@@ -692,7 +727,7 @@ infer_genome_size_gb() {
   fi
   if [[ -f "$REFERENCE" ]]; then
     case "$REFERENCE" in
-      *.gz) zcat "$REFERENCE" 2&gt;/dev/null || gzip -dc "$REFERENCE" ;;
+      *.gz) zcat "$REFERENCE" 2&gt; /dev/null || gzip -dc "$REFERENCE" ;;
       *) cat "$REFERENCE" ;;
     esac | awk 'BEGIN {n=0} /^&gt;/ {next} {gsub(/[[:space:]]/, ""); n += length($0)} END {printf "%.2f", n/1000000000}'
     return
@@ -712,7 +747,7 @@ fi
 if [[ "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
+    *.gff | *.gff3 | *.gff.gz | *.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
   shopt -u nocasematch
@@ -786,7 +821,8 @@ yaml_quote() {
   printf '"%s"' "$value"
 }
 
-cat &gt; "$CONFIG" &lt;&lt;YAML
+cat &gt; "$CONFIG" &lt;&lt; YAML
+---
 project_name: $(yaml_quote "$PROJECT_NAME")
 project_description: $(yaml_quote "$PROJECT_DESCRIPTION")
 project_owner: $(yaml_quote "$PROJECT_OWNER")
@@ -811,6 +847,8 @@ aligner: $(yaml_quote "$ALIGNER")
 pseudo_aligner: $(yaml_quote "$PSEUDO_ALIGNER")
 skip_alignment: ${SKIP_ALIGNMENT}
 gc_bias: ${GC_BIAS}
+trimmer: $(yaml_quote "$TRIMMER")
+ribo_removal_tool: $(yaml_quote "$RIBO_REMOVAL_TOOL")
 profile: $(yaml_quote "$PROFILE")
 memory: $(yaml_quote "$MEMORY")
 cpu: ${CPU}
@@ -824,14 +862,17 @@ echo "Wrote $CONFIG"
 
 # Human-readable project summary at the project root.
 nv() { if [[ -n "${1:-}" ]]; then printf '%s' "$1"; else printf '(not set)'; fi; }
-if [[ "$RUN_MODE" == "salmon_only" ]]; then
-  MODE_LABEL="Salmon only"
-else
-  MODE_LABEL="STAR + Salmon"
-fi
+case "$RUN_MODE" in
+  salmon_only) MODE_LABEL="Salmon only" ;;
+  star_salmon) MODE_LABEL="STAR + Salmon" ;;
+  star_rsem) MODE_LABEL="STAR + RSEM" ;;
+  hisat2) MODE_LABEL="HISAT2" ;;
+  bowtie2_salmon) MODE_LABEL="Bowtie2 + Salmon" ;;
+  *) MODE_LABEL="$RUN_MODE" ;;
+esac
 if [[ "$GC_BIAS" == "true" ]]; then GC_LABEL="enabled"; else GC_LABEL="disabled"; fi
 
-cat &gt; PROJECT_INFO.md &lt;&lt;INFO
+cat &gt; PROJECT_INFO.md &lt;&lt; INFO
 # Project Information
 
 ## Project
@@ -863,6 +904,12 @@ nf-core/rnaseq $PIPELINE_VERSION
 
 Pipeline Mode:
 $MODE_LABEL
+
+Aligner:
+$(nv "$ALIGNER")
+
+Pseudo-aligner:
+$(nv "$PSEUDO_ALIGNER")
 
 Profile:
 $PROFILE
@@ -896,22 +943,21 @@ One Sample Validation
 -&gt;
 Full Run
 
-For STAR + Salmon mode:
-- Genome alignment: STAR
-- Quantification: Salmon
-- Output includes gene/transcript expression matrices, Salmon quantification files, MultiQC report, and pipeline execution reports.
+For alignment modes:
+- Genome alignment uses the selected aligner above.
+- Pseudo-alignment/quantification uses the pseudo-aligner above when enabled by nf-core/rnaseq.
+- Output includes Salmon transcript quantification files, nf-core summary tables, MultiQC report, and pipeline execution reports. Build or verify any gene-level matrix downstream with the matching annotation before DESeq2/edgeR.
 
-For Salmon only mode:
-- Genome alignment: skipped
-- Quantification: Salmon pseudoalignment
-- Output includes Salmon quantification files, expression matrices where generated, MultiQC report, and pipeline execution reports.
+For Salmon-only mode:
+- Genome alignment is skipped.
+- Quantification uses Salmon pseudo-alignment.
+- Output includes Salmon quantification files, nf-core summary tables where generated, MultiQC report, and pipeline execution reports.
 INFO
 
 echo "Wrote PROJECT_INFO.md"
 echo "Run mode: $RUN_MODE"
 echo "Estimated resources: memory=$MEMORY cpu=$CPU walltime=$WALLTIME"
-echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"
-</code></pre>
+echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"</code></pre>
               </div>
             </details>
           </div>
@@ -983,6 +1029,16 @@ HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
 HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
 HPC_TARGET="${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR%/}/"
 
+if [[ -z "$HPC_USER" || "$HPC_USER" == "your_username" || "$HPC_USER" == "your_user" ||
+  -z "$HPC_HOST" || "$HPC_HOST" == "your.cluster.edu" || "$HPC_HOST" == "hpc.example.edu" ||
+  -z "$HPC_PROJECT_DIR" || "$HPC_PROJECT_DIR" == /path/on/hpc/* || "$HPC_PROJECT_DIR" == /hpc/path/to/project ]]; then
+  echo "ERROR: Phoenix upload target is not configured." &gt;&amp;2
+  echo "Set HPC_USER, HPC_HOST, and HPC_PROJECT_DIR, or run Step 3 configure with the correct values." &gt;&amp;2
+  exit 2
+fi
+
+ssh "${HPC_USER}@${HPC_HOST}" mkdir -p -- "${HPC_PROJECT_DIR%/}"
+
 rsync -avh --partial --progress \
   --exclude '.git/' \
   --exclude '.DS_Store' \
@@ -994,8 +1050,7 @@ rsync -avh --partial --progress \
   --exclude 'tmp/' \
   ./ "$HPC_TARGET" 2&gt;&amp;1 | tee "$LOG"
 
-echo "Upload log: $LOG"
-</code></pre>
+echo "Upload log: $LOG"</code></pre>
               </div>
             </details>
           </div>
@@ -1081,34 +1136,47 @@ CONFIG="${CONFIG:-configs/configure.yaml}"
 REPORT="reports/smoke_test_report.md"
 mkdir -p reports logs work
 
-# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
-# The smoke test downloads tiny test data, so it needs internet access.
-module purge 2&gt;/dev/null || true
-module load Nextflow/25.10.2 2&gt;/dev/null || true
-module load Apptainer/1.2.5-GCCcore-12.3.0 2&gt;/dev/null || true
-export NXF_OPTS='-Xms1g -Xmx4g'
-export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
-mkdir -p "$NXF_APPTAINER_CACHEDIR"
-
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
   awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
+
+CACHE_DIR="$(get_config cache_dir)"
+
+# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
+# The smoke test downloads tiny test data, so it needs internet access.
+module purge 2&gt; /dev/null || true
+module load Nextflow/25.10.2 2&gt; /dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2&gt; /dev/null || true
+export NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-${CACHE_DIR:-$PWD/apptainer_cache}}"
+export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR"
 
 # Use the configured profile (e.g. singularity, docker) with the built-in test data.
 PROFILE="${PROFILE:-$(get_config profile)}"
 PROFILE="${PROFILE:-apptainer}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-$(get_config pipeline_version)}"
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
-SAMPLESHEET="$(get_config samplesheet)"; SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
+SAMPLESHEET="$(get_config samplesheet)"
+SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="$(get_config reference)"
 ANNOTATION="$(get_config annotation)"
 ANNOTATION_TYPE="$(get_config annotation_type)"
-ALIGNER="$(get_config aligner)"; ALIGNER="${ALIGNER:-star_salmon}"
-WORKDIR="$(get_config workdir)"; WORKDIR="${WORKDIR:-work}"
-OUTDIR="$(get_config outdir)"; OUTDIR="${OUTDIR:-results}"
+ALIGNER="$(get_config aligner)"
+ALIGNER="${ALIGNER:-star_salmon}"
+PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
+SKIP_ALIGNMENT="$(get_config skip_alignment)"
+GC_BIAS="$(get_config gc_bias)"
+GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="$(get_config trimmer)"
+WORKDIR="$(get_config workdir)"
+WORKDIR="${WORKDIR:-work}"
+OUTDIR="$(get_config outdir)"
+OUTDIR="${OUTDIR:-results}"
 
-if ! command -v nextflow &gt;/dev/null 2&gt;&amp;1; then
+if ! command -v nextflow &gt; /dev/null 2&gt;&amp;1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." &gt;&amp;2
   exit 1
 fi
@@ -1139,25 +1207,49 @@ echo "Using nf-core/rnaseq version: $PIPELINE_VERSION"
   echo
   echo "## Preflight"
   echo '```'
-  echo "# modules"; module list 2&gt;&amp;1 || true
-  echo "NXF_APPTAINER_CACHEDIR=$NXF_APPTAINER_CACHEDIR"; du -sh "$NXF_APPTAINER_CACHEDIR" 2&gt;/dev/null || true
-  echo "# disk"; df -h . 2&gt;/dev/null || true
-  du -sh "$WORKDIR" "$OUTDIR" references fastq 2&gt;/dev/null || true
-  du -sh references/prebuilt_indexes/* 2&gt;/dev/null || true
+  echo "# modules"
+  module list 2&gt;&amp;1 || true
+  echo "NXF_APPTAINER_CACHEDIR=$NXF_APPTAINER_CACHEDIR"
+  du -sh "$NXF_APPTAINER_CACHEDIR" 2&gt; /dev/null || true
+  echo "# disk"
+  df -h . 2&gt; /dev/null || true
+  du -sh "$WORKDIR" "$OUTDIR" input/reference input/annotation input/fastq 2&gt; /dev/null || true
+  du -sh references/prebuilt_indexes/* 2&gt; /dev/null || true
   echo '```'
 } &gt;&gt; "$REPORT"
 
-if [[ -f "$SAMPLESHEET" &amp;&amp; -n "$REFERENCE" ]]; then
+if [[ -f "$SAMPLESHEET" &amp;&amp; -n "$REFERENCE" &amp;&amp; -n "$ANNOTATION" ]]; then
   ann_flag="--gtf"
   case "${ANNOTATION_TYPE:-}" in
     gff*) ann_flag="--gff" ;;
     *) [[ "$ANNOTATION" == *.gff || "$ANNOTATION" == *.gff3 || "$ANNOTATION" == *.gff.gz || "$ANNOTATION" == *.gff3.gz ]] &amp;&amp; ann_flag="--gff" ;;
   esac
   echo "Preflight: running a Nextflow -preview dry run on your inputs..."
-  if nextflow run nf-core/rnaseq -r "$PIPELINE_VERSION" -profile "$PROFILE" -preview \
-       --input "$SAMPLESHEET" --outdir "${OUTDIR%/}/preview" \
-       --fasta "$REFERENCE" "$ann_flag" "$ANNOTATION" --aligner "$ALIGNER" --igenomes_ignore \
-       2&gt;&amp;1 | tee logs/preflight_preview.log; then
+  preview_cmd=(nextflow run nf-core/rnaseq
+    -r "$PIPELINE_VERSION"
+    -profile "$PROFILE"
+    -preview
+    --input "$SAMPLESHEET"
+    --outdir "${OUTDIR%/}/preview"
+    --fasta "$REFERENCE"
+    "$ann_flag" "$ANNOTATION"
+    --igenomes_ignore)
+  if [[ -n "$ALIGNER" &amp;&amp; "$SKIP_ALIGNMENT" != "true" ]]; then
+    preview_cmd+=(--aligner "$ALIGNER")
+  fi
+  if [[ -n "$PSEUDO_ALIGNER" ]]; then
+    preview_cmd+=(--pseudo_aligner "$PSEUDO_ALIGNER")
+  fi
+  if [[ -n "$TRIMMER" ]]; then
+    preview_cmd+=(--trimmer "$TRIMMER")
+  fi
+  if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
+    preview_cmd+=(--skip_alignment)
+  fi
+  if [[ "$GC_BIAS" == "true" ]]; then
+    preview_cmd+=("--extra_salmon_quant_args=--gcBias")
+  fi
+  if "${preview_cmd[@]}" 2&gt;&amp;1 | tee logs/preflight_preview.log; then
     echo "Preflight -preview: OK (workflow builds, inputs validate)" &gt;&gt; "$REPORT"
   else
     echo "Preflight -preview: FAILED — review logs/preflight_preview.log" | tee -a "$REPORT"
@@ -1168,10 +1260,10 @@ else
 fi
 
 if [[ "$ALLOW_FIXES" == "true" ]]; then
-  export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
-  export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_SINGULARITY_CACHEDIR}"
+  export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+  export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
   export TMPDIR="${TMPDIR:-$PWD/work/tmp}"
-  mkdir -p "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR"
+  mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR"
 fi
 
 run_smoke_test() {
@@ -1188,10 +1280,10 @@ if ! run_smoke_test; then
       echo "Initial smoke test failed."
       echo "Applied safe infrastructure fixes: cache directories, Apptainer cache, TMPDIR, and resume retry."
     } &gt;&gt; "$REPORT"
-    export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
-    export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_SINGULARITY_CACHEDIR}"
+    export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+    export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
     export TMPDIR="${TMPDIR:-$PWD/work/tmp}"
-    mkdir -p "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR" work logs reports
+    mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR" work logs reports
     run_smoke_test || {
       echo "Smoke test failed after safe fixes. Review logs/smoke_run.log" | tee -a "$REPORT"
       exit 1
@@ -1224,21 +1316,31 @@ set -euo pipefail
 ALLOW_FIXES="${ALLOW_FIXES:-false}"
 SAMPLE_MODE="${SAMPLE_MODE:-largest}"
 SAMPLE_ID="${SAMPLE_ID:-}"
+CONFIG="${CONFIG:-configs/configure.yaml}"
 REPORT="reports/one_sample_validation_report.md"
 RUN_ID="${SLURM_JOB_ID:-manual_$(date +%Y%m%d_%H%M%S)}"
 TRACE="logs/one_sample_trace_${RUN_ID}.txt"
 mkdir -p reports logs work
 
+get_config() {
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
+}
+
+CACHE_DIR="$(get_config cache_dir)"
+
 # --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
 # Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
 #   nextflow pull nf-core/rnaseq -r &lt;version&gt;
-module purge 2&gt;/dev/null || true
-module load Nextflow/25.10.2 2&gt;/dev/null || true
-module load Apptainer/1.2.5-GCCcore-12.3.0 2&gt;/dev/null || true
+module purge 2&gt; /dev/null || true
+module load Nextflow/25.10.2 2&gt; /dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2&gt; /dev/null || true
 export NXF_OPTS='-Xms1g -Xmx4g'
 export NXF_OFFLINE='true'
-export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
-mkdir -p "$NXF_APPTAINER_CACHEDIR"
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-${CACHE_DIR:-$PWD/apptainer_cache}}"
+export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR"
 
 {
   echo "# One Sample Validation Report"
@@ -1249,11 +1351,6 @@ mkdir -p "$NXF_APPTAINER_CACHEDIR"
   echo "Automatic fixes allowed: ${ALLOW_FIXES}"
 } &gt; "$REPORT"
 
-CONFIG="${CONFIG:-configs/configure.yaml}"
-get_config() {
-  [[ -f "$CONFIG" ]] || return 0
-  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
-}
 SAMPLESHEET="$(get_config samplesheet)"
 REFERENCE="$(get_config reference)"
 ANNOTATION="$(get_config annotation)"
@@ -1261,9 +1358,13 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
-GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
-PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
-PROFILE="$(get_config profile)"; PROFILE="${PROFILE:-apptainer}"
+GC_BIAS="$(get_config gc_bias)"
+GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="$(get_config trimmer)"
+PIPELINE_VERSION="$(get_config pipeline_version)"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+PROFILE="$(get_config profile)"
+PROFILE="${PROFILE:-apptainer}"
 OUTDIR="$(get_config outdir)"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
@@ -1275,9 +1376,9 @@ head -n 1 "$SAMPLESHEET" &gt; "$ONE_SAMPLE_SHEET"
 
 file_size() {
   local file="$1"
-  if stat -c '%s' "$file" &gt;/dev/null 2&gt;&amp;1; then
+  if stat -c '%s' "$file" &gt; /dev/null 2&gt;&amp;1; then
     stat -c '%s' "$file"
-  elif stat -f '%z' "$file" &gt;/dev/null 2&gt;&amp;1; then
+  elif stat -f '%z' "$file" &gt; /dev/null 2&gt;&amp;1; then
     stat -f '%z' "$file"
   else
     echo 0
@@ -1296,12 +1397,12 @@ select_sample_line() {
     first)
       tail -n +2 "$SAMPLESHEET" | head -n 1
       ;;
-    smallest|largest)
+    smallest | largest)
       local sort_flag="-nr"
       [[ "$SAMPLE_MODE" == "smallest" ]] &amp;&amp; sort_flag="-n"
       tail -n +2 "$SAMPLESHEET" | while IFS=, read -r sample fastq_1 fastq_2 strandedness rest; do
         [[ -z "$sample" ]] &amp;&amp; continue
-        size=$(( $(file_size "$fastq_1") + $(file_size "$fastq_2") ))
+        size=$(($(file_size "$fastq_1") + $(file_size "$fastq_2")))
         printf "%020d,%s,%s,%s,%s\n" "$size" "$sample" "$fastq_1" "$fastq_2" "$strandedness"
       done | sort "$sort_flag" | head -n 1 | cut -d, -f2-
       ;;
@@ -1323,7 +1424,7 @@ echo "Selected sample: $(printf '%s\n' "$selected_line" | cut -d, -f1)" &gt;&gt;
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
+    *.gff | *.gff3 | *.gff.gz | *.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
   shopt -u nocasematch
@@ -1339,7 +1440,10 @@ add_resource_limits() {
   [[ -n "$WALLTIME" &amp;&amp; "$WALLTIME" != "auto" &amp;&amp; "$WALLTIME" != "unknown" ]] &amp;&amp; res+=("time: ${WALLTIME}")
   if [[ ${#res[@]} -gt 0 ]]; then
     mkdir -p configs
-    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" &gt; "$conf"
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(
+      IFS=,
+      echo "${res[*]}"
+    )" &gt; "$conf"
     cmd+=(-c "$conf")
   fi
 }
@@ -1384,7 +1488,7 @@ move_workdir_to_retry_area() {
 round_up_to_multiple() {
   local value="$1"
   local multiple="$2"
-  echo $(( ((value + multiple - 1) / multiple) * multiple ))
+  echo $((((value + multiple - 1) / multiple) * multiple))
 }
 
 recommend_resources_from_trace() {
@@ -1423,20 +1527,20 @@ recommend_resources_from_trace() {
       for (i = 1; i &lt;= NF; i++) col[$i] = i
       next
     }
-    ($col["status"] == "COMPLETED" || $col["status"] == "CACHED") &amp;&amp; $col["name"] ~ /STAR_ALIGN|STAR_GENOMEGENERATE/ {
-      rss = mem_gb($col["peak_rss"])
+    ($(col["status"]) == "COMPLETED" || $(col["status"]) == "CACHED") &amp;&amp; $(col["name"]) ~ /STAR_ALIGN|STAR_GENOMEGENERATE/ {
+      rss = mem_gb($(col["peak_rss"]))
       if (rss &gt; max_rss) {
         max_rss = rss
-        max_rss_task = $col["name"]
+        max_rss_task = $(col["name"])
       }
-      cpu = $col["%cpu"]
+      cpu = $(col["%cpu"])
       gsub(/%/, "", cpu)
       if (cpu &gt; max_cpu) max_cpu = cpu
-      t = hours($col["realtime"])
-      if (t == 0) t = hours($col["duration"])
+      t = hours($(col["realtime"]))
+      if (t == 0) t = hours($(col["duration"]))
       if (t &gt; max_hours) {
         max_hours = t
-        max_time_task = $col["name"]
+        max_time_task = $(col["name"])
       }
     }
     END {
@@ -1505,13 +1609,21 @@ recommend_resources_from_trace() {
     echo "- STAR walltime: \`$rec_walltime\`"
     echo "- STAR maxForks: \`$star_max_forks\`"
     echo
-    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned. STAR maxForks is calculated from a 300 GB total STAR memory budget and capped at 4."
+    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned. STAR alignment maxForks is calculated from a 300 GB total STAR memory budget and capped at 4."
   } &gt;&gt; "$REPORT"
 
   if [[ "$ALLOW_FIXES" == "true" ]]; then
     local star_conf="configs/star_resource_recommendation.config"
-    cat &gt; "$star_conf" &lt;&lt;CONF
+    cat &gt; "$star_conf" &lt;&lt; CONF
 process {
+  withName: '.*:STAR_GENOMEGENERATE' {
+    cpus = ${rec_cpu}
+    memory = '${rec_memory_gb} GB'
+    time = '${rec_walltime}'
+    errorStrategy = 'retry'
+    maxRetries = 2
+  }
+
   withName: '.*:STAR_ALIGN' {
     cpus = ${rec_cpu}
     memory = '${rec_memory_gb} GB'
@@ -1523,17 +1635,17 @@ process {
 }
 CONF
     set_config_value star_resource_config "\"$star_conf\""
-    echo "Applied STAR-only resource recommendation to $star_conf and recorded it in $CONFIG because ALLOW_FIXES=true." &gt;&gt; "$REPORT"
+    echo "Applied STAR-specific resource recommendation to $star_conf and recorded it in $CONFIG because ALLOW_FIXES=true." &gt;&gt; "$REPORT"
   else
     echo "Recommendation not applied. Re-run with ALLOW_FIXES=true to write configs/star_resource_recommendation.config and use it in Step 6 automatically." &gt;&gt; "$REPORT"
   fi
 }
 
 prepare_runtime_dirs() {
-  export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
-  export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_SINGULARITY_CACHEDIR}"
+  export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+  export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
   export TMPDIR="${TMPDIR:-$PWD/work/tmp}"
-  mkdir -p "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR" "$WORKDIR" logs reports
+  mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR" "$WORKDIR" logs reports
   echo "Safe fix: prepared cache, temporary, and work directories." &gt;&gt; "$REPORT"
 }
 
@@ -1562,6 +1674,9 @@ run_one_sample() {
   if [[ -n "$PSEUDO_ALIGNER" ]]; then
     cmd+=(--pseudo_aligner "$PSEUDO_ALIGNER")
   fi
+  if [[ -n "$TRIMMER" ]]; then
+    cmd+=(--trimmer "$TRIMMER")
+  fi
   if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
     cmd+=(--skip_alignment)
   fi
@@ -1573,7 +1688,7 @@ run_one_sample() {
   "${cmd[@]}" -resume -with-trace "$TRACE" 2&gt;&amp;1 | tee logs/one_sample_run.log
 }
 
-if ! command -v nextflow &gt;/dev/null 2&gt;&amp;1; then
+if ! command -v nextflow &gt; /dev/null 2&gt;&amp;1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." | tee -a "$REPORT" &gt;&amp;2
   exit 1
 fi
@@ -1603,8 +1718,7 @@ if ! run_one_sample; then
 fi
 
 echo "One sample validation passed." &gt;&gt; "$REPORT"
-recommend_resources_from_trace
-</code></pre>
+recommend_resources_from_trace</code></pre>
               </div>
             </details>
           </div>
@@ -1736,24 +1850,30 @@ set -euo pipefail
 CONFIG="${CONFIG:-configs/configure.yaml}"
 mkdir -p logs
 
-# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
-# Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
-#   nextflow pull nf-core/rnaseq -r &lt;version&gt;
-module purge 2&gt;/dev/null || true
-module load Nextflow/25.10.2 2&gt;/dev/null || true
-module load Apptainer/1.2.5-GCCcore-12.3.0 2&gt;/dev/null || true
-export NXF_OPTS='-Xms1g -Xmx4g'
-export NXF_OFFLINE='true'
-export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
-mkdir -p "$NXF_APPTAINER_CACHEDIR"
-
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
   awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
-PROFILE="$(get_config profile)"; PROFILE="${PROFILE:-apptainer}"
-PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+CACHE_DIR="$(get_config cache_dir)"
+
+# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
+# Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
+#   nextflow pull nf-core/rnaseq -r &lt;version&gt;
+module purge 2&gt; /dev/null || true
+module load Nextflow/25.10.2 2&gt; /dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2&gt; /dev/null || true
+export NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_OFFLINE='true'
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-${CACHE_DIR:-$PWD/apptainer_cache}}"
+export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR"
+
+PROFILE="$(get_config profile)"
+PROFILE="${PROFILE:-apptainer}"
+PIPELINE_VERSION="$(get_config pipeline_version)"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 SAMPLESHEET="$(get_config samplesheet)"
 OUTDIR="$(get_config outdir)"
 REFERENCE="$(get_config reference)"
@@ -1762,11 +1882,14 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
-GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
+GC_BIAS="$(get_config gc_bias)"
+GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="$(get_config trimmer)"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
+STAR_RESOURCE_CONFIG="$(get_config star_resource_config)"
 
 # Write resource limits as a Nextflow config. nf-core/rnaseq removed the
 # --max_cpus/--max_memory/--max_time params (template v3+), so we set
@@ -1779,7 +1902,10 @@ write_resource_config() {
   [[ -n "$WALLTIME" &amp;&amp; "$WALLTIME" != "auto" &amp;&amp; "$WALLTIME" != "unknown" ]] &amp;&amp; res+=("time: ${WALLTIME}")
   if [[ ${#res[@]} -gt 0 ]]; then
     mkdir -p configs
-    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" &gt; "$conf"
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(
+      IFS=,
+      echo "${res[*]}"
+    )" &gt; "$conf"
     printf '%s' "$conf"
   fi
 }
@@ -1787,13 +1913,13 @@ write_resource_config() {
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
+    *.gff | *.gff3 | *.gff.gz | *.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
   shopt -u nocasematch
 fi
 
-if ! command -v nextflow &gt;/dev/null 2&gt;&amp;1; then
+if ! command -v nextflow &gt; /dev/null 2&gt;&amp;1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." &gt;&amp;2
   exit 1
 fi
@@ -1822,6 +1948,9 @@ fi
 if [[ -n "$PSEUDO_ALIGNER" ]]; then
   cmd+=(--pseudo_aligner "$PSEUDO_ALIGNER")
 fi
+if [[ -n "$TRIMMER" ]]; then
+  cmd+=(--trimmer "$TRIMMER")
+fi
 if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
   cmd+=(--skip_alignment)
 fi
@@ -1832,6 +1961,9 @@ fi
 RES_CONF="$(write_resource_config)"
 if [[ -n "$RES_CONF" ]]; then
   cmd+=(-c "$RES_CONF")
+fi
+if [[ -n "$STAR_RESOURCE_CONFIG" &amp;&amp; -f "$STAR_RESOURCE_CONFIG" ]]; then
+  cmd+=(-c "$STAR_RESOURCE_CONFIG")
 fi
 
 extra_args=("$@")
@@ -1856,34 +1988,40 @@ fi
 set -euo pipefail
 
 echo "## Job status"
-squeue -u "$USER" 2&gt;/dev/null || true
+squeue -u "$USER" 2&gt; /dev/null || true
 
 echo
 echo "## Disk usage"
-du -sh results work logs reports 2&gt;/dev/null || true
+du -sh results work logs reports 2&gt; /dev/null || true
 
 echo
 echo "## Recent Nextflow log"
-tail -80 .nextflow.log 2&gt;/dev/null || echo "No .nextflow.log found"
+tail -80 .nextflow.log 2&gt; /dev/null || echo "No .nextflow.log found"
 
 echo
 echo "## Run history (nextflow log)"
-nextflow log 2&gt;/dev/null | tail -6 || echo "nextflow log unavailable (run from the project dir after a run starts)"
+nextflow log 2&gt; /dev/null | tail -6 || echo "nextflow log unavailable (run from the project dir after a run starts)"
 
 echo
 echo "## Failed tasks"
-grep -iE "failed|error|killed|oom-kill|slurmstepd|DUE TO TIME LIMIT|disk quota exceeded" .nextflow.log 2&gt;/dev/null | tail -40 || true
+grep -iE "failed|error|killed|oom-kill|slurmstepd|DUE TO TIME LIMIT|disk quota exceeded" .nextflow.log 2&gt; /dev/null | tail -40 || true
 
 echo
 echo "## Slurm accounting (recent jobs)"
-sacct -u "$USER" --format=JobID,JobName%20,State,ExitCode,Elapsed,ReqMem,MaxRSS 2&gt;/dev/null | tail -15 || echo "sacct unavailable"
+sacct -u "$USER" --format=JobID,JobName%20,State,ExitCode,Elapsed,ReqMem,MaxRSS 2&gt; /dev/null | tail -15 || echo "sacct unavailable"
 
 echo
 echo "## Most recent failed-task log"
-latest_err="$(ls -t work/*/*/.command.err 2&gt;/dev/null | head -n 1 || true)"
+latest_err=""
+for err in work/*/*/.command.err; do
+  [[ -e "$err" ]] || continue
+  if [[ -z "$latest_err" || "$err" -nt "$latest_err" ]]; then
+    latest_err="$err"
+  fi
+done
 if [[ -n "$latest_err" ]]; then
   echo "From: $latest_err"
-  tail -20 "$latest_err" 2&gt;/dev/null || true
+  tail -20 "$latest_err" 2&gt; /dev/null || true
 else
   echo "No .command.err found under work/ yet."
 fi
@@ -1892,8 +2030,7 @@ echo
 echo "Tips:"
 echo "- 'nextflow log &lt;run_name&gt;' lists each task's work directory."
 echo "- In a task work dir, inspect .command.err, .command.log and .command.out."
-echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"
-</code></pre>
+echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pre>
               </div>
             </details>
           </div>
@@ -1943,11 +2080,11 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"
             <article class="output-card">
               <h3>Analysis Data</h3>
               <p class="label">Files</p>
-              <p>gene/transcript expression matrices</p>
-              <p>merged matrices, e.g. <code>salmon.merged.gene_counts.tsv</code> (name/location varies by run mode and output options)</p>
-              <p><code>quant.sf</code> (Salmon, per sample)</p>
+              <p>per-sample Salmon transcript quantification</p>
+              <p><code>quant.sf</code> files for each sample</p>
+              <p>optional derived summaries, e.g. <code>salmon.merged.gene_counts.tsv</code>, after verifying <code>tx2gene</code></p>
               <p class="label">Use</p>
-              <p>DESeq2</p>
+              <p>tximport / DESeq2</p>
               <p>edgeR / limma</p>
               <p>Downstream analysis</p>
             </article>
@@ -2021,6 +2158,14 @@ HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
 HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
 HPC_SOURCE="${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR%/}"
 
+if [[ -z "$HPC_USER" || "$HPC_USER" == "your_username" || "$HPC_USER" == "your_user" ||
+  -z "$HPC_HOST" || "$HPC_HOST" == "your.cluster.edu" || "$HPC_HOST" == "hpc.example.edu" ||
+  -z "$HPC_PROJECT_DIR" || "$HPC_PROJECT_DIR" == /path/on/hpc/* || "$HPC_PROJECT_DIR" == /hpc/path/to/project ]]; then
+  echo "ERROR: Phoenix download source is not configured." &gt;&amp;2
+  echo "Set HPC_USER, HPC_HOST, and HPC_PROJECT_DIR, or run Step 3 configure with the correct values." &gt;&amp;2
+  exit 2
+fi
+
 EXCLUDES=(--exclude 'work/' --exclude '.nextflow*')
 if [[ "$INCLUDE_BAM" != "true" ]]; then
   EXCLUDES+=(--exclude '*.bam' --exclude '*.cram')
@@ -2043,8 +2188,7 @@ rsync -avh --partial --progress --ignore-missing-args \
 echo "Downloaded into: $LOCAL_DEST"
 echo "Files received:"
 find "$LOCAL_DEST" -type f | wc -l | sed 's/^/  total files: /'
-echo "Download log: $LOG"
-</code></pre>
+echo "Download log: $LOG"</code></pre>
               </div>
             </details>
           </div>
@@ -2179,8 +2323,6 @@ cat("Wrote", out_file, "\n")
     </section>
   </main>
 
-  <p class="scope-note">This guide targets <strong>nf-core/rnaseq v3.26.0</strong> (pinned with <code>-r 3.26.0</code>). It focuses on running the pipeline on Phoenix, not downstream DESeq2/WGCNA interpretation.</p>
-  <footer>Reproducible · Secure · Resumable · Shareable</footer>
   <script>
     const tabs = document.querySelectorAll('.step-tab');
     const panels = document.querySelectorAll('.step-detail');

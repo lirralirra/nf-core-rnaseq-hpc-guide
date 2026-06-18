@@ -13,24 +13,30 @@ set -euo pipefail
 CONFIG="${CONFIG:-configs/configure.yaml}"
 mkdir -p logs
 
-# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
-# Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
-#   nextflow pull nf-core/rnaseq -r <version>
-module purge 2>/dev/null || true
-module load Nextflow/25.10.2 2>/dev/null || true
-module load Apptainer/1.2.5-GCCcore-12.3.0 2>/dev/null || true
-export NXF_OPTS='-Xms1g -Xmx4g'
-export NXF_OFFLINE='true'
-export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
-mkdir -p "$NXF_APPTAINER_CACHEDIR"
-
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
   awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
 }
 
-PROFILE="$(get_config profile)"; PROFILE="${PROFILE:-apptainer}"
-PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+CACHE_DIR="$(get_config cache_dir)"
+
+# --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
+# Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
+#   nextflow pull nf-core/rnaseq -r <version>
+module purge 2> /dev/null || true
+module load Nextflow/25.10.2 2> /dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2> /dev/null || true
+export NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_OFFLINE='true'
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-${CACHE_DIR:-$PWD/apptainer_cache}}"
+export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR"
+
+PROFILE="$(get_config profile)"
+PROFILE="${PROFILE:-apptainer}"
+PIPELINE_VERSION="$(get_config pipeline_version)"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
 SAMPLESHEET="$(get_config samplesheet)"
 OUTDIR="$(get_config outdir)"
 REFERENCE="$(get_config reference)"
@@ -39,7 +45,8 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
-GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
+GC_BIAS="$(get_config gc_bias)"
+GC_BIAS="${GC_BIAS:-true}"
 TRIMMER="$(get_config trimmer)"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
@@ -58,7 +65,10 @@ write_resource_config() {
   [[ -n "$WALLTIME" && "$WALLTIME" != "auto" && "$WALLTIME" != "unknown" ]] && res+=("time: ${WALLTIME}")
   if [[ ${#res[@]} -gt 0 ]]; then
     mkdir -p configs
-    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" > "$conf"
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(
+      IFS=,
+      echo "${res[*]}"
+    )" > "$conf"
     printf '%s' "$conf"
   fi
 }
@@ -66,13 +76,13 @@ write_resource_config() {
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
+    *.gff | *.gff3 | *.gff.gz | *.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
   shopt -u nocasematch
 fi
 
-if ! command -v nextflow >/dev/null 2>&1; then
+if ! command -v nextflow > /dev/null 2>&1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." >&2
   exit 1
 fi

@@ -11,21 +11,31 @@ set -euo pipefail
 ALLOW_FIXES="${ALLOW_FIXES:-false}"
 SAMPLE_MODE="${SAMPLE_MODE:-largest}"
 SAMPLE_ID="${SAMPLE_ID:-}"
+CONFIG="${CONFIG:-configs/configure.yaml}"
 REPORT="reports/one_sample_validation_report.md"
 RUN_ID="${SLURM_JOB_ID:-manual_$(date +%Y%m%d_%H%M%S)}"
 TRACE="logs/one_sample_trace_${RUN_ID}.txt"
 mkdir -p reports logs work
 
+get_config() {
+  [[ -f "$CONFIG" ]] || return 0
+  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
+}
+
+CACHE_DIR="$(get_config cache_dir)"
+
 # --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
 # Compute nodes have no internet. Pre-pull the pipeline ONCE on a login node:
 #   nextflow pull nf-core/rnaseq -r <version>
-module purge 2>/dev/null || true
-module load Nextflow/25.10.2 2>/dev/null || true
-module load Apptainer/1.2.5-GCCcore-12.3.0 2>/dev/null || true
+module purge 2> /dev/null || true
+module load Nextflow/25.10.2 2> /dev/null || true
+module load Apptainer/1.2.5-GCCcore-12.3.0 2> /dev/null || true
 export NXF_OPTS='-Xms1g -Xmx4g'
 export NXF_OFFLINE='true'
-export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-$PWD/apptainer_cache}"
-mkdir -p "$NXF_APPTAINER_CACHEDIR"
+export NXF_APPTAINER_CACHEDIR="${NXF_APPTAINER_CACHEDIR:-${CACHE_DIR:-$PWD/apptainer_cache}}"
+export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR"
 
 {
   echo "# One Sample Validation Report"
@@ -36,11 +46,6 @@ mkdir -p "$NXF_APPTAINER_CACHEDIR"
   echo "Automatic fixes allowed: ${ALLOW_FIXES}"
 } > "$REPORT"
 
-CONFIG="${CONFIG:-configs/configure.yaml}"
-get_config() {
-  [[ -f "$CONFIG" ]] || return 0
-  awk -F': *' -v key="$1" '$1 == key { v=$2; gsub(/^[\042\047]+|[\042\047]+$/, "", v); print v; exit }' "$CONFIG"
-}
 SAMPLESHEET="$(get_config samplesheet)"
 REFERENCE="$(get_config reference)"
 ANNOTATION="$(get_config annotation)"
@@ -48,9 +53,13 @@ ANNOTATION_TYPE="$(get_config annotation_type)"
 ALIGNER="$(get_config aligner)"
 PSEUDO_ALIGNER="$(get_config pseudo_aligner)"
 SKIP_ALIGNMENT="$(get_config skip_alignment)"
-GC_BIAS="$(get_config gc_bias)"; GC_BIAS="${GC_BIAS:-true}"
-PIPELINE_VERSION="$(get_config pipeline_version)"; PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
-PROFILE="$(get_config profile)"; PROFILE="${PROFILE:-apptainer}"
+GC_BIAS="$(get_config gc_bias)"
+GC_BIAS="${GC_BIAS:-true}"
+TRIMMER="$(get_config trimmer)"
+PIPELINE_VERSION="$(get_config pipeline_version)"
+PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
+PROFILE="$(get_config profile)"
+PROFILE="${PROFILE:-apptainer}"
 OUTDIR="$(get_config outdir)"
 WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
@@ -62,9 +71,9 @@ head -n 1 "$SAMPLESHEET" > "$ONE_SAMPLE_SHEET"
 
 file_size() {
   local file="$1"
-  if stat -c '%s' "$file" >/dev/null 2>&1; then
+  if stat -c '%s' "$file" > /dev/null 2>&1; then
     stat -c '%s' "$file"
-  elif stat -f '%z' "$file" >/dev/null 2>&1; then
+  elif stat -f '%z' "$file" > /dev/null 2>&1; then
     stat -f '%z' "$file"
   else
     echo 0
@@ -83,12 +92,12 @@ select_sample_line() {
     first)
       tail -n +2 "$SAMPLESHEET" | head -n 1
       ;;
-    smallest|largest)
+    smallest | largest)
       local sort_flag="-nr"
       [[ "$SAMPLE_MODE" == "smallest" ]] && sort_flag="-n"
       tail -n +2 "$SAMPLESHEET" | while IFS=, read -r sample fastq_1 fastq_2 strandedness rest; do
         [[ -z "$sample" ]] && continue
-        size=$(( $(file_size "$fastq_1") + $(file_size "$fastq_2") ))
+        size=$(($(file_size "$fastq_1") + $(file_size "$fastq_2")))
         printf "%020d,%s,%s,%s,%s\n" "$size" "$sample" "$fastq_1" "$fastq_2" "$strandedness"
       done | sort "$sort_flag" | head -n 1 | cut -d, -f2-
       ;;
@@ -110,7 +119,7 @@ echo "Selected sample: $(printf '%s\n' "$selected_line" | cut -d, -f1)" >> "$REP
 if [[ -z "$ANNOTATION_TYPE" || "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
+    *.gff | *.gff3 | *.gff.gz | *.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
   shopt -u nocasematch
@@ -126,7 +135,10 @@ add_resource_limits() {
   [[ -n "$WALLTIME" && "$WALLTIME" != "auto" && "$WALLTIME" != "unknown" ]] && res+=("time: ${WALLTIME}")
   if [[ ${#res[@]} -gt 0 ]]; then
     mkdir -p configs
-    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(IFS=,; echo "${res[*]}")" > "$conf"
+    printf 'process {\n  resourceLimits = [ %s ]\n}\n' "$(
+      IFS=,
+      echo "${res[*]}"
+    )" > "$conf"
     cmd+=(-c "$conf")
   fi
 }
@@ -171,7 +183,7 @@ move_workdir_to_retry_area() {
 round_up_to_multiple() {
   local value="$1"
   local multiple="$2"
-  echo $(( ((value + multiple - 1) / multiple) * multiple ))
+  echo $((((value + multiple - 1) / multiple) * multiple))
 }
 
 recommend_resources_from_trace() {
@@ -210,20 +222,20 @@ recommend_resources_from_trace() {
       for (i = 1; i <= NF; i++) col[$i] = i
       next
     }
-    ($col["status"] == "COMPLETED" || $col["status"] == "CACHED") && $col["name"] ~ /STAR_ALIGN|STAR_GENOMEGENERATE/ {
-      rss = mem_gb($col["peak_rss"])
+    ($(col["status"]) == "COMPLETED" || $(col["status"]) == "CACHED") && $(col["name"]) ~ /STAR_ALIGN|STAR_GENOMEGENERATE/ {
+      rss = mem_gb($(col["peak_rss"]))
       if (rss > max_rss) {
         max_rss = rss
-        max_rss_task = $col["name"]
+        max_rss_task = $(col["name"])
       }
-      cpu = $col["%cpu"]
+      cpu = $(col["%cpu"])
       gsub(/%/, "", cpu)
       if (cpu > max_cpu) max_cpu = cpu
-      t = hours($col["realtime"])
-      if (t == 0) t = hours($col["duration"])
+      t = hours($(col["realtime"]))
+      if (t == 0) t = hours($(col["duration"]))
       if (t > max_hours) {
         max_hours = t
-        max_time_task = $col["name"]
+        max_time_task = $(col["name"])
       }
     }
     END {
@@ -292,13 +304,21 @@ recommend_resources_from_trace() {
     echo "- STAR walltime: \`$rec_walltime\`"
     echo "- STAR maxForks: \`$star_max_forks\`"
     echo
-    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned. STAR maxForks is calculated from a 300 GB total STAR memory budget and capped at 4."
+    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned. STAR alignment maxForks is calculated from a 300 GB total STAR memory budget and capped at 4."
   } >> "$REPORT"
 
   if [[ "$ALLOW_FIXES" == "true" ]]; then
     local star_conf="configs/star_resource_recommendation.config"
-    cat > "$star_conf" <<CONF
+    cat > "$star_conf" << CONF
 process {
+  withName: '.*:STAR_GENOMEGENERATE' {
+    cpus = ${rec_cpu}
+    memory = '${rec_memory_gb} GB'
+    time = '${rec_walltime}'
+    errorStrategy = 'retry'
+    maxRetries = 2
+  }
+
   withName: '.*:STAR_ALIGN' {
     cpus = ${rec_cpu}
     memory = '${rec_memory_gb} GB'
@@ -310,17 +330,17 @@ process {
 }
 CONF
     set_config_value star_resource_config "\"$star_conf\""
-    echo "Applied STAR-only resource recommendation to $star_conf and recorded it in $CONFIG because ALLOW_FIXES=true." >> "$REPORT"
+    echo "Applied STAR-specific resource recommendation to $star_conf and recorded it in $CONFIG because ALLOW_FIXES=true." >> "$REPORT"
   else
     echo "Recommendation not applied. Re-run with ALLOW_FIXES=true to write configs/star_resource_recommendation.config and use it in Step 6 automatically." >> "$REPORT"
   fi
 }
 
 prepare_runtime_dirs() {
-  export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
-  export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_SINGULARITY_CACHEDIR}"
+  export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
+  export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_APPTAINER_CACHEDIR}"
   export TMPDIR="${TMPDIR:-$PWD/work/tmp}"
-  mkdir -p "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR" "$WORKDIR" logs reports
+  mkdir -p "$NXF_APPTAINER_CACHEDIR" "$NXF_SINGULARITY_CACHEDIR" "$APPTAINER_CACHEDIR" "$TMPDIR" "$WORKDIR" logs reports
   echo "Safe fix: prepared cache, temporary, and work directories." >> "$REPORT"
 }
 
@@ -349,6 +369,9 @@ run_one_sample() {
   if [[ -n "$PSEUDO_ALIGNER" ]]; then
     cmd+=(--pseudo_aligner "$PSEUDO_ALIGNER")
   fi
+  if [[ -n "$TRIMMER" ]]; then
+    cmd+=(--trimmer "$TRIMMER")
+  fi
   if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
     cmd+=(--skip_alignment)
   fi
@@ -360,7 +383,7 @@ run_one_sample() {
   "${cmd[@]}" -resume -with-trace "$TRACE" 2>&1 | tee logs/one_sample_run.log
 }
 
-if ! command -v nextflow >/dev/null 2>&1; then
+if ! command -v nextflow > /dev/null 2>&1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." | tee -a "$REPORT" >&2
   exit 1
 fi

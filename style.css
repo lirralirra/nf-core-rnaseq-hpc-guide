@@ -1927,16 +1927,6 @@ h1 {
   margin-bottom: 0;
 }
 
-footer {
-  height: 34px;
-  display: grid;
-  place-items: center;
-  color: #79847f;
-  border-top: 1px solid #edf0ee;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-}
-
 .intro-overlay {
   position: fixed;
   inset: 0;
@@ -2114,14 +2104,6 @@ footer {
 .intro-scene:focus-visible {
   outline: 3px solid rgba(102, 145, 74, 0.55);
   outline-offset: 4px;
-}
-
-.intro-storyboard {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: center 62%;
 }
 
 .intro-start {
@@ -4198,65 +4180,143 @@ body {
   color: #eef1e8 !important;
 }
 
-/* Homepage intro image — paper mat / whitespace around it */
-.intro-scene {
-  width: min(calc(100vw - 56px), calc((100dvh - 56px) * 1672 / 941)) !important;
-  height: auto !important;
-  max-height: calc(100dvh - 56px) !important;
-  padding: clamp(14px, 2.2vw, 30px) !important;
-  background: #ffffff !important;
-  border: 1px solid #e8e6dd !important;
-  border-radius: 16px !important;
+/* Homepage intro card */
+.intro-overlay {
+  place-items: center !important;
+  padding: 18px !important;
+  background:
+    linear-gradient(90deg, rgba(12, 29, 45, 0.38) 0%, rgba(12, 29, 45, 0.22) 44%, rgba(12, 29, 45, 0.08) 100%),
+    url("assets/rnaseq-made-easy-intro-bg.png") center / cover no-repeat !important;
 }
-.intro-storyboard {
-  border-radius: 10px;
+
+.intro-scene {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 100dvh !important;
+  height: auto !important;
+  display: grid !important;
+  place-items: center start !important;
+  aspect-ratio: auto !important;
+  padding: clamp(42px, 8vw, 96px) 18px !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .intro-copy {
-  position: absolute;
-  left: clamp(28px, 5vw, 76px);
-  top: clamp(24px, 5vw, 68px);
-  max-width: min(620px, calc(100% - 56px));
-  padding: 14px 18px;
-  color: #21332a;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(231, 224, 214, 0.88);
-  border-radius: 12px;
-  box-shadow: 0 16px 38px rgba(33, 51, 42, 0.14);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  gap: 26px;
+  width: 100%;
+  max-width: min(900px, 58vw);
+  margin: 0 0 0 clamp(38px, 6vw, 116px);
+  padding: 0;
+  color: #ffffff;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: translateY(-5vh);
+}
+
+.intro-copy h1 {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(46px, 6.8vw, 84px);
+  font-weight: 820;
+  line-height: 1.05;
+  text-shadow: 0 6px 34px rgba(20, 36, 28, 0.26);
+  white-space: normal;
 }
 
 .intro-copy p {
+  max-width: none;
   margin: 0;
-  font-size: clamp(15px, 1.55vw, 22px);
-  font-weight: 850;
-  line-height: 1.28;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 610;
+  line-height: 1.45;
+  text-shadow: 0 5px 26px rgba(20, 36, 28, 0.22);
+  white-space: nowrap;
 }
 
 .intro-start {
-  right: clamp(30px, 5.8vw, 84px) !important;
-  bottom: clamp(28px, 5.8vw, 78px) !important;
+  position: static !important;
+  flex: 0 0 auto !important;
   width: auto !important;
-  min-width: 116px !important;
-  min-height: 44px !important;
-  padding: 10px 24px !important;
-  color: #ffffff !important;
-  background: #2f6b45 !important;
-  border: 1px solid #275a3a !important;
-  border-radius: 999px !important;
-  font-size: 15px !important;
-  font-weight: 850 !important;
-  box-shadow: 0 14px 34px rgba(36, 79, 54, 0.28) !important;
+  min-width: 126px !important;
+  min-height: 48px !important;
+  padding: 12px 30px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(19, 184, 166, 0.76) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  font-weight: 780 !important;
+  transform: none !important;
+  box-shadow: 0 14px 34px rgba(19, 184, 166, 0.22) !important;
+  backdrop-filter: blur(8px) !important;
 }
 
-/* Homepage scope / boundary note */
-.scope-note {
-  margin: 26px auto 0;
-  max-width: 760px;
-  padding: 0 18px;
-  color: #6b6a63;
-  font-size: 13.5px;
-  line-height: 1.5;
-  text-align: center;
+.intro-start:hover,
+.intro-start:focus-visible {
+  background: rgba(15, 159, 145, 0.86) !important;
+  outline: 3px solid rgba(19, 184, 166, 0.22) !important;
+  outline-offset: 4px !important;
+}
+
+@media (max-width: 1120px) {
+  .intro-scene {
+    min-height: auto !important;
+    max-height: calc(100dvh - 36px) !important;
+  }
+
+  .intro-copy {
+    max-width: none;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+    transform: none;
+  }
+
+  .intro-copy p {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 640px) {
+  .intro-scene {
+    width: calc(100vw - 24px) !important;
+    min-height: auto !important;
+    max-height: calc(100dvh - 28px) !important;
+    padding: 34px 8px !important;
+  }
+
+  .intro-copy {
+    gap: 18px;
+    max-width: none;
+  }
+
+  .intro-copy h1 {
+    font-size: 42px;
+  }
+
+  .intro-copy p {
+    font-size: 16px;
+  }
+
+  .intro-start {
+    min-width: 96px !important;
+    min-height: 38px !important;
+    padding: 8px 18px !important;
+    font-size: 13px !important;
+  }
 }
 
 /* Step tabs: luminous light-cyan cards on cream, uniform for local and

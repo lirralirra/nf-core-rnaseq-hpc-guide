@@ -34,7 +34,7 @@ check_path() {
 # Read a plain or gzipped text file.
 read_text() {
   case "$1" in
-    *.gz) zcat "$1" 2>/dev/null || gzip -dc "$1" ;;
+    *.gz) zcat "$1" 2> /dev/null || gzip -dc "$1" ;;
     *) cat "$1" ;;
   esac
 }
@@ -76,9 +76,11 @@ read_text() {
       fi
 
       case "$strandedness" in
-        auto|forward|reverse|unstranded) : ;;
-        *) echo "- BAD STRANDEDNESS: '$strandedness' for sample '$sample' (allowed: auto, forward, reverse, unstranded)"
-           errors=$((errors + 1)) ;;
+        auto | forward | reverse | unstranded) : ;;
+        *)
+          echo "- BAD STRANDEDNESS: '$strandedness' for sample '$sample' (allowed: auto, forward, reverse, unstranded)"
+          errors=$((errors + 1))
+          ;;
       esac
 
       for fq in "$fastq_1" "$fastq_2"; do
@@ -119,7 +121,7 @@ read_text() {
   fi
   echo
   echo "## Upload size estimate"
-  du -sh input configs scripts reports README.md 2>/dev/null || true
+  du -sh input configs scripts reports README.md 2> /dev/null || true
   echo
   if [[ "$errors" -eq 0 ]]; then
     echo "## Result"

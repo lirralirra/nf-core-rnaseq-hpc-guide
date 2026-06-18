@@ -1,26 +1,34 @@
-local_project_dir: /local/path/to/project
-hpc_user: your_user
-hpc_host: hpc.example.edu
-hpc_project_dir: /hpc/path/to/project
-
-fastq_dir: input/fastq
-samplesheet: input/samplesheet.csv
-reference: input/reference/genome.fa
-annotation: input/annotation/genes.gtf
-annotation_type: gtf
-species: unknown
+---
+project_name: ""
+project_description: ""
+project_owner: ""
+guide_version: "v1.0.0"
+template_version: "v1.0.0"
+created_date: "2026-06-18"
+local_project_dir: "/local/path/to/project"
+hpc_user: "your_username"
+hpc_host: "p2-log-2.hpc.adelaide.edu.au"
+hpc_project_dir: "/scratchdata1/your_project/rnaseq_projects/my_project"
+fastq_dir: "input/fastq"
+samplesheet: "input/samplesheet.csv"
+reference: "input/reference/genome.fa"
+annotation: "input/annotation/genes.gtf"
+annotation_type: "gtf"
+pipeline_version: "3.26.0"
+species: "unknown"
 genome_size_gb: unknown
 sample_count: unknown
-
-run_mode: star_salmon
-aligner: star_salmon
-pseudo_aligner: salmon
+run_mode: "star_salmon"
+aligner: "star_salmon"
+pseudo_aligner: "salmon"
 skip_alignment: false
-profile: singularity
-
-memory: auto
+gc_bias: true
+trimmer: "trimgalore"
+ribo_removal_tool: ""
+profile: "apptainer"
+memory: "auto"
 cpu: auto
-walltime: auto
-workdir: work
-outdir: results
-cache_dir: /scratch/$USER/happy_rnaseq_project/cache
+walltime: "auto"
+workdir: "work"
+outdir: "results"
+cache_dir: "/scratchdata1/your_username/apptainer_cache"
