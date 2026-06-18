@@ -12,6 +12,8 @@ ALLOW_FIXES="${ALLOW_FIXES:-false}"
 SAMPLE_MODE="${SAMPLE_MODE:-largest}"
 SAMPLE_ID="${SAMPLE_ID:-}"
 REPORT="reports/one_sample_validation_report.md"
+RUN_ID="${SLURM_JOB_ID:-manual_$(date +%Y%m%d_%H%M%S)}"
+TRACE="logs/one_sample_trace_${RUN_ID}.txt"
 mkdir -p reports logs work
 
 # --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
@@ -166,6 +168,137 @@ move_workdir_to_retry_area() {
   echo "Safe fix: moved validation work directory to $WORKDIR." >> "$REPORT"
 }
 
+round_up_to_multiple() {
+  local value="$1"
+  local multiple="$2"
+  echo $(( ((value + multiple - 1) / multiple) * multiple ))
+}
+
+recommend_resources_from_trace() {
+  [[ -f "$TRACE" ]] || return 0
+
+  local recommendation
+  recommendation="$(awk -F'\t' '
+    function mem_gb(value, n, unit) {
+      n = value
+      sub(/ .*/, "", n)
+      unit = value
+      sub(/^[0-9.]+ /, "", unit)
+      if (unit == "TB") return n * 1024
+      if (unit == "GB") return n
+      if (unit == "MB") return n / 1024
+      if (unit == "KB") return n / 1024 / 1024
+      return n
+    }
+    function hours(value, total, i, part, n, unit) {
+      total = 0
+      gsub(/,/, "", value)
+      split(value, part, " ")
+      for (i in part) {
+        n = part[i]
+        unit = n
+        sub(/^[0-9.]+/, "", unit)
+        sub(/[a-zA-Z]+$/, "", n)
+        if (unit == "d") total += n * 24
+        else if (unit == "h") total += n
+        else if (unit == "m") total += n / 60
+        else if (unit == "s") total += n / 3600
+      }
+      return total
+    }
+    NR == 1 {
+      for (i = 1; i <= NF; i++) col[$i] = i
+      next
+    }
+    $col["status"] == "COMPLETED" || $col["status"] == "CACHED" {
+      rss = mem_gb($col["peak_rss"])
+      if (rss > max_rss) {
+        max_rss = rss
+        max_rss_task = $col["name"]
+      }
+      cpu = $col["%cpu"]
+      gsub(/%/, "", cpu)
+      if (cpu > max_cpu) max_cpu = cpu
+      t = hours($col["realtime"])
+      if (t == 0) t = hours($col["duration"])
+      if (t > max_hours) {
+        max_hours = t
+        max_time_task = $col["name"]
+      }
+    }
+    END {
+      if (max_rss > 0 || max_cpu > 0 || max_hours > 0) {
+        printf "%.2f\t%.0f\t%.2f\t%s\t%s\n", max_rss, max_cpu, max_hours, max_rss_task, max_time_task
+      }
+    }
+  ' "$TRACE")"
+
+  [[ -n "$recommendation" ]] || return 0
+
+  local peak_rss_gb peak_cpu_pct max_hours peak_rss_task max_time_task
+  IFS=$'\t' read -r peak_rss_gb peak_cpu_pct max_hours peak_rss_task max_time_task <<< "$recommendation"
+
+  local min_mem=48 min_cpu=8 min_walltime=12
+  if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
+    min_mem=32
+    min_cpu=4
+    min_walltime=8
+  fi
+
+  local rec_memory rec_cpu rec_walltime
+  rec_memory="$(awk -v peak="$peak_rss_gb" -v min="$min_mem" 'BEGIN {
+    rec = int((peak * 1.35) + 4 + 0.999)
+    if (rec < min) rec = min
+    printf "%d", rec
+  }')"
+  rec_memory="$(round_up_to_multiple "$rec_memory" 8)G"
+
+  rec_cpu="$(awk -v peak="$peak_cpu_pct" -v min="$min_cpu" 'BEGIN {
+    rec = int((peak / 100 * 1.25) + 0.999)
+    if (rec < min) rec = min
+    printf "%d", rec
+  }')"
+
+  rec_walltime="$(awk -v peak="$max_hours" -v min="$min_walltime" 'BEGIN {
+    rec = int((peak * 2) + 0.999)
+    if (rec < min) rec = min
+    printf "%d.h", rec
+  }')"
+
+  {
+    echo
+    echo "## Resource recommendation from one-sample trace"
+    echo
+    echo "Trace file: \`$TRACE\`"
+    echo
+    echo "- Peak RSS: ${peak_rss_gb} GB"
+    echo "- Peak CPU: ${peak_cpu_pct}%"
+    echo "- Longest task realtime: ${max_hours} h"
+    echo "- Memory-driving task: ${peak_rss_task:-unknown}"
+    echo "- Time-driving task: ${max_time_task:-unknown}"
+    echo
+    echo "Recommended Step 6 caps:"
+    echo
+    echo "- memory: \`$rec_memory\`"
+    echo "- cpu: \`$rec_cpu\`"
+    echo "- walltime: \`$rec_walltime\`"
+    echo
+    echo "These are per-task caps for the full run, not total runtime. The recommendation uses the selected one-sample run plus safety margins; it is most reliable when \`SAMPLE_MODE=largest\`."
+  } >> "$REPORT"
+
+  if [[ "$ALLOW_FIXES" == "true" ]]; then
+    MEMORY="$rec_memory"
+    CPU="$rec_cpu"
+    WALLTIME="$rec_walltime"
+    set_config_value memory "\"$MEMORY\""
+    set_config_value cpu "$CPU"
+    set_config_value walltime "\"$WALLTIME\""
+    echo "Applied resource recommendation to $CONFIG because ALLOW_FIXES=true." >> "$REPORT"
+  else
+    echo "Recommendation not applied. Re-run with ALLOW_FIXES=true to update $CONFIG automatically." >> "$REPORT"
+  fi
+}
+
 prepare_runtime_dirs() {
   export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
   export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_SINGULARITY_CACHEDIR}"
@@ -206,7 +339,8 @@ run_one_sample() {
     cmd+=("--extra_salmon_quant_args=--gcBias")
   fi
   add_resource_limits
-  "${cmd[@]}" -resume 2>&1 | tee logs/one_sample_run.log
+  rm -f "$TRACE"
+  "${cmd[@]}" -resume -with-trace "$TRACE" 2>&1 | tee logs/one_sample_run.log
 }
 
 if ! command -v nextflow >/dev/null 2>&1; then
@@ -239,3 +373,4 @@ if ! run_one_sample; then
 fi
 
 echo "One sample validation passed." >> "$REPORT"
+recommend_resources_from_trace

@@ -1037,7 +1037,8 @@ echo "Upload log: $LOG"
               <ul>
                 <li>Run one real sample (largest by default) to validate the current project configuration and estimate real resource requirements</li>
                 <li>Workflow: Dry Run → Run one real sample</li>
-                <li>When automatic fixes are allowed, adjust safe infrastructure/resource settings for common failures such as missing container images, STAR/BEDTOOLS memory failures, walltime limits, and TMPDIR/scratch permission or workdir issues, then resume when possible; storage/quota problems are reported but must be resolved manually</li>
+                <li>After the one-sample run passes, parse the Nextflow trace and recommend Step 6 memory, CPU, and walltime caps from observed peak RSS, CPU use, and longest task runtime</li>
+                <li>When automatic fixes are allowed, apply those trace-based resource recommendations to <code>configs/configure.yaml</code>, adjust safe infrastructure/resource settings for common failures, and resume when possible; storage/quota problems are reported but must be resolved manually</li>
                 <li>Write <code>reports/one_sample_validation_report.md</code></li>
               </ul>
             </details>
@@ -1047,7 +1048,7 @@ echo "Upload log: $LOG"
               <summary>Notes</summary>
               <ul>
             <li><strong>bash vs sbatch:</strong> small checks and helpers run on the login node with <code>bash</code> (for example <code>bash scripts/input_validate.sh</code>). Anything that launches <code>nf-core/rnaseq</code> through Nextflow &mdash; <code>smoke_run.sh</code>, <code>one_sample_run.sh</code>, and <code>run.sh</code> &mdash; must be submitted to SLURM with <code>sbatch</code> so it runs on a compute node, never directly on the login node. Phoenix compute nodes have no internet, so pre-pull the pipeline once on a login node first: <code>nextflow pull nf-core/rnaseq -r 3.26.0</code>.</li>
-            <li><strong>☑ Allow limited safe fixes and resume during validation:</strong> The validation step can suggest or apply limited safe infrastructure/resource fixes — creating cache/temporary directories, adjusting the work directory, raising memory or walltime, and retrying with resume. It does not automatically fix storage quotas, container-registry access, or other cluster-level issues; those are reported for you to resolve. Biological settings are never changed automatically.</li>
+            <li><strong>☑ Allow limited safe fixes and resume during validation:</strong> The validation step can suggest safe resource values from the one-sample trace. With <code>ALLOW_FIXES=true</code>, it can write those values to <code>configs/configure.yaml</code>, create cache/temporary directories, adjust the work directory, raise memory or walltime after failures, and retry with resume. It does not automatically fix storage quotas, container-registry access, or other cluster-level issues; those are reported for you to resolve. Biological settings are never changed automatically.</li>
             <li>Review <code>reports/smoke_test_report.md</code>.</li>
             <li>Use the largest sample by default when the goal is resource validation.</li>
             <li>Review <code>reports/one_sample_validation_report.md</code> before launching the full run.</li>
@@ -1218,6 +1219,8 @@ ALLOW_FIXES="${ALLOW_FIXES:-false}"
 SAMPLE_MODE="${SAMPLE_MODE:-largest}"
 SAMPLE_ID="${SAMPLE_ID:-}"
 REPORT="reports/one_sample_validation_report.md"
+RUN_ID="${SLURM_JOB_ID:-manual_$(date +%Y%m%d_%H%M%S)}"
+TRACE="logs/one_sample_trace_${RUN_ID}.txt"
 mkdir -p reports logs work
 
 # --- Phoenix HPC environment (adjust module versions if Phoenix changes them) ---
@@ -1372,6 +1375,137 @@ move_workdir_to_retry_area() {
   echo "Safe fix: moved validation work directory to $WORKDIR." &gt;&gt; "$REPORT"
 }
 
+round_up_to_multiple() {
+  local value="$1"
+  local multiple="$2"
+  echo $(( ((value + multiple - 1) / multiple) * multiple ))
+}
+
+recommend_resources_from_trace() {
+  [[ -f "$TRACE" ]] || return 0
+
+  local recommendation
+  recommendation="$(awk -F'\t' '
+    function mem_gb(value, n, unit) {
+      n = value
+      sub(/ .*/, "", n)
+      unit = value
+      sub(/^[0-9.]+ /, "", unit)
+      if (unit == "TB") return n * 1024
+      if (unit == "GB") return n
+      if (unit == "MB") return n / 1024
+      if (unit == "KB") return n / 1024 / 1024
+      return n
+    }
+    function hours(value, total, i, part, n, unit) {
+      total = 0
+      gsub(/,/, "", value)
+      split(value, part, " ")
+      for (i in part) {
+        n = part[i]
+        unit = n
+        sub(/^[0-9.]+/, "", unit)
+        sub(/[a-zA-Z]+$/, "", n)
+        if (unit == "d") total += n * 24
+        else if (unit == "h") total += n
+        else if (unit == "m") total += n / 60
+        else if (unit == "s") total += n / 3600
+      }
+      return total
+    }
+    NR == 1 {
+      for (i = 1; i &lt;= NF; i++) col[$i] = i
+      next
+    }
+    $col["status"] == "COMPLETED" || $col["status"] == "CACHED" {
+      rss = mem_gb($col["peak_rss"])
+      if (rss &gt; max_rss) {
+        max_rss = rss
+        max_rss_task = $col["name"]
+      }
+      cpu = $col["%cpu"]
+      gsub(/%/, "", cpu)
+      if (cpu &gt; max_cpu) max_cpu = cpu
+      t = hours($col["realtime"])
+      if (t == 0) t = hours($col["duration"])
+      if (t &gt; max_hours) {
+        max_hours = t
+        max_time_task = $col["name"]
+      }
+    }
+    END {
+      if (max_rss &gt; 0 || max_cpu &gt; 0 || max_hours &gt; 0) {
+        printf "%.2f\t%.0f\t%.2f\t%s\t%s\n", max_rss, max_cpu, max_hours, max_rss_task, max_time_task
+      }
+    }
+  ' "$TRACE")"
+
+  [[ -n "$recommendation" ]] || return 0
+
+  local peak_rss_gb peak_cpu_pct max_hours peak_rss_task max_time_task
+  IFS=$'\t' read -r peak_rss_gb peak_cpu_pct max_hours peak_rss_task max_time_task &lt;&lt;&lt; "$recommendation"
+
+  local min_mem=48 min_cpu=8 min_walltime=12
+  if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
+    min_mem=32
+    min_cpu=4
+    min_walltime=8
+  fi
+
+  local rec_memory rec_cpu rec_walltime
+  rec_memory="$(awk -v peak="$peak_rss_gb" -v min="$min_mem" 'BEGIN {
+    rec = int((peak * 1.35) + 4 + 0.999)
+    if (rec &lt; min) rec = min
+    printf "%d", rec
+  }')"
+  rec_memory="$(round_up_to_multiple "$rec_memory" 8)G"
+
+  rec_cpu="$(awk -v peak="$peak_cpu_pct" -v min="$min_cpu" 'BEGIN {
+    rec = int((peak / 100 * 1.25) + 0.999)
+    if (rec &lt; min) rec = min
+    printf "%d", rec
+  }')"
+
+  rec_walltime="$(awk -v peak="$max_hours" -v min="$min_walltime" 'BEGIN {
+    rec = int((peak * 2) + 0.999)
+    if (rec &lt; min) rec = min
+    printf "%d.h", rec
+  }')"
+
+  {
+    echo
+    echo "## Resource recommendation from one-sample trace"
+    echo
+    echo "Trace file: \`$TRACE\`"
+    echo
+    echo "- Peak RSS: ${peak_rss_gb} GB"
+    echo "- Peak CPU: ${peak_cpu_pct}%"
+    echo "- Longest task realtime: ${max_hours} h"
+    echo "- Memory-driving task: ${peak_rss_task:-unknown}"
+    echo "- Time-driving task: ${max_time_task:-unknown}"
+    echo
+    echo "Recommended Step 6 caps:"
+    echo
+    echo "- memory: \`$rec_memory\`"
+    echo "- cpu: \`$rec_cpu\`"
+    echo "- walltime: \`$rec_walltime\`"
+    echo
+    echo "These are per-task caps for the full run, not total runtime. The recommendation uses the selected one-sample run plus safety margins; it is most reliable when \`SAMPLE_MODE=largest\`."
+  } &gt;&gt; "$REPORT"
+
+  if [[ "$ALLOW_FIXES" == "true" ]]; then
+    MEMORY="$rec_memory"
+    CPU="$rec_cpu"
+    WALLTIME="$rec_walltime"
+    set_config_value memory "\"$MEMORY\""
+    set_config_value cpu "$CPU"
+    set_config_value walltime "\"$WALLTIME\""
+    echo "Applied resource recommendation to $CONFIG because ALLOW_FIXES=true." &gt;&gt; "$REPORT"
+  else
+    echo "Recommendation not applied. Re-run with ALLOW_FIXES=true to update $CONFIG automatically." &gt;&gt; "$REPORT"
+  fi
+}
+
 prepare_runtime_dirs() {
   export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-$PWD/work/container_cache}"
   export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$NXF_SINGULARITY_CACHEDIR}"
@@ -1412,7 +1546,8 @@ run_one_sample() {
     cmd+=("--extra_salmon_quant_args=--gcBias")
   fi
   add_resource_limits
-  "${cmd[@]}" -resume 2&gt;&amp;1 | tee logs/one_sample_run.log
+  rm -f "$TRACE"
+  "${cmd[@]}" -resume -with-trace "$TRACE" 2&gt;&amp;1 | tee logs/one_sample_run.log
 }
 
 if ! command -v nextflow &gt;/dev/null 2&gt;&amp;1; then
@@ -1444,7 +1579,9 @@ if ! run_one_sample; then
   fi
 fi
 
-echo "One sample validation passed." &gt;&gt; "$REPORT"</code></pre>
+echo "One sample validation passed." &gt;&gt; "$REPORT"
+recommend_resources_from_trace
+</code></pre>
               </div>
             </details>
           </div>
