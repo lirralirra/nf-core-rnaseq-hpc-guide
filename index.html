@@ -71,10 +71,10 @@
       <div class="sidebar-downloads" aria-label="Version information">
         <h2>Versions</h2>
         <dl class="version-block" aria-label="Version information">
-          <div><dt>Guide Version</dt><dd>v1.0.0</dd></div>
-          <div><dt>Template Version</dt><dd>v1.0.0</dd></div>
+          <div><dt>Guide Version</dt><dd>v1.1.0</dd></div>
+          <div><dt>Template Version</dt><dd>v1.1.0</dd></div>
           <div><dt>Compatible nf-core/rnaseq</dt><dd>3.26.0</dd></div>
-          <div><dt>Last Updated</dt><dd>2026-06-16</dd></div>
+          <div><dt>Last Updated</dt><dd>2026-06-18</dd></div>
         </dl>
       </div>
     </section>
@@ -126,27 +126,34 @@
                 <ol>
                   <li>Enter your project details (optional):
                     <div class="simple-path-box">
-                      <label for="projectName"><strong>Project name</strong></label>
-                      <input id="projectName" type="text" autocomplete="off" placeholder="MY_RNASEQ_PROJECT_202601">
-                      <label for="projectDescription"><strong>Project description</strong></label>
-                      <input id="projectDescription" type="text" autocomplete="off" placeholder="Short one-line description of this RNA-seq study">
-                      <label for="projectOwner"><strong>Project owner</strong></label>
-                      <input id="projectOwner" type="text" autocomplete="off" placeholder="Your name">
-                      <p>Identification only &mdash; written to <code>configure.yaml</code> and <code>PROJECT_INFO.md</code>; does not affect the pipeline run. The project name is used to name the download below (and the unzipped folder); if left blank, the download keeps a versioned name. Tip: use English letters, numbers, <code>_</code> or <code>-</code>, since this becomes a folder name used on Phoenix.</p>
+                      <div class="project-meta-grid">
+                        <label for="projectName"><strong>Project name</strong></label>
+                        <label for="projectOwner"><strong>Project owner</strong></label>
+                        <input id="projectName" type="text" autocomplete="off" placeholder="MY_RNASEQ_PROJECT_202601">
+                        <input id="projectOwner" type="text" autocomplete="off" placeholder="Your name">
+                        <div class="field-label-row wide">
+                          <label for="projectDescription"><strong>Project description</strong></label>
+                          <details class="info-popover">
+                            <summary aria-label="Project metadata help">i</summary>
+                            <p>Identification only &mdash; written to <code>configure.yaml</code> and <code>PROJECT_INFO.md</code>; does not affect the pipeline run. The project name is used to name the download below (and the unzipped folder); if left blank, the download keeps a versioned name. Tip: use English letters, numbers, <code>_</code> or <code>-</code>, since this becomes a folder name used on Phoenix.</p>
+                          </details>
+                        </div>
+                        <textarea class="wide" id="projectDescription" autocomplete="off" placeholder="Describe this RNA-seq study"></textarea>
+                      </div>
                     </div>
                   </li>
-                  <li>Download the <strong>Template ZIP</strong> for your own FASTQ, reference, annotation, and samplesheet:
+                  <li>Download data package:
                     <div class="step-download-row">
-                      <a id="dlTemplate" class="demo-button" href="demo/template_project_v1.0.0.zip" download="template_project_v1.0.0.zip">
-                        <span class="dl-title">Download Template v1.0.0</span>
+                      <a id="dlTemplate" class="demo-button" href="demo/template_project_v1.1.0.zip" download="template_project_v1.1.0.zip">
+                        <span class="dl-title">Download Template v1.1.0</span>
                         <span class="dl-sub">Empty project for your own data</span>
                       </a>
                     </div>
                   </li>
-                  <li>Or download the <strong>Demo Project ZIP</strong> to try the workflow on a small example:
+                  <li>Or try the demo:
                     <div class="step-download-row">
-                      <a id="dlDemo" class="demo-button" href="demo/demo_project_v1.0.0.zip" download="demo_project_v1.0.0.zip">
-                        <span class="dl-title">Download Demo Project v1.0.0</span>
+                      <a id="dlDemo" class="demo-button" href="demo/demo_project_v1.1.0.zip" download="demo_project_v1.1.0.zip">
+                        <span class="dl-title">Download Demo Project v1.1.0</span>
                         <span class="dl-sub">Small example to try the workflow</span>
                       </a>
                     </div>
@@ -154,8 +161,8 @@
                   <li>Unzip the project on your local computer, check the folder structure, and put the folder path below.
                     <div class="simple-path-box">
                       <label for="localPath"><strong>Local working folder</strong></label>
-                      <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/my_project">
-                      <p>This is the folder where you unzipped the template. Later local commands will use this path.</p>
+                      <input id="localPath" type="text" autocomplete="off" placeholder="/Users/yourname/rnaseq_projects/MY_RNASEQ_PROJECT_202601">
+                      <p>Leave blank to use the Project name as the folder name. If you type a path here, local commands and the Phoenix project folder will use this path instead.</p>
                     </div>
                   </li>
                 </ol>
@@ -196,7 +203,7 @@
             <li>Generate <code>input/samplesheet.csv</code>, run:
               <pre data-command="step2-make"></pre>
             </li>
-            <li>Open <code>input/samplesheet.csv</code> and manually check it matches the nf-core/rnaseq format (<a href="documents.html#samplesheet-format">samplesheet spec</a>).</li>
+            <li>Open <code>input/samplesheet.csv</code> and manually check it (<a href="documents.html#samplesheet-format">samplesheet spec</a>).</li>
             <li>Validate files, pairs, sample names, references, annotation, scripts, and upload size, run:
               <pre data-command="step2-validate"></pre>
             </li>
@@ -247,9 +254,13 @@ if [[ ! -d "$FASTQ_DIR" ]]; then
 fi
 
 if [[ -f "$SAMPLESHEET" &amp;&amp; "$FORCE" != "true" ]]; then
-  echo "Samplesheet exists: $SAMPLESHEET"
-  echo "Set FORCE=true to overwrite."
-  exit 0
+  existing_rows="$(awk 'NR &gt; 1 &amp;&amp; $0 !~ /^[[:space:]]*$/ {count++} END {print count + 0}' "$SAMPLESHEET")"
+  if [[ "$existing_rows" -gt 0 ]]; then
+    echo "Samplesheet exists with $existing_rows data row(s): $SAMPLESHEET"
+    echo "Set FORCE=true to overwrite."
+    exit 0
+  fi
+  echo "Samplesheet exists but has no data rows; regenerating: $SAMPLESHEET"
 fi
 
 tmp="$(mktemp)"
@@ -364,6 +375,13 @@ read_text() {
       echo "- ERROR: unexpected header"
       errors=$((errors + 1))
     fi
+    data_rows="$(awk -F, 'NR &gt; 1 &amp;&amp; $1 !~ /^[[:space:]]*$/ {count++} END {print count + 0}' "$SAMPLESHEET")"
+    if [[ "$data_rows" -lt 1 ]]; then
+      echo "- ERROR: samplesheet has no sample rows. Run scripts/make_samplesheet.sh after adding FASTQ files."
+      errors=$((errors + 1))
+    else
+      echo "- OK: $data_rows sample row(s)"
+    fi
     duplicates="$(awk -F, 'NR&gt;1 {print $1}' "$SAMPLESHEET" | tr -d '\r' | sort | uniq -d || true)"
     if [[ -n "$duplicates" ]]; then
       printf '%s\n' "$duplicates" | sed 's/^/- DUPLICATE SAMPLE ID: /'
@@ -459,9 +477,15 @@ fi</code></pre>
             <li>Open your local terminal and move into your local project folder, run:
               <pre data-command="local-context"></pre>
             </li>
-            <li>Choose the aligner (<a href="documents.html#choose-pipeline-mode">how to decide</a>). For most eukaryotic RNA-seq, keep the recommended default:
+            <li>Choose the aligner (<a href="documents.html#choose-pipeline-mode">how to decide</a>):
               <div class="simple-path-box aligner-choice-box">
-                <label for="alignerMode"><strong>Aligner</strong> (<code>--aligner</code>)</label>
+                <div class="field-label-row">
+                  <label for="alignerMode"><strong>Aligner</strong> (<code>--aligner</code>)</label>
+                  <details class="info-popover">
+                    <summary aria-label="nf-core defaults used">i</summary>
+                    <p>All other nf-core/rnaseq options use the pipeline defaults; see the full <a href="https://nf-co.re/rnaseq/3.26.0/parameters/" target="_blank" rel="noopener">nf-core/rnaseq 3.26.0 parameters</a>. The one intentional exception in this guide is <a href="documents.html#gc-bias">Salmon GC bias correction</a>, which is enabled by default here.</p>
+                  </details>
+                </div>
                 <select id="alignerMode">
                   <option value="star_salmon">STAR + Salmon (recommended, default)</option>
                   <option value="star_rsem">STAR + RSEM</option>
@@ -470,7 +494,6 @@ fi</code></pre>
                   <option value="salmon">Salmon only (no genome alignment)</option>
                 </select>
                 <p id="alignerModeHelp">STAR + Salmon (recommended, default): splice-aware genome alignment with STAR, quantification with Salmon.</p>
-                <p class="more-choices-note">All other nf-core/rnaseq options use the pipeline defaults; see the full <a href="https://nf-co.re/rnaseq/3.26.0/parameters/" target="_blank" rel="noopener">nf-core/rnaseq 3.26.0 parameters</a>. The one intentional exception in this guide is <a href="documents.html#gc-bias">Salmon GC bias correction</a>, which is enabled by default here.</p>
               </div>
             </li>
             <li>Generate <code>configs/configure.yaml</code> for the selected mode, run:
@@ -498,9 +521,9 @@ fi</code></pre>
             <pre>project_name: MY_RNASEQ_PROJECT_202601
 project_description: Short one-line description of this RNA-seq study
 project_owner: Your Name
-guide_version: v1.0.0
-template_version: v1.0.0
-created_date: 2026-06-15
+guide_version: v1.1.0
+template_version: v1.1.0
+created_date: 2026-06-18
 pipeline_version: 3.26.0
 run_mode: star_salmon
 aligner: star_salmon
@@ -517,7 +540,7 @@ genome_size_gb: 12
 sample_count: 30
 hpc_user: your_username
 hpc_host: p2-log-2.hpc.adelaide.edu.au
-hpc_project_dir: /scratchdata1/your_project/rnaseq_projects/my_project
+hpc_project_dir: /hpcfs/users/your_username/rna_seq_projects/my_project
 profile: apptainer
 outdir: results
 workdir: work
@@ -583,8 +606,8 @@ RIBO_REMOVAL_TOOL="${RIBO_REMOVAL_TOOL:-}"
 
 # Shared constants (keep in sync with the guide UI and templates).
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
-GUIDE_VERSION="${GUIDE_VERSION:-v1.0.0}"
-TEMPLATE_VERSION="${TEMPLATE_VERSION:-v1.0.0}"
+GUIDE_VERSION="${GUIDE_VERSION:-v1.1.0}"
+TEMPLATE_VERSION="${TEMPLATE_VERSION:-v1.1.0}"
 CREATED_DATE="${CREATED_DATE:-$(date +%Y-%m-%d)}"
 
 # Project metadata (identification only; does not affect nf-core/rnaseq execution).
@@ -672,7 +695,7 @@ HPC_USER="${HPC_USER:-your_username}"
 HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
 HPC_HOST="${HPC_HOST:-p2-log-2.hpc.adelaide.edu.au}"
 HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
-HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/hpcfs/users/${HPC_USER}/rna_seq_projects/$(basename "$LOCAL_PROJECT_DIR")}"
 FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
 SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="${REFERENCE:-input/reference/genome.fa}"
@@ -969,27 +992,16 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"</code></pre>
             <span class="context-pill local-pill">Local</span>
             <span class="context-pill hpc-pill">Phoenix</span>
           </div>
-          <p class="step-purpose">Transfer the prepared project to Phoenix.</p>
+          <p class="step-purpose">Log in to Phoenix, confirm the correct storage folder, then upload the prepared project.</p>
           <div class="action-notes-grid">
             <div class="action-block">
               <p><strong>What You Do:</strong></p>
               <ol>
-            <li>Set your <strong>Phoenix working folder</strong> &mdash; the project folder on Phoenix:
-              <div class="simple-path-box">
-                <label for="hpcPath"><strong>Phoenix working folder</strong></label>
-                <input id="hpcPath" type="text" autocomplete="off" placeholder="/scratchdata1/your_project/rnaseq_projects/my_project">
-                <p>Fills the command boxes below and is written into <code>configure.yaml</code> so the upload/download scripts target it.</p>
-              </div>
-            </li>
-            <li>Open your local terminal and log in to your Phoenix account, run:
+            <li>Open your local terminal, log in to your Phoenix account, create the Phoenix parent folder, and print its full path:
               <pre data-command="hpc-ssh"></pre>
+              <pre data-command="hpc-create-working-folder"></pre>
             </li>
-            <li>Using the <strong>Phoenix working folder</strong> you set above, either locate the existing folder or create it. If it already exists, locate it, run:
-              <pre data-command="hpc-folder-locate"></pre>
-              <p>If it does not exist yet, create it, run:</p>
-              <pre data-command="hpc-folder-check"></pre>
-            </li>
-            <li>Open another local terminal and upload the initialized project folder with resume-safe rsync, run:
+            <li>Open another local terminal and upload the initialized project folder, run:
               <pre data-command="upload-rsync2"></pre>
             </li>
               </ol>
@@ -999,7 +1011,7 @@ echo "HPC target: ${HPC_USER}@${HPC_HOST}:${HPC_PROJECT_DIR}"</code></pre>
               <summary>What Scripts Will Do</summary>
               <p><code>upload_to_hpc.sh</code></p>
               <ul>
-                <li>Read Phoenix destination from <code>configure.yaml</code></li>
+                <li>Read the confirmed Phoenix working folder from <code>configure.yaml</code></li>
                 <li>Upload the prepared project folder using resume-safe <code>rsync</code></li>
                 <li>Skip local caches, temporary files, old <code>work/</code> directories, and unnecessary outputs</li>
                 <li>Write an upload log (<code>logs/upload_to_hpc.log</code>) to review the transfer</li>
@@ -1073,9 +1085,8 @@ echo "Upload log: $LOG"</code></pre>
             <li>Enter your project folder, run:
               <pre data-command="hpc-cd"></pre>
             </li>
-            <li>Run the smoke test (see <strong>What Scripts Will Do</strong>), run:
+            <li>Run the smoke test (<a href="documents.html#smoke-test">optional</a>), run:
               <pre data-command="step5-smoke"></pre>
-              See the <a href="documents.html#hpc-preflight">preflight checklist</a> and <a href="documents.html#troubleshooting">known issues</a>. Needs internet to download the tiny test data and pull containers.
             </li>
             <li>Run the One Sample Run, run:
               <pre data-command="step5-one-sample"></pre>
@@ -2052,7 +2063,7 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pr
             <li>Optionally build a combined project report (project info + MultiQC summary), run:
               <pre data-command="step7-report"></pre>
             </li>
-            <li>Next step: review your QC and plan downstream analysis &mdash; see <a href="documents.html#after-results">Documents &rarr; After Downloading Results</a>.</li>
+            <li><a href="documents.html#after-results">Next step: review your QC and plan downstream analysis</a>.</li>
               </ol>
             </div>
             <div class="pipeline-side">
@@ -2060,14 +2071,14 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pr
               <summary>What Scripts Will Do</summary>
               <p><code>download_results.sh</code></p>
               <ul>
-                <li>Download <code>results/</code>, <code>reports/</code>, and <code>logs/</code> with resume-safe <code>rsync</code></li>
-                <li>Also bring back the reproducibility files: <code>configs/</code>, <code>scripts/</code>, <code>README.md</code>, reference metadata, and the samplesheet</li>
-                <li>Write a download log and report how many files were received</li>
+                <li>Download results into four local folders that match <strong>What You Will Get</strong>: <code>analysis_data/</code>, <code>qc_report/</code>, <code>run_metadata/</code>, and <code>reproducibility_docs/</code></li>
+                <li>Bring back quantification outputs, merged nf-core summaries where produced, QC reports, pipeline metadata, logs, configs, scripts, project docs, reference metadata, and the samplesheet</li>
+                <li>Write a download log and report file counts for each folder</li>
               </ul>
               <p><code>make_report.R</code> (optional)</p>
               <ul>
                 <li>Read project info from <code>configs/configure.yaml</code> and the MultiQC general statistics</li>
-                <li>Write <code>reports/project_report.md</code> combining project metadata, versions, run settings, and a per-sample QC summary table</li>
+                <li>Write <code>downloaded_results/qc_report/project_report.md</code> combining project metadata, versions, run settings, and a per-sample QC summary table</li>
                 <li>Uses base R only (no extra packages); skips gracefully if MultiQC output is not present yet</li>
               </ul>
             </details>
@@ -2075,14 +2086,15 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pr
           </div>
           <details class="notes-block notes-bottom">
           <summary>What You Will Get</summary>
-          <p><code>results/</code>, <code>reports/</code>, <code>logs/</code>, MultiQC reports, quantification outputs, and pipeline summaries.</p>
+          <p><code>downloaded_results/</code> is organized into four folders that match the sections below.</p>
           <div class="output-grid mini-output-grid full-output-grid">
             <article class="output-card">
               <h3>Analysis Data</h3>
               <p class="label">Files</p>
-              <p>per-sample Salmon transcript quantification</p>
-              <p><code>quant.sf</code> files for each sample</p>
-              <p>optional derived summaries, e.g. <code>salmon.merged.gene_counts.tsv</code>, after verifying <code>tx2gene</code></p>
+              <p><code>analysis_data/</code></p>
+              <p>per-sample Salmon <strong>transcript</strong> <code>quant.sf</code> files</p>
+              <p class="output-note">nf-core merged summaries when produced, e.g. <code>salmon.merged.gene_counts.tsv</code></p>
+              <p class="output-note">Verify <code>tx2gene</code> before DESeq2/edgeR.</p>
               <p class="label">Use</p>
               <p>tximport / DESeq2</p>
               <p>edgeR / limma</p>
@@ -2091,6 +2103,7 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pr
             <article class="output-card">
               <h3>QC Report</h3>
               <p class="label">Files</p>
+              <p><code>qc_report/</code></p>
               <p><code>multiqc_report.html</code></p>
               <p>FastQC summary</p>
               <p>STAR / Salmon summary</p>
@@ -2102,6 +2115,7 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pr
             <article class="output-card">
               <h3>Run Metadata</h3>
               <p class="label">Files</p>
+              <p><code>run_metadata/</code></p>
               <p><code>pipeline_info/</code></p>
               <p><code>software_versions.yml</code></p>
               <p><code>params.json</code></p>
@@ -2115,6 +2129,7 @@ echo "- After a safe fix, resume with: sbatch scripts/run.sh -resume"</code></pr
             <article class="output-card">
               <h3>Reproducibility Docs</h3>
               <p class="label">Files</p>
+              <p><code>reproducibility_docs/</code></p>
               <p><code>README.md</code></p>
               <p><code>samplesheet.csv</code></p>
               <p><code>configure.yaml</code></p>
@@ -2146,7 +2161,11 @@ CONFIG="${CONFIG:-configs/configure.yaml}"
 LOCAL_DEST="${LOCAL_DEST:-./downloaded_results}"
 INCLUDE_BAM="${INCLUDE_BAM:-false}"
 LOG="logs/download_results.log"
-mkdir -p logs "$LOCAL_DEST"
+ANALYSIS_DIR="$LOCAL_DEST/analysis_data"
+QC_DIR="$LOCAL_DEST/qc_report"
+RUN_METADATA_DIR="$LOCAL_DEST/run_metadata"
+REPRO_DIR="$LOCAL_DEST/reproducibility_docs"
+mkdir -p logs "$ANALYSIS_DIR" "$QC_DIR" "$RUN_METADATA_DIR" "$REPRO_DIR"
 
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
@@ -2166,27 +2185,64 @@ if [[ -z "$HPC_USER" || "$HPC_USER" == "your_username" || "$HPC_USER" == "your_u
   exit 2
 fi
 
-EXCLUDES=(--exclude 'work/' --exclude '.nextflow*')
+EXCLUDES=(--exclude 'work/' --exclude '.nextflow/')
 if [[ "$INCLUDE_BAM" != "true" ]]; then
   EXCLUDES+=(--exclude '*.bam' --exclude '*.cram')
 fi
 
-# Bring back analysis outputs plus the reproducibility files shown on the page.
-# --ignore-missing-args skips any source that does not exist on HPC.
-rsync -avh --partial --progress --ignore-missing-args \
-  "${EXCLUDES[@]}" \
-  "${HPC_SOURCE%/}/results" \
-  "${HPC_SOURCE%/}/reports" \
+rsync_from_hpc() {
+  local dest="$1"
+  shift
+  mkdir -p "$dest"
+  rsync -avh --partial --progress --ignore-missing-args \
+    "${EXCLUDES[@]}" \
+    "$@" \
+    "$dest/" 2&gt;&amp;1 | tee -a "$LOG"
+}
+
+: &gt; "$LOG"
+
+# Analysis data: Salmon transcript quantification and nf-core merged summaries
+# when the pipeline produced them. Derived gene summaries still need tx2gene
+# verification before downstream DESeq2/edgeR use.
+rsync_from_hpc "$ANALYSIS_DIR" \
+  "${HPC_SOURCE%/}/results/star_salmon" \
+  "${HPC_SOURCE%/}/results/salmon" \
+  "${HPC_SOURCE%/}/results/rsem" \
+  "${HPC_SOURCE%/}/results/kallisto" \
+  "${HPC_SOURCE%/}/results/featurecounts" \
+  "${HPC_SOURCE%/}/results/stringtie"
+
+# QC report: MultiQC, read QC, and project validation reports.
+rsync_from_hpc "$QC_DIR" \
+  "${HPC_SOURCE%/}/results/multiqc" \
+  "${HPC_SOURCE%/}/results/fastqc" \
+  "${HPC_SOURCE%/}/results/trim_galore" \
+  "${HPC_SOURCE%/}/results/fastp" \
+  "${HPC_SOURCE%/}/reports"
+
+# Run metadata: Nextflow/nf-core execution provenance and runtime logs.
+rsync_from_hpc "$RUN_METADATA_DIR" \
+  "${HPC_SOURCE%/}/results/pipeline_info" \
   "${HPC_SOURCE%/}/logs" \
+  "${HPC_SOURCE%/}/.nextflow.log"
+
+# Reproducibility docs: inputs and project files needed to understand/rerun.
+rsync_from_hpc "$REPRO_DIR" \
   "${HPC_SOURCE%/}/configs" \
   "${HPC_SOURCE%/}/scripts" \
   "${HPC_SOURCE%/}/README.md" \
+  "${HPC_SOURCE%/}/PROJECT_INFO.md" \
+  "${HPC_SOURCE%/}/nextflow.config" \
   "${HPC_SOURCE%/}/reference_metadata.txt" \
-  "${HPC_SOURCE%/}/input/samplesheet.csv" \
-  "$LOCAL_DEST/" 2&gt;&amp;1 | tee "$LOG"
+  "${HPC_SOURCE%/}/input/samplesheet.csv"
 
 echo "Downloaded into: $LOCAL_DEST"
 echo "Files received:"
+for category in "$ANALYSIS_DIR" "$QC_DIR" "$RUN_METADATA_DIR" "$REPRO_DIR"; do
+  count="$(find "$category" -type f | wc -l | tr -d ' ')"
+  echo "  $(basename "$category"): $count files"
+done
 find "$LOCAL_DEST" -type f | wc -l | sed 's/^/  total files: /'
 echo "Download log: $LOG"</code></pre>
               </div>
@@ -2205,12 +2261,12 @@ echo "Download log: $LOG"</code></pre>
 # Usage:
 #   Rscript scripts/make_report.R [results_dir] [out_file]
 # Defaults:
-#   results_dir = results
-#   out_file    = reports/project_report.md
+#   results_dir = downloaded_results
+#   out_file    = downloaded_results/qc_report/project_report.md
 
 args &lt;- commandArgs(trailingOnly = TRUE)
-results_dir &lt;- if (length(args) &gt;= 1 &amp;&amp; nzchar(args[1])) args[1] else "results"
-out_file    &lt;- if (length(args) &gt;= 2 &amp;&amp; nzchar(args[2])) args[2] else "reports/project_report.md"
+results_dir &lt;- if (length(args) &gt;= 1 &amp;&amp; nzchar(args[1])) args[1] else "downloaded_results"
+out_file    &lt;- if (length(args) &gt;= 2 &amp;&amp; nzchar(args[2])) args[2] else file.path(results_dir, "qc_report", "project_report.md")
 config_file &lt;- Sys.getenv("CONFIG", "configs/configure.yaml")
 
 dir.create(dirname(out_file), showWarnings = FALSE, recursive = TRUE)
@@ -2242,8 +2298,17 @@ gc_label   &lt;- if (identical(get("gc_bias", ""), "true")) "enabled" else "disa
 # --- locate the MultiQC general stats table -------------------------------
 stats_file &lt;- NA_character_
 if (dir.exists(results_dir)) {
-  hits &lt;- list.files(results_dir, pattern = "multiqc_general_stats\\.txt$",
-                     recursive = TRUE, full.names = TRUE)
+  search_dirs &lt;- c(
+    file.path(results_dir, "qc_report"),
+    file.path(results_dir, "results", "multiqc"),
+    file.path(results_dir, "multiqc"),
+    results_dir
+  )
+  search_dirs &lt;- unique(search_dirs[dir.exists(search_dirs)])
+  hits &lt;- unlist(lapply(search_dirs, function(path) {
+    list.files(path, pattern = "multiqc_general_stats\\.txt$",
+               recursive = TRUE, full.names = TRUE)
+  }), use.names = FALSE)
   if (length(hits) &gt; 0) stats_file &lt;- hits[1]
 }
 
@@ -2279,7 +2344,7 @@ w("")
 
 if (is.na(stats_file)) {
   w("MultiQC general stats not found under '", results_dir,
-    "'. Run the pipeline (or download results) first, then re-run this script.")
+    "'. Run the pipeline, then run scripts/download_results.sh before re-running this script.")
 } else {
   w("Source: ", stats_file)
   w("")
@@ -2313,8 +2378,7 @@ if (is.na(stats_file)) {
 }
 
 close(con)
-cat("Wrote", out_file, "\n")
-</code></pre>
+cat("Wrote", out_file, "\n")</code></pre>
               </div>
             </details>
           </div>
@@ -2328,8 +2392,7 @@ cat("Wrote", out_file, "\n")
     const panels = document.querySelectorAll('.step-detail');
     const storagePrefix = 'happy-rnaseq-paths-';
     const defaults = {
-      localPath: '/Users/yourname/rnaseq_projects/my_project',
-      hpcPath: '/scratchdata1/your_project/rnaseq_projects/my_project',
+      localPath: '',
       hpcUser: 'a1234567',
       hpcHost: 'p2-log-2.hpc.adelaide.edu.au',
       projectName: '',
@@ -2338,7 +2401,6 @@ cat("Wrote", out_file, "\n")
     };
     const pathInputs = {
       localPath: document.getElementById('localPath'),
-      hpcPath: document.getElementById('hpcPath'),
       hpcUser: document.getElementById('hpcUser'),
       hpcHost: document.getElementById('hpcHost'),
       projectName: document.getElementById('projectName'),
@@ -2418,7 +2480,16 @@ cat("Wrote", out_file, "\n")
     function fieldValue(key) {
       const input = pathInputs[key];
       const value = input ? input.value.trim() : '';
-      return value || defaults[key];
+      return value || defaultValue(key);
+    }
+
+    function defaultValue(key) {
+      if (key === 'localPath') return defaultLocalPath();
+      return defaults[key];
+    }
+
+    function defaultLocalPath() {
+      return `/Users/yourname/rnaseq_projects/${folderNameFor('template')}`;
     }
 
     function cleanShellValue(value) {
@@ -2434,16 +2505,32 @@ cat("Wrote", out_file, "\n")
       return cleaned.endsWith('/') ? cleaned : `${cleaned}/`;
     }
 
+    function pathBasename(value) {
+      const cleaned = cleanShellValue(value).replace(/\/+$/, '');
+      return cleaned.split('/').filter(Boolean).pop() || 'my_project';
+    }
+
+    function hpcParentPath() {
+      return `/hpcfs/users/${fieldValue('hpcUser')}/rna_seq_projects`;
+    }
+
+    function remoteProjectPath() {
+      const parent = hpcParentPath();
+      return `${parent}/${pathBasename(fieldValue('localPath'))}`;
+    }
+
     function sshTarget() {
       return `${fieldValue('hpcUser')}@${fieldValue('hpcHost')}`;
     }
 
     function commandFor(key) {
       const local = fieldValue('localPath');
-      const hpc = fieldValue('hpcPath');
+      const hpc = hpcParentPath();
+      const remoteProject = remoteProjectPath();
       const target = sshTarget();
       const qLocal = shellQuote(local);
       const qHpc = shellQuote(hpc);
+      const qRemoteProject = shellQuote(remoteProject);
       // Optional project metadata is passed to configure.sh as env vars
       // (identification only; does not affect the pipeline run).
       // Project metadata and Phoenix details are not typed on the command line.
@@ -2472,20 +2559,22 @@ cat("Wrote", out_file, "\n")
         'local-context': `cd ${qLocal}`,
         'local-chmod': `chmod -R u+rwX ${qLocal}`,
         'hpc-ssh': `ssh ${target}`,
-        'hpc-connect': `ssh ${target}\ncd ${qHpc}`,
+        'hpc-connect': `ssh ${target}\ncd ${qRemoteProject}`,
         'hpc-mkdir': `mkdir -p ${qHpc}`,
-        'hpc-cd': `cd ${qHpc}`,
-        'hpc-context': `cd ${qHpc}`,
-        'hpc-chmod': `chmod -R u+rwX ${qHpc}`,
-        'hpc-chmod-group': `chmod -R u+rwX,g+rwX,o-rwx ${qHpc}`,
-        'hpc-folder-locate': `ls -ld ${qHpc}`,
-        'hpc-folder-check': `mkdir -p ${qHpc}\nls -ld ${qHpc}`,
+        'hpc-cd': `cd ${qRemoteProject}`,
+        'hpc-context': `cd ${qRemoteProject}`,
+        'hpc-chmod': `chmod -R u+rwX ${qRemoteProject}`,
+        'hpc-chmod-group': `chmod -R u+rwX,g+rwX,o-rwx ${qRemoteProject}`,
+        'hpc-home-check': `pwd`,
+        'hpc-create-working-folder': `cd /hpcfs/users/$USER\nmkdir -p rna_seq_projects\ncd rna_seq_projects\npwd`,
+        'hpc-folder-locate': `ls -ld ${qRemoteProject}`,
+        'hpc-folder-check': `mkdir -p ${qRemoteProject}\nls -ld ${qRemoteProject}`,
         'upload-rsync': `rsync -avh --progress \\\n  ${shellQuote(trailingSlash(local))} \\\n  ${shellQuote(`${target}:${trailingSlash(hpc)}`)}`,
         'upload-rsync2': `cd ${qLocal}\nscripts/upload_to_hpc.sh`,
         'download-rsync': `cd ${qLocal}\nscripts/download_results.sh`,
         'step2-make': `scripts/make_samplesheet.sh`,
         'step2-validate': `scripts/input_validate.sh`,
-        'step7-report': `Rscript scripts/make_report.R downloaded_results`,
+        'step7-report': `Rscript scripts/make_report.R`,
         'step3-configure': buildConfigure(),
         'step3-star': star,
         'step3-salmon': salmon,
@@ -2523,6 +2612,8 @@ cat("Wrote", out_file, "\n")
       'hpc-context',
       'hpc-chmod',
       'hpc-chmod-group',
+      'hpc-home-check',
+      'hpc-create-working-folder',
       'hpc-folder-locate',
       'hpc-folder-check',
       'step5-smoke',
@@ -2533,6 +2624,7 @@ cat("Wrote", out_file, "\n")
     ]);
 
     function updateCommands() {
+      updateLocalPathPlaceholder();
       document.querySelectorAll('pre[data-command]').forEach((pre) => {
         pre.textContent = commandFor(pre.dataset.command);
         if (localCommandBoxes.has(pre.dataset.command)) {
@@ -2544,6 +2636,28 @@ cat("Wrote", out_file, "\n")
         }
       });
       updateDownloadNames();
+    }
+
+    function updateLocalPathPlaceholder() {
+      const input = pathInputs.localPath;
+      if (!input) return;
+      input.placeholder = defaultLocalPath();
+      syncDerivedLocalPath();
+    }
+
+    function isAutoLocalPath(value) {
+      const cleaned = cleanShellValue(value);
+      const currentDefault = defaultLocalPath();
+      return cleaned === currentDefault || /^\/Users\/yourname\/rnaseq_projects\/(my_project|template_project_v1\.0\.0|MY_RNASEQ_PROJECT_202601)$/.test(cleaned);
+    }
+
+    function syncDerivedLocalPath() {
+      const input = pathInputs.localPath;
+      if (!input) return;
+      if (!input.dataset.autofillProjectName) return;
+      input.value = defaultLocalPath();
+      localStorage.setItem(`${storagePrefix}localPath`, input.value);
+      localStorage.setItem(`${storagePrefix}localPathAutofill`, 'true');
     }
 
     // Name the downloaded ZIP after the project (if entered); otherwise keep
@@ -2573,9 +2687,9 @@ cat("Wrote", out_file, "\n")
     // The folder the user gets after unzipping (and the .zip filename stem).
     // Template uses the entered project name; the demo always keeps its name.
     function folderNameFor(kind) {
-      if (kind === 'demo') return 'demo_project_v1.0.0';
+      if (kind === 'demo') return 'demo_project_v1.1.0';
       const safe = safeProjectName();
-      return safe || 'template_project_v1.0.0';
+      return safe || 'template_project_v1.1.0';
     }
 
     function downloadNameFor(kind) {
@@ -2606,7 +2720,7 @@ cat("Wrote", out_file, "\n")
         project_owner: v('projectOwner'),
         hpc_user: v('hpcUser'),
         hpc_host: v('hpcHost'),
-        hpc_project_dir: v('hpcPath')
+        hpc_project_dir: remoteProjectPath()
       };
       const seen = {};
       let lines = text.split('\n').map((line) => {
@@ -2693,7 +2807,46 @@ cat("Wrote", out_file, "\n")
         } else {
           input.value = stored || '';                  // text inputs show their placeholder
         }
+      });
+
+      const localInput = pathInputs.localPath;
+      if (localInput) {
+        const wasAutofill = localStorage.getItem(`${storagePrefix}localPathAutofill`) === 'true';
+        if (wasAutofill || !localInput.value || isAutoLocalPath(localInput.value)) {
+          localInput.dataset.autofillProjectName = 'true';
+          localInput.value = defaultLocalPath();
+          localStorage.setItem(`${storagePrefix}localPath`, localInput.value);
+          localStorage.setItem(`${storagePrefix}localPathAutofill`, 'true');
+        } else {
+          delete localInput.dataset.autofillProjectName;
+          localStorage.removeItem(`${storagePrefix}localPathAutofill`);
+        }
+      }
+
+      Object.entries(pathInputs).forEach(([key, input]) => {
+        if (!input) return;
+        if (key === 'localPath') {
+          if (!input.value || isAutoLocalPath(input.value)) {
+            input.dataset.autofillProjectName = 'true';
+            input.value = defaultLocalPath();
+            localStorage.setItem(`${storagePrefix}localPath`, input.value);
+            localStorage.setItem(`${storagePrefix}localPathAutofill`, 'true');
+          } else {
+            delete input.dataset.autofillProjectName;
+            localStorage.removeItem(`${storagePrefix}localPathAutofill`);
+          }
+        }
         input.addEventListener('input', () => {
+          if (key === 'localPath') {
+            if (!input.value || isAutoLocalPath(input.value)) {
+              input.dataset.autofillProjectName = 'true';
+              input.value = defaultLocalPath();
+              localStorage.setItem(`${storagePrefix}localPathAutofill`, 'true');
+            } else {
+              delete input.dataset.autofillProjectName;
+              localStorage.removeItem(`${storagePrefix}localPathAutofill`);
+            }
+          }
           localStorage.setItem(`${storagePrefix}${key}`, input.value);
           updateCommands();
         });
@@ -2704,7 +2857,7 @@ cat("Wrote", out_file, "\n")
     function installSaveButtons() {
       document.querySelectorAll('.simple-path-box:not(.aligner-choice-box)').forEach((box) => {
         if (box.querySelector('.save-inputs-btn')) return;
-        const fields = box.querySelectorAll('input, select');
+        const fields = box.querySelectorAll('input, select, textarea');
         if (!fields.length) return;
         const last = fields[fields.length - 1];
         const btn = document.createElement('button');
@@ -2733,6 +2886,10 @@ cat("Wrote", out_file, "\n")
         } else {
           const wrap = document.createElement('div');
           wrap.className = 'save-inline';
+          if (last.classList.contains('wide')) {
+            wrap.classList.add('wide');
+            last.classList.remove('wide');
+          }
           last.parentNode.insertBefore(wrap, last);
           wrap.append(last, btn, note);
         }

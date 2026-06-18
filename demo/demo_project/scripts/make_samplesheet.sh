@@ -14,9 +14,13 @@ if [[ ! -d "$FASTQ_DIR" ]]; then
 fi
 
 if [[ -f "$SAMPLESHEET" && "$FORCE" != "true" ]]; then
-  echo "Samplesheet exists: $SAMPLESHEET"
-  echo "Set FORCE=true to overwrite."
-  exit 0
+  existing_rows="$(awk 'NR > 1 && $0 !~ /^[[:space:]]*$/ {count++} END {print count + 0}' "$SAMPLESHEET")"
+  if [[ "$existing_rows" -gt 0 ]]; then
+    echo "Samplesheet exists with $existing_rows data row(s): $SAMPLESHEET"
+    echo "Set FORCE=true to overwrite."
+    exit 0
+  fi
+  echo "Samplesheet exists but has no data rows; regenerating: $SAMPLESHEET"
 fi
 
 tmp="$(mktemp)"

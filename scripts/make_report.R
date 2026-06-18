@@ -6,12 +6,12 @@
 # Usage:
 #   Rscript scripts/make_report.R [results_dir] [out_file]
 # Defaults:
-#   results_dir = results
-#   out_file    = reports/project_report.md
+#   results_dir = downloaded_results
+#   out_file    = downloaded_results/qc_report/project_report.md
 
 args <- commandArgs(trailingOnly = TRUE)
-results_dir <- if (length(args) >= 1 && nzchar(args[1])) args[1] else "results"
-out_file    <- if (length(args) >= 2 && nzchar(args[2])) args[2] else "reports/project_report.md"
+results_dir <- if (length(args) >= 1 && nzchar(args[1])) args[1] else "downloaded_results"
+out_file    <- if (length(args) >= 2 && nzchar(args[2])) args[2] else file.path(results_dir, "qc_report", "project_report.md")
 config_file <- Sys.getenv("CONFIG", "configs/configure.yaml")
 
 dir.create(dirname(out_file), showWarnings = FALSE, recursive = TRUE)
@@ -43,8 +43,17 @@ gc_label   <- if (identical(get("gc_bias", ""), "true")) "enabled" else "disable
 # --- locate the MultiQC general stats table -------------------------------
 stats_file <- NA_character_
 if (dir.exists(results_dir)) {
-  hits <- list.files(results_dir, pattern = "multiqc_general_stats\\.txt$",
-                     recursive = TRUE, full.names = TRUE)
+  search_dirs <- c(
+    file.path(results_dir, "qc_report"),
+    file.path(results_dir, "results", "multiqc"),
+    file.path(results_dir, "multiqc"),
+    results_dir
+  )
+  search_dirs <- unique(search_dirs[dir.exists(search_dirs)])
+  hits <- unlist(lapply(search_dirs, function(path) {
+    list.files(path, pattern = "multiqc_general_stats\\.txt$",
+               recursive = TRUE, full.names = TRUE)
+  }), use.names = FALSE)
   if (length(hits) > 0) stats_file <- hits[1]
 }
 
@@ -80,7 +89,7 @@ w("")
 
 if (is.na(stats_file)) {
   w("MultiQC general stats not found under '", results_dir,
-    "'. Run the pipeline (or download results) first, then re-run this script.")
+    "'. Run the pipeline, then run scripts/download_results.sh before re-running this script.")
 } else {
   w("Source: ", stats_file)
   w("")

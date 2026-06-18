@@ -59,6 +59,13 @@ read_text() {
       echo "- ERROR: unexpected header"
       errors=$((errors + 1))
     fi
+    data_rows="$(awk -F, 'NR > 1 && $1 !~ /^[[:space:]]*$/ {count++} END {print count + 0}' "$SAMPLESHEET")"
+    if [[ "$data_rows" -lt 1 ]]; then
+      echo "- ERROR: samplesheet has no sample rows. Run scripts/make_samplesheet.sh after adding FASTQ files."
+      errors=$((errors + 1))
+    else
+      echo "- OK: $data_rows sample row(s)"
+    fi
     duplicates="$(awk -F, 'NR>1 {print $1}' "$SAMPLESHEET" | tr -d '\r' | sort | uniq -d || true)"
     if [[ -n "$duplicates" ]]; then
       printf '%s\n' "$duplicates" | sed 's/^/- DUPLICATE SAMPLE ID: /'

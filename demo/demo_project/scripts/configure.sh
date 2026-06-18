@@ -20,8 +20,8 @@ RIBO_REMOVAL_TOOL="${RIBO_REMOVAL_TOOL:-}"
 
 # Shared constants (keep in sync with the guide UI and templates).
 PIPELINE_VERSION="${PIPELINE_VERSION:-3.26.0}"
-GUIDE_VERSION="${GUIDE_VERSION:-v1.0.0}"
-TEMPLATE_VERSION="${TEMPLATE_VERSION:-v1.0.0}"
+GUIDE_VERSION="${GUIDE_VERSION:-v1.1.0}"
+TEMPLATE_VERSION="${TEMPLATE_VERSION:-v1.1.0}"
 CREATED_DATE="${CREATED_DATE:-$(date +%Y-%m-%d)}"
 
 # Project metadata (identification only; does not affect nf-core/rnaseq execution).
@@ -109,7 +109,7 @@ HPC_USER="${HPC_USER:-your_username}"
 HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
 HPC_HOST="${HPC_HOST:-p2-log-2.hpc.adelaide.edu.au}"
 HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
-HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/hpcfs/users/${HPC_USER}/rna_seq_projects/$(basename "$LOCAL_PROJECT_DIR")}"
 FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
 SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="${REFERENCE:-input/reference/genome.fa}"

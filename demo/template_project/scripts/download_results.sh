@@ -5,7 +5,11 @@ CONFIG="${CONFIG:-configs/configure.yaml}"
 LOCAL_DEST="${LOCAL_DEST:-./downloaded_results}"
 INCLUDE_BAM="${INCLUDE_BAM:-false}"
 LOG="logs/download_results.log"
-mkdir -p logs "$LOCAL_DEST"
+ANALYSIS_DIR="$LOCAL_DEST/analysis_data"
+QC_DIR="$LOCAL_DEST/qc_report"
+RUN_METADATA_DIR="$LOCAL_DEST/run_metadata"
+REPRO_DIR="$LOCAL_DEST/reproducibility_docs"
+mkdir -p logs "$ANALYSIS_DIR" "$QC_DIR" "$RUN_METADATA_DIR" "$REPRO_DIR"
 
 get_config() {
   [[ -f "$CONFIG" ]] || return 0
@@ -25,26 +29,63 @@ if [[ -z "$HPC_USER" || "$HPC_USER" == "your_username" || "$HPC_USER" == "your_u
   exit 2
 fi
 
-EXCLUDES=(--exclude 'work/' --exclude '.nextflow*')
+EXCLUDES=(--exclude 'work/' --exclude '.nextflow/')
 if [[ "$INCLUDE_BAM" != "true" ]]; then
   EXCLUDES+=(--exclude '*.bam' --exclude '*.cram')
 fi
 
-# Bring back analysis outputs plus the reproducibility files shown on the page.
-# --ignore-missing-args skips any source that does not exist on HPC.
-rsync -avh --partial --progress --ignore-missing-args \
-  "${EXCLUDES[@]}" \
-  "${HPC_SOURCE%/}/results" \
-  "${HPC_SOURCE%/}/reports" \
+rsync_from_hpc() {
+  local dest="$1"
+  shift
+  mkdir -p "$dest"
+  rsync -avh --partial --progress --ignore-missing-args \
+    "${EXCLUDES[@]}" \
+    "$@" \
+    "$dest/" 2>&1 | tee -a "$LOG"
+}
+
+: > "$LOG"
+
+# Analysis data: Salmon transcript quantification and nf-core merged summaries
+# when the pipeline produced them. Derived gene summaries still need tx2gene
+# verification before downstream DESeq2/edgeR use.
+rsync_from_hpc "$ANALYSIS_DIR" \
+  "${HPC_SOURCE%/}/results/star_salmon" \
+  "${HPC_SOURCE%/}/results/salmon" \
+  "${HPC_SOURCE%/}/results/rsem" \
+  "${HPC_SOURCE%/}/results/kallisto" \
+  "${HPC_SOURCE%/}/results/featurecounts" \
+  "${HPC_SOURCE%/}/results/stringtie"
+
+# QC report: MultiQC, read QC, and project validation reports.
+rsync_from_hpc "$QC_DIR" \
+  "${HPC_SOURCE%/}/results/multiqc" \
+  "${HPC_SOURCE%/}/results/fastqc" \
+  "${HPC_SOURCE%/}/results/trim_galore" \
+  "${HPC_SOURCE%/}/results/fastp" \
+  "${HPC_SOURCE%/}/reports"
+
+# Run metadata: Nextflow/nf-core execution provenance and runtime logs.
+rsync_from_hpc "$RUN_METADATA_DIR" \
+  "${HPC_SOURCE%/}/results/pipeline_info" \
   "${HPC_SOURCE%/}/logs" \
+  "${HPC_SOURCE%/}/.nextflow.log"
+
+# Reproducibility docs: inputs and project files needed to understand/rerun.
+rsync_from_hpc "$REPRO_DIR" \
   "${HPC_SOURCE%/}/configs" \
   "${HPC_SOURCE%/}/scripts" \
   "${HPC_SOURCE%/}/README.md" \
+  "${HPC_SOURCE%/}/PROJECT_INFO.md" \
+  "${HPC_SOURCE%/}/nextflow.config" \
   "${HPC_SOURCE%/}/reference_metadata.txt" \
-  "${HPC_SOURCE%/}/input/samplesheet.csv" \
-  "$LOCAL_DEST/" 2>&1 | tee "$LOG"
+  "${HPC_SOURCE%/}/input/samplesheet.csv"
 
 echo "Downloaded into: $LOCAL_DEST"
 echo "Files received:"
+for category in "$ANALYSIS_DIR" "$QC_DIR" "$RUN_METADATA_DIR" "$REPRO_DIR"; do
+  count="$(find "$category" -type f | wc -l | tr -d ' ')"
+  echo "  $(basename "$category"): $count files"
+done
 find "$LOCAL_DEST" -type f | wc -l | sed 's/^/  total files: /'
 echo "Download log: $LOG"

@@ -147,7 +147,7 @@
 CONTROL_REP1,input/fastq/AEG588A1_S1_L002_R1_001.fastq.gz,input/fastq/AEG588A1_S1_L002_R2_001.fastq.gz,auto
 CONTROL_REP1,input/fastq/AEG588A1_S1_L003_R1_001.fastq.gz,input/fastq/AEG588A1_S1_L003_R2_001.fastq.gz,auto
 TREATMENT_REP1,input/fastq/AEG588A4_S4_L003_R1_001.fastq.gz,,auto</pre>
-      <p>Step 2 generates this file with <code>make_samplesheet.sh</code> and checks it with <code>input_validate.sh</code> (header, unique/valid sample names, paired FASTQ existence, strandedness whitelist). Still open the file and confirm sample names and R1/R2 pairing look correct before uploading. Full details: <a href="https://nf-co.re/rnaseq/3.26.0/docs/usage/" target="_blank" rel="noopener">official nf-core/rnaseq usage docs</a>.</p>
+      <p>Step 2 generates this file with <code>make_samplesheet.sh</code> and checks it with <code>input_validate.sh</code> (header, unique/valid sample names, paired FASTQ existence, strandedness whitelist). Still open the file before uploading and confirm it both follows nf-core/rnaseq requirements and strictly matches your experimental design: sample IDs, biological replicates, technical-lane replicates, R1/R2 pairing, single-end versus paired-end layout, strandedness, and any condition/timepoint naming you will use downstream. Full details: <a href="https://nf-co.re/rnaseq/3.26.0/docs/usage/" target="_blank" rel="noopener">official nf-core/rnaseq usage docs</a>.</p>
     </section>
 
     <section class="content-card" id="smoke-test">
@@ -175,8 +175,9 @@ TREATMENT_REP1,input/fastq/AEG588A4_S4_L003_R1_001.fastq.gz,,auto</pre>
       <h2 id="after-results">After Downloading Results</h2>
       <p>Downloading results finishes the nf-core/rnaseq run, but it is usually the start of biological analysis.</p>
       <p><strong>Important:</strong> this guide's STAR + Salmon workflow should be treated first as a <strong>transcript-level quantification</strong> run. The key Salmon files are the per-sample <code>quant.sf</code> outputs. Do not describe the downloaded results as already being a final gene-level differential-expression matrix unless you have checked the exact merged files produced by your run.</p>
+      <p><code>download_results.sh</code> organizes the local <code>downloaded_results/</code> folder into four sections: <code>analysis_data/</code> for quantification outputs and nf-core merged summaries, <code>qc_report/</code> for MultiQC and validation reports, <code>run_metadata/</code> for pipeline provenance and logs, and <code>reproducibility_docs/</code> for configs, scripts, project docs, reference metadata, and the samplesheet.</p>
       <p>For gene-level analysis, you can generate a gene-level count matrix downstream in R. A common route is <code>tximport</code> + <code>DESeq2</code>: import the Salmon <code>quant.sf</code> files produced by this pipeline, combine them with a transcript-to-gene mapping (<code>tx2gene</code>) derived from the same GTF/GFF3 annotation used for the run, and then create a DESeq2 dataset for differential expression.</p>
-      <p>If nf-core/rnaseq also publishes merged gene-level summary files for your configuration, such as <code>salmon.merged.gene_counts.tsv</code>, treat them as derived summaries and verify the transcript-to-gene mapping before using them for DESeq2/edgeR.</p>
+      <p>If nf-core/rnaseq publishes merged gene-level summary files for your configuration, such as <code>salmon.merged.gene_counts.tsv</code>, they will be downloaded under <code>analysis_data/</code>. Treat them as derived summaries and verify the transcript-to-gene mapping before using them for DESeq2/edgeR.</p>
       <p><strong>What next?</strong> Review QC first, then use the transcript quantification outputs or a verified gene-level matrix for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
       <ul>
         <li>Open MultiQC first and check whether sequencing and mapping quality look acceptable.</li>
