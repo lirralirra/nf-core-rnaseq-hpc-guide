@@ -12,6 +12,9 @@
     <button class="intro-skip" type="button" aria-label="Skip intro">×</button>
     <div class="intro-scene" role="button" tabindex="0" aria-label="Start">
       <img class="intro-storyboard" src="assets/happy-rnaseq-intro-witch.jpg" alt="Illustrated Happy RNA-seq visual showing inputs, running the pipeline, and count matrix outputs.">
+      <div class="intro-copy">
+        <p>RNA-seq Made Easy — A beginner-friendly step-by-step guide for running nf-core/rnaseq on HPC, from FASTQ files to downloadable results.</p>
+      </div>
       <button class="intro-start" id="introStart" type="button" aria-label="Start">Start</button>
     </div>
   </div>
@@ -62,6 +65,9 @@
           <strong>Download Results</strong>
         </button>
       </div>
+      <div class="sidebar-documents" aria-label="Documentation">
+        <a href="documents.html">Documents</a>
+      </div>
       <div class="sidebar-downloads" aria-label="Version information">
         <h2>Versions</h2>
         <dl class="version-block" aria-label="Version information">
@@ -75,7 +81,7 @@
 
     <section class="hands-lower">
       <section class="step-detail-card" aria-live="polite">
-        <article class="step-detail active" data-step-panel="prereq">
+        <article id="before-you-start" class="step-detail active" data-step-panel="prereq">
           <div class="step-title-row">
             <h2>Before You Start — Prerequisites</h2>
             <span class="context-pill local-pill">Local</span>
@@ -2594,6 +2600,12 @@ cat("Wrote", out_file, "\n")
     function runIntro() {
       const intro = document.getElementById('introOverlay');
       if (!intro) return;
+
+      if (window.location.hash === '#before-you-start') {
+        intro.classList.remove('show', 'hide');
+        intro.setAttribute('aria-hidden', 'true');
+        return;
+      }
 
       const skip = intro.querySelector('.intro-skip');
       const scene = intro.querySelector('.intro-scene');
