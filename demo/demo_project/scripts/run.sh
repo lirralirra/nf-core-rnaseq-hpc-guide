@@ -53,6 +53,7 @@ MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
 STAR_RESOURCE_CONFIG="$(get_config star_resource_config)"
+NF_CONFIG="${NF_CONFIG:-nextflow.config}"
 
 # Write resource limits as a Nextflow config. nf-core/rnaseq removed the
 # --max_cpus/--max_memory/--max_time params (template v3+), so we set
@@ -98,6 +99,10 @@ cmd=(nextflow run nf-core/rnaseq
   --outdir "$OUTDIR"
   --fasta "$REFERENCE"
   -work-dir "$WORKDIR")
+
+if [[ -f "$NF_CONFIG" ]]; then
+  cmd+=(-c "$NF_CONFIG")
+fi
 
 if [[ "$ANNOTATION_TYPE" == "gff" ]]; then
   cmd+=(--gff "$ANNOTATION")

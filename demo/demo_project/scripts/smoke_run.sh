@@ -52,6 +52,7 @@ WORKDIR="$(get_config workdir)"
 WORKDIR="${WORKDIR:-work}"
 OUTDIR="$(get_config outdir)"
 OUTDIR="${OUTDIR:-results}"
+NF_CONFIG="${NF_CONFIG:-nextflow.config}"
 
 if ! command -v nextflow > /dev/null 2>&1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." >&2
@@ -111,6 +112,9 @@ if [[ -f "$SAMPLESHEET" && -n "$REFERENCE" && -n "$ANNOTATION" ]]; then
     --fasta "$REFERENCE"
     "$ann_flag" "$ANNOTATION"
     --igenomes_ignore)
+  if [[ -f "$NF_CONFIG" ]]; then
+    preview_cmd+=(-c "$NF_CONFIG")
+  fi
   if [[ -n "$ALIGNER" && "$SKIP_ALIGNMENT" != "true" ]]; then
     preview_cmd+=(--aligner "$ALIGNER")
   fi
@@ -144,10 +148,13 @@ if [[ "$ALLOW_FIXES" == "true" ]]; then
 fi
 
 run_smoke_test() {
-  nextflow run nf-core/rnaseq \
-    -r "${PIPELINE_VERSION}" \
-    -profile "test,${PROFILE}" \
-    -resume 2>&1 | tee logs/smoke_run.log
+  local smoke_cmd=(nextflow run nf-core/rnaseq
+    -r "${PIPELINE_VERSION}"
+    -profile "test,${PROFILE}")
+  if [[ -f "$NF_CONFIG" ]]; then
+    smoke_cmd+=(-c "$NF_CONFIG")
+  fi
+  "${smoke_cmd[@]}" -resume 2>&1 | tee logs/smoke_run.log
 }
 
 if ! run_smoke_test; then

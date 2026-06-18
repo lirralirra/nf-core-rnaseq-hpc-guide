@@ -4288,9 +4288,13 @@ body {
 .intro-overlay {
   place-items: center !important;
   padding: 18px !important;
-  background:
+  background-color: #cfe2e9 !important;
+  background-image:
     linear-gradient(90deg, rgba(12, 29, 45, 0.38) 0%, rgba(12, 29, 45, 0.22) 44%, rgba(12, 29, 45, 0.08) 100%),
-    url("assets/rnaseq-made-easy-intro-bg.png") center / cover no-repeat !important;
+    url("assets/rnaseq-made-easy-intro-bg.png") !important;
+  background-position: center, center !important;
+  background-size: cover, 100% 100% !important;
+  background-repeat: no-repeat, no-repeat !important;
 }
 
 .intro-scene {
@@ -4358,20 +4362,20 @@ body {
   min-height: 48px !important;
   padding: 12px 30px !important;
   color: rgba(255, 255, 255, 0.9) !important;
-  background: rgba(19, 184, 166, 0.76) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(44, 113, 151, 0.78) !important;
+  border: 0 !important;
   border-radius: 8px !important;
   font-size: 16px !important;
   font-weight: 780 !important;
   transform: none !important;
-  box-shadow: 0 14px 34px rgba(19, 184, 166, 0.22) !important;
+  box-shadow: 0 14px 34px rgba(23, 79, 118, 0.24) !important;
   backdrop-filter: blur(8px) !important;
 }
 
 .intro-start:hover,
 .intro-start:focus-visible {
-  background: rgba(15, 159, 145, 0.86) !important;
-  outline: 3px solid rgba(19, 184, 166, 0.22) !important;
+  background: rgba(34, 95, 132, 0.88) !important;
+  outline: 3px solid rgba(154, 209, 227, 0.26) !important;
   outline-offset: 4px !important;
 }
 
@@ -4386,7 +4390,7 @@ body {
     margin: 0 auto;
     align-items: center;
     text-align: center;
-    transform: none;
+    transform: translateY(-5vh);
   }
 
   .intro-copy p {
@@ -4405,6 +4409,7 @@ body {
   .intro-copy {
     gap: 18px;
     max-width: none;
+    transform: translateY(-6vh);
   }
 
   .intro-copy h1 {

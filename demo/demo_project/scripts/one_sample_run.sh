@@ -65,6 +65,7 @@ WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
+NF_CONFIG="${NF_CONFIG:-nextflow.config}"
 
 ONE_SAMPLE_SHEET="input/one_sample.samplesheet.csv"
 head -n 1 "$SAMPLESHEET" > "$ONE_SAMPLE_SHEET"
@@ -356,6 +357,10 @@ run_one_sample() {
     --outdir "${OUTDIR%/}/one_sample_validation"
     --fasta "$REFERENCE"
     -work-dir "$run_workdir")
+
+  if [[ -f "$NF_CONFIG" ]]; then
+    cmd+=(-c "$NF_CONFIG")
+  fi
 
   if [[ "$ANNOTATION_TYPE" == "gff" ]]; then
     cmd+=(--gff "$ANNOTATION")

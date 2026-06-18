@@ -1186,6 +1186,7 @@ WORKDIR="$(get_config workdir)"
 WORKDIR="${WORKDIR:-work}"
 OUTDIR="$(get_config outdir)"
 OUTDIR="${OUTDIR:-results}"
+NF_CONFIG="${NF_CONFIG:-nextflow.config}"
 
 if ! command -v nextflow &gt; /dev/null 2&gt;&amp;1; then
   echo "ERROR: nextflow not found in PATH. Load/install Nextflow first (e.g. 'module load Nextflow')." &gt;&amp;2
@@ -1245,6 +1246,9 @@ if [[ -f "$SAMPLESHEET" &amp;&amp; -n "$REFERENCE" &amp;&amp; -n "$ANNOTATION" ]
     --fasta "$REFERENCE"
     "$ann_flag" "$ANNOTATION"
     --igenomes_ignore)
+  if [[ -f "$NF_CONFIG" ]]; then
+    preview_cmd+=(-c "$NF_CONFIG")
+  fi
   if [[ -n "$ALIGNER" &amp;&amp; "$SKIP_ALIGNMENT" != "true" ]]; then
     preview_cmd+=(--aligner "$ALIGNER")
   fi
@@ -1278,10 +1282,13 @@ if [[ "$ALLOW_FIXES" == "true" ]]; then
 fi
 
 run_smoke_test() {
-  nextflow run nf-core/rnaseq \
-    -r "${PIPELINE_VERSION}" \
-    -profile "test,${PROFILE}" \
-    -resume 2&gt;&amp;1 | tee logs/smoke_run.log
+  local smoke_cmd=(nextflow run nf-core/rnaseq
+    -r "${PIPELINE_VERSION}"
+    -profile "test,${PROFILE}")
+  if [[ -f "$NF_CONFIG" ]]; then
+    smoke_cmd+=(-c "$NF_CONFIG")
+  fi
+  "${smoke_cmd[@]}" -resume 2&gt;&amp;1 | tee logs/smoke_run.log
 }
 
 if ! run_smoke_test; then
@@ -1381,6 +1388,7 @@ WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
+NF_CONFIG="${NF_CONFIG:-nextflow.config}"
 
 ONE_SAMPLE_SHEET="input/one_sample.samplesheet.csv"
 head -n 1 "$SAMPLESHEET" &gt; "$ONE_SAMPLE_SHEET"
@@ -1673,6 +1681,10 @@ run_one_sample() {
     --fasta "$REFERENCE"
     -work-dir "$run_workdir")
 
+  if [[ -f "$NF_CONFIG" ]]; then
+    cmd+=(-c "$NF_CONFIG")
+  fi
+
   if [[ "$ANNOTATION_TYPE" == "gff" ]]; then
     cmd+=(--gff "$ANNOTATION")
   else
@@ -1901,6 +1913,7 @@ MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
 STAR_RESOURCE_CONFIG="$(get_config star_resource_config)"
+NF_CONFIG="${NF_CONFIG:-nextflow.config}"
 
 # Write resource limits as a Nextflow config. nf-core/rnaseq removed the
 # --max_cpus/--max_memory/--max_time params (template v3+), so we set
@@ -1946,6 +1959,10 @@ cmd=(nextflow run nf-core/rnaseq
   --outdir "$OUTDIR"
   --fasta "$REFERENCE"
   -work-dir "$WORKDIR")
+
+if [[ -f "$NF_CONFIG" ]]; then
+  cmd+=(-c "$NF_CONFIG")
+fi
 
 if [[ "$ANNOTATION_TYPE" == "gff" ]]; then
   cmd+=(--gff "$ANNOTATION")
