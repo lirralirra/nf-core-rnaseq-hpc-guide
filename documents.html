@@ -9,11 +9,11 @@
 <body>
   <nav class="site-nav product-nav" aria-label="Site navigation">
     <div class="nav-brand">
-      <div class="nav-title">🧬 Happy RNA-seq</div>
-      <div class="nav-subtitle">A friendly nf-core RNA-seq runner for local setup, Phoenix validation, auto-fix, resume, and result download.</div>
+      <div class="nav-title">RNA-seq Made Easy</div>
+      <div class="nav-subtitle">From FASTQ to transcript-level quantification using the nf-core RNA-seq pipeline on Phoenix.</div>
     </div>
     <div class="nav-links">
-      <a href="index.html">Workflow</a>
+      <a href="index.html#before-you-start">Workflow</a>
       <a class="active" href="documents.html">Documents</a>
     </div>
   </nav>
@@ -77,8 +77,8 @@
           <p>Quantifies reads without genome alignment. This is faster and lighter, but it is mainly for quantification-focused runs and does not produce the same genome-alignment evidence as STAR-based mode.</p>
         </div>
         <div>
-          <h3>Count matrix</h3>
-          <p>Produces gene-level and/or transcript-level count or abundance tables for downstream analysis. These are the key files used later for differential expression, visualisation, and other RNA-seq summaries.</p>
+          <h3>Quantification outputs</h3>
+          <p>Produces per-sample Salmon transcript-level <code>quant.sf</code> files plus nf-core summary tables. Build or verify any gene-level matrix downstream with the matching annotation before using it for differential expression.</p>
         </div>
         <div>
           <h3>MultiQC report</h3>
@@ -174,10 +174,13 @@ TREATMENT_REP1,input/fastq/AEG588A4_S4_L003_R1_001.fastq.gz,,auto</pre>
     <section class="content-card">
       <h2 id="after-results">After Downloading Results</h2>
       <p>Downloading results finishes the nf-core/rnaseq run, but it is usually the start of biological analysis.</p>
-      <p><strong>What next?</strong> Review QC first, then use the count or quantification outputs for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
+      <p><strong>Important:</strong> this guide's STAR + Salmon workflow should be treated first as a <strong>transcript-level quantification</strong> run. The key Salmon files are the per-sample <code>quant.sf</code> outputs. Do not describe the downloaded results as already being a final gene-level differential-expression matrix unless you have checked the exact merged files produced by your run.</p>
+      <p>For gene-level analysis, you can generate a gene-level count matrix downstream in R. A common route is <code>tximport</code> + <code>DESeq2</code>: import the Salmon <code>quant.sf</code> files produced by this pipeline, combine them with a transcript-to-gene mapping (<code>tx2gene</code>) derived from the same GTF/GFF3 annotation used for the run, and then create a DESeq2 dataset for differential expression.</p>
+      <p>If nf-core/rnaseq also publishes merged gene-level summary files for your configuration, such as <code>salmon.merged.gene_counts.tsv</code>, treat them as derived summaries and verify the transcript-to-gene mapping before using them for DESeq2/edgeR.</p>
+      <p><strong>What next?</strong> Review QC first, then use the transcript quantification outputs or a verified gene-level matrix for differential expression, enrichment, co-expression, visualisation, Shiny apps, or reporting.</p>
       <ul>
         <li>Open MultiQC first and check whether sequencing and mapping quality look acceptable.</li>
-        <li>Use count or quantification outputs for differential expression analysis.</li>
+        <li>Use <code>quant.sf</code> plus a matching <code>tx2gene</code> table to build a gene-level count matrix with <code>tximport</code>/<code>DESeq2</code>, if your downstream analysis is gene-level.</li>
         <li>Use reproducibility files when sharing or rerunning the project.</li>
         <li>Move into enrichment, co-expression, visualisation, Shiny, or reporting only after QC looks reasonable.</li>
       </ul>
@@ -249,13 +252,13 @@ du -sh references/prebuilt_indexes/* 2>/dev/null</pre>
       <h3>Why do I need a one-sample run?</h3>
       <p>It is a cheap dress rehearsal on <em>your</em> data, genome, and config. The tiny smoke test only proves Nextflow/Apptainer/SLURM work; a one-sample run catches the real-world problems &mdash; wrong strandedness, a mismatched GTF/GFF, an under-sized memory or partition request, a missing reference index, container/PATH issues &mdash; before you commit hours and a large allocation to every sample. If one real sample finishes cleanly, the full run almost always will too.</p>
       <h3>Where are my results?</h3>
-      <p>Under the <code>--outdir</code> you set (the guide uses <code>results/</code>). Open <code>multiqc/star_salmon/multiqc_report.html</code> first for the overall QC summary. The count matrices you feed into DESeq2/edgeR are in <code>star_salmon/</code> (e.g. <code>salmon.merged.gene_counts.tsv</code>); per-sample Salmon quant and genome-aligned BAMs are there too. Run provenance &mdash; software versions, params, and the timeline/report/trace &mdash; is in <code>pipeline_info/</code>.</p>
+      <p>Under the <code>--outdir</code> you set (the guide uses <code>results/</code>). Open <code>multiqc/star_salmon/multiqc_report.html</code> first for the overall QC summary. The primary analysis outputs are the per-sample Salmon <code>quant.sf</code> files in <code>star_salmon/</code>; use them with a matching <code>tx2gene</code> table to build a verified gene-level matrix for DESeq2/edgeR. If your run also publishes derived summaries such as <code>salmon.merged.gene_counts.tsv</code>, verify the mapping before treating them as gene-level inputs. Run provenance &mdash; software versions, params, and the timeline/report/trace &mdash; is in <code>pipeline_info/</code>.</p>
       <h3>Can I delete the <code>work/</code> directory?</h3>
       <p>Yes, but only after the run has finished and you have confirmed the results in <code>--outdir</code> are complete. <code>work/</code> holds Nextflow's intermediate files and is what makes <code>-resume</code> possible, so deleting it means any later resume starts from scratch. Clearing it (kept on <code>/scratchdata1</code>) is the main way to reclaim space. <strong>Caution:</strong> if the run used <code>--publish_dir_mode symlink</code>, files in <code>results/</code> are links <em>into</em> <code>work/</code> &mdash; deleting <code>work/</code> breaks them, so copy the results out first or re-publish with <code>copy</code>.</p>
       <h3>Which aligner should I choose?</h3>
-      <p><strong>STAR + Salmon</strong> (<code>star_salmon</code>) is the recommended default: STAR aligns reads to the genome and Salmon quantifies, giving you both expression matrices and genome-aligned BAMs (useful for IGV, coverage tracks, or later SNP calling). Choose <strong>Salmon-only</strong> (<code>--pseudo_aligner salmon --skip_alignment</code>) when you just need fast transcript/gene quantification and do not need BAMs &mdash; it is lighter and avoids STAR's large memory footprint, which matters for big genomes.</p>
+      <p><strong>STAR + Salmon</strong> (<code>star_salmon</code>) is the recommended default: STAR aligns reads to the genome and Salmon quantifies transcripts, giving you both quantification outputs and genome-aligned BAMs (useful for IGV, coverage tracks, or later SNP calling). Choose <strong>Salmon-only</strong> (<code>--pseudo_aligner salmon --skip_alignment</code>) when you just need fast transcript quantification and do not need BAMs &mdash; it is lighter and avoids STAR's large memory footprint, which matters for big genomes.</p>
       <h3>What should I keep after the run?</h3>
-      <p>Keep the count matrices (<code>star_salmon/*gene_counts*</code> and transcript counts), the MultiQC report, and <code>pipeline_info/</code> (versions, params, trace) &mdash; these are what you need to analyse and to reproduce the run. Also keep your <code>samplesheet.csv</code>, <code>configs/</code>, <code>nextflow.config</code>, the scripts, and reference metadata. BAMs are large &mdash; keep them only if you will do alignment-based work (coverage, variant calling). Delete <code>work/</code> once results are verified.</p>
+      <p>Keep the per-sample <code>quant.sf</code> files, transcript count or abundance summaries, any verified derived gene matrix you plan to use, the MultiQC report, and <code>pipeline_info/</code> (versions, params, trace) &mdash; these are what you need to analyse and to reproduce the run. Also keep your <code>samplesheet.csv</code>, <code>configs/</code>, <code>nextflow.config</code>, the scripts, and reference metadata. BAMs are large &mdash; keep them only if you will do alignment-based work (coverage, variant calling). Delete <code>work/</code> once results are verified.</p>
       <h3>Phoenix specifics: modules, offline mode, and partitions</h3>
       <p>The run scripts load Phoenix modules (e.g. <code>module load Nextflow/25.10.2</code> and <code>module load Apptainer/1.2.5-GCCcore-12.3.0</code> &mdash; check <code>module avail</code> for current versions) and use <code>-profile apptainer</code>. Phoenix compute nodes have <strong>no internet</strong>, so the full and one-sample runs use <code>-offline</code> and <code>NXF_OFFLINE=true</code>; pre-pull the pipeline once on a login node with <code>nextflow pull nf-core/rnaseq -r 3.26.0</code> before submitting. The smoke test downloads tiny test data and so needs internet. Partitions: jobs default to <code>batch</code>; memory-heavy steps for large genomes (STAR index, Salmon index/quant, STAR align) should go to <code>highmem</code> or <code>icelake</code> &mdash; see the commented large-genome block in <code>nextflow.config</code>. Containers run with <code>--bind /scratchdata1</code> and a cache at <code>NXF_APPTAINER_CACHEDIR</code>; keep <code>work/</code> on <code>/scratchdata1</code> to avoid <code>/hpcfs</code> quota issues.</p>
       <h3>A step failed with &ldquo;apptainer: No such file or directory&rdquo; (exit 127)</h3>
@@ -264,7 +267,5 @@ du -sh references/prebuilt_indexes/* 2>/dev/null</pre>
 
 
   </main>
-
-  <footer>Reproducible · Secure · Resumable · Shareable</footer>
 </body>
 </html>

@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --aligner)
       case "${2:-}" in
-        star_salmon|star_rsem|hisat2|bowtie2_salmon)
+        star_salmon | star_rsem | hisat2 | bowtie2_salmon)
           ALIGNER="$2"
           RUN_MODE="$2"
           PSEUDO_ALIGNER="salmon"
@@ -60,22 +60,31 @@ while [[ $# -gt 0 ]]; do
       ;;
     --pseudo-aligner)
       case "${2:-}" in
-        salmon|kallisto) PSEUDO_ALIGNER="$2" ;;
-        *) echo "Unknown --pseudo-aligner '${2:-}'. Choose: salmon, kallisto." >&2; exit 2 ;;
+        salmon | kallisto) PSEUDO_ALIGNER="$2" ;;
+        *)
+          echo "Unknown --pseudo-aligner '${2:-}'. Choose: salmon, kallisto." >&2
+          exit 2
+          ;;
       esac
       shift 2
       ;;
     --trimmer)
       case "${2:-}" in
-        trimgalore|fastp) TRIMMER="$2" ;;
-        *) echo "Unknown --trimmer '${2:-}'. Choose: trimgalore, fastp." >&2; exit 2 ;;
+        trimgalore | fastp) TRIMMER="$2" ;;
+        *)
+          echo "Unknown --trimmer '${2:-}'. Choose: trimgalore, fastp." >&2
+          exit 2
+          ;;
       esac
       shift 2
       ;;
     --ribo-removal-tool)
       case "${2:-}" in
-        sortmerna|bowtie2|ribodetector) RIBO_REMOVAL_TOOL="$2" ;;
-        *) echo "Unknown --ribo-removal-tool '${2:-}'. Choose: sortmerna, bowtie2, ribodetector." >&2; exit 2 ;;
+        sortmerna | bowtie2 | ribodetector) RIBO_REMOVAL_TOOL="$2" ;;
+        *)
+          echo "Unknown --ribo-removal-tool '${2:-}'. Choose: sortmerna, bowtie2, ribodetector." >&2
+          exit 2
+          ;;
       esac
       shift 2
       ;;
@@ -95,9 +104,12 @@ done
 
 LOCAL_PROJECT_DIR="${LOCAL_PROJECT_DIR:-$(pwd)}"
 # Precedence: environment variable > value saved in configure.yaml > placeholder.
-HPC_USER="${HPC_USER:-$(get_config hpc_user)}"; HPC_USER="${HPC_USER:-your_username}"
-HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"; HPC_HOST="${HPC_HOST:-your.cluster.edu}"
-HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"; HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
+HPC_USER="${HPC_USER:-$(get_config hpc_user)}"
+HPC_USER="${HPC_USER:-your_username}"
+HPC_HOST="${HPC_HOST:-$(get_config hpc_host)}"
+HPC_HOST="${HPC_HOST:-p2-log-2.hpc.adelaide.edu.au}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-$(get_config hpc_project_dir)}"
+HPC_PROJECT_DIR="${HPC_PROJECT_DIR:-/path/on/hpc/happy_rnaseq_project}"
 FASTQ_DIR="${FASTQ_DIR:-input/fastq}"
 SAMPLESHEET="${SAMPLESHEET:-input/samplesheet.csv}"
 REFERENCE="${REFERENCE:-input/reference/genome.fa}"
@@ -106,7 +118,7 @@ ANNOTATION_TYPE="${ANNOTATION_TYPE:-auto}"
 PROFILE="${PROFILE:-apptainer}"
 WORKDIR="${WORKDIR:-work}"
 OUTDIR="${OUTDIR:-results}"
-CACHE_DIR="${CACHE_DIR:-/scratch/${HPC_USER}/apptainer_cache}"
+CACHE_DIR="${CACHE_DIR:-/scratchdata1/${HPC_USER}/apptainer_cache}"
 
 metadata_value() {
   local key="$1"
@@ -137,7 +149,7 @@ infer_sample_count() {
     return
   fi
   if [[ -d "$FASTQ_DIR" ]]; then
-    find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) 2>/dev/null | sed -E 's/(_R?[12]|_1|_2)\.(fastq|fq)(\.gz)?$//' | sort -u | wc -l | tr -d ' '
+    find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) 2> /dev/null | sed -E 's/(_R?[12]|_1|_2)\.(fastq|fq)(\.gz)?$//' | sort -u | wc -l | tr -d ' '
   else
     echo 0
   fi
@@ -152,7 +164,7 @@ infer_genome_size_gb() {
   fi
   if [[ -f "$REFERENCE" ]]; then
     case "$REFERENCE" in
-      *.gz) zcat "$REFERENCE" 2>/dev/null || gzip -dc "$REFERENCE" ;;
+      *.gz) zcat "$REFERENCE" 2> /dev/null || gzip -dc "$REFERENCE" ;;
       *) cat "$REFERENCE" ;;
     esac | awk 'BEGIN {n=0} /^>/ {next} {gsub(/[[:space:]]/, ""); n += length($0)} END {printf "%.2f", n/1000000000}'
     return
@@ -172,7 +184,7 @@ fi
 if [[ "$ANNOTATION_TYPE" == "auto" ]]; then
   shopt -s nocasematch
   case "$ANNOTATION" in
-    *.gff|*.gff3|*.gff.gz|*.gff3.gz) ANNOTATION_TYPE="gff" ;;
+    *.gff | *.gff3 | *.gff.gz | *.gff3.gz) ANNOTATION_TYPE="gff" ;;
     *) ANNOTATION_TYPE="gtf" ;;
   esac
   shopt -u nocasematch
@@ -246,7 +258,8 @@ yaml_quote() {
   printf '"%s"' "$value"
 }
 
-cat > "$CONFIG" <<YAML
+cat > "$CONFIG" << YAML
+---
 project_name: $(yaml_quote "$PROJECT_NAME")
 project_description: $(yaml_quote "$PROJECT_DESCRIPTION")
 project_owner: $(yaml_quote "$PROJECT_OWNER")
@@ -296,7 +309,7 @@ case "$RUN_MODE" in
 esac
 if [[ "$GC_BIAS" == "true" ]]; then GC_LABEL="enabled"; else GC_LABEL="disabled"; fi
 
-cat > PROJECT_INFO.md <<INFO
+cat > PROJECT_INFO.md << INFO
 # Project Information
 
 ## Project
@@ -370,12 +383,12 @@ Full Run
 For alignment modes:
 - Genome alignment uses the selected aligner above.
 - Pseudo-alignment/quantification uses the pseudo-aligner above when enabled by nf-core/rnaseq.
-- Output includes gene/transcript expression matrices, quantification files, MultiQC report, and pipeline execution reports.
+- Output includes Salmon transcript quantification files, nf-core summary tables, MultiQC report, and pipeline execution reports. Build or verify any gene-level matrix downstream with the matching annotation before DESeq2/edgeR.
 
 For Salmon-only mode:
 - Genome alignment is skipped.
 - Quantification uses Salmon pseudo-alignment.
-- Output includes Salmon quantification files, expression matrices where generated, MultiQC report, and pipeline execution reports.
+- Output includes Salmon quantification files, nf-core summary tables where generated, MultiQC report, and pipeline execution reports.
 INFO
 
 echo "Wrote PROJECT_INFO.md"

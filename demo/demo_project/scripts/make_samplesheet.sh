@@ -23,8 +23,8 @@ tmp="$(mktemp)"
 echo "sample,fastq_1,fastq_2,strandedness" > "$tmp"
 
 # Accept .fastq.gz, .fq.gz, .fastq and .fq, with R1/R2 or _1/_2 naming.
-find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) \
-  | sort | while IFS= read -r r1; do
+find "$FASTQ_DIR" -type f \( -name '*.fastq.gz' -o -name '*.fq.gz' -o -name '*.fastq' -o -name '*.fq' \) |
+  sort | while IFS= read -r r1; do
   base="$(basename "$r1")"
   # Only start a pair from the read-1 file; derive its read-2 mate.
   if [[ "$base" == *_R1_* || "$base" == *_R1.* ]]; then
