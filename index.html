@@ -1456,7 +1456,7 @@ recommend_resources_from_trace() {
   fi
 
   local min_mem=64 min_cpu=4 min_walltime=12
-  local rec_memory rec_memory_gb rec_cpu rec_walltime
+  local rec_memory rec_memory_gb rec_cpu rec_walltime star_max_forks
   rec_memory="$(awk -v peak="$peak_rss_gb" -v min="$min_mem" 'BEGIN {
     rec = int((peak * 1.35) + 4 + 0.999)
     if (rec &lt; min) rec = min
@@ -1476,6 +1476,9 @@ recommend_resources_from_trace() {
     if (rec &lt; min) rec = min
     printf "%d.h", rec
   }')"
+  star_max_forks=$((300 / rec_memory_gb))
+  [[ "$star_max_forks" -lt 1 ]] &amp;&amp; star_max_forks=1
+  [[ "$star_max_forks" -gt 4 ]] &amp;&amp; star_max_forks=4
 
   {
     echo
@@ -1494,8 +1497,9 @@ recommend_resources_from_trace() {
     echo "- STAR memory: \`$rec_memory\`"
     echo "- STAR cpu: \`$rec_cpu\`"
     echo "- STAR walltime: \`$rec_walltime\`"
+    echo "- STAR maxForks: \`$star_max_forks\`"
     echo
-    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned."
+    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned. STAR maxForks is calculated from a 300 GB total STAR memory budget and capped at 4."
   } &gt;&gt; "$REPORT"
 
   if [[ "$ALLOW_FIXES" == "true" ]]; then
@@ -1506,6 +1510,7 @@ process {
     cpus = ${rec_cpu}
     memory = '${rec_memory_gb} GB'
     time = '${rec_walltime}'
+    maxForks = ${star_max_forks}
     errorStrategy = 'retry'
     maxRetries = 2
   }
