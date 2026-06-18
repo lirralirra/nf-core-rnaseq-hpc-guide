@@ -45,6 +45,7 @@ WORKDIR="$(get_config workdir)"
 MEMORY="$(get_config memory)"
 CPU="$(get_config cpu)"
 WALLTIME="$(get_config walltime)"
+STAR_RESOURCE_CONFIG="$(get_config star_resource_config)"
 
 # Write resource limits as a Nextflow config. nf-core/rnaseq removed the
 # --max_cpus/--max_memory/--max_time params (template v3+), so we set
@@ -113,6 +114,9 @@ fi
 RES_CONF="$(write_resource_config)"
 if [[ -n "$RES_CONF" ]]; then
   cmd+=(-c "$RES_CONF")
+fi
+if [[ -n "$STAR_RESOURCE_CONFIG" && -f "$STAR_RESOURCE_CONFIG" ]]; then
+  cmd+=(-c "$STAR_RESOURCE_CONFIG")
 fi
 
 extra_args=("$@")

@@ -210,7 +210,7 @@ recommend_resources_from_trace() {
       for (i = 1; i <= NF; i++) col[$i] = i
       next
     }
-    $col["status"] == "COMPLETED" || $col["status"] == "CACHED" {
+    ($col["status"] == "COMPLETED" || $col["status"] == "CACHED") && $col["name"] ~ /STAR_ALIGN|STAR_GENOMEGENERATE/ {
       rss = mem_gb($col["peak_rss"])
       if (rss > max_rss) {
         max_rss = rss
@@ -238,20 +238,25 @@ recommend_resources_from_trace() {
   local peak_rss_gb peak_cpu_pct max_hours peak_rss_task max_time_task
   IFS=$'\t' read -r peak_rss_gb peak_cpu_pct max_hours peak_rss_task max_time_task <<< "$recommendation"
 
-  local min_mem=48 min_cpu=8 min_walltime=12
-  if [[ "$SKIP_ALIGNMENT" == "true" ]]; then
-    min_mem=32
-    min_cpu=4
-    min_walltime=8
+  if [[ "$SKIP_ALIGNMENT" == "true" || -z "$ALIGNER" ]]; then
+    {
+      echo
+      echo "## STAR resource recommendation"
+      echo
+      echo "Skipped: this run does not use genome alignment, so no STAR-specific resource override is needed."
+    } >> "$REPORT"
+    return 0
   fi
 
-  local rec_memory rec_cpu rec_walltime
+  local min_mem=64 min_cpu=4 min_walltime=12
+  local rec_memory rec_memory_gb rec_cpu rec_walltime
   rec_memory="$(awk -v peak="$peak_rss_gb" -v min="$min_mem" 'BEGIN {
     rec = int((peak * 1.35) + 4 + 0.999)
     if (rec < min) rec = min
     printf "%d", rec
   }')"
-  rec_memory="$(round_up_to_multiple "$rec_memory" 8)G"
+  rec_memory_gb="$(round_up_to_multiple "$rec_memory" 8)"
+  rec_memory="${rec_memory_gb}G"
 
   rec_cpu="$(awk -v peak="$peak_cpu_pct" -v min="$min_cpu" 'BEGIN {
     rec = int((peak / 100 * 1.25) + 0.999)
@@ -267,35 +272,42 @@ recommend_resources_from_trace() {
 
   {
     echo
-    echo "## Resource recommendation from one-sample trace"
+    echo "## STAR resource recommendation from one-sample trace"
     echo
     echo "Trace file: \`$TRACE\`"
     echo
-    echo "- Peak RSS: ${peak_rss_gb} GB"
-    echo "- Peak CPU: ${peak_cpu_pct}%"
-    echo "- Longest task realtime: ${max_hours} h"
-    echo "- Memory-driving task: ${peak_rss_task:-unknown}"
-    echo "- Time-driving task: ${max_time_task:-unknown}"
+    echo "- STAR peak RSS: ${peak_rss_gb} GB"
+    echo "- STAR peak CPU: ${peak_cpu_pct}%"
+    echo "- STAR longest task realtime: ${max_hours} h"
+    echo "- STAR memory-driving task: ${peak_rss_task:-unknown}"
+    echo "- STAR time-driving task: ${max_time_task:-unknown}"
     echo
-    echo "Recommended Step 6 caps:"
+    echo "Recommended STAR override for Step 6:"
     echo
-    echo "- memory: \`$rec_memory\`"
-    echo "- cpu: \`$rec_cpu\`"
-    echo "- walltime: \`$rec_walltime\`"
+    echo "- STAR memory: \`$rec_memory\`"
+    echo "- STAR cpu: \`$rec_cpu\`"
+    echo "- STAR walltime: \`$rec_walltime\`"
     echo
-    echo "These are per-task caps for the full run, not total runtime. The recommendation uses the selected one-sample run plus safety margins; it is most reliable when \`SAMPLE_MODE=largest\`."
+    echo "Only STAR-specific settings are recommended. Other nf-core/rnaseq process resources are left unchanged unless they fail or are manually tuned."
   } >> "$REPORT"
 
   if [[ "$ALLOW_FIXES" == "true" ]]; then
-    MEMORY="$rec_memory"
-    CPU="$rec_cpu"
-    WALLTIME="$rec_walltime"
-    set_config_value memory "\"$MEMORY\""
-    set_config_value cpu "$CPU"
-    set_config_value walltime "\"$WALLTIME\""
-    echo "Applied resource recommendation to $CONFIG because ALLOW_FIXES=true." >> "$REPORT"
+    local star_conf="configs/star_resource_recommendation.config"
+    cat > "$star_conf" <<CONF
+process {
+  withName: '.*:STAR_ALIGN' {
+    cpus = ${rec_cpu}
+    memory = '${rec_memory_gb} GB'
+    time = '${rec_walltime}'
+    errorStrategy = 'retry'
+    maxRetries = 2
+  }
+}
+CONF
+    set_config_value star_resource_config "\"$star_conf\""
+    echo "Applied STAR-only resource recommendation to $star_conf and recorded it in $CONFIG because ALLOW_FIXES=true." >> "$REPORT"
   else
-    echo "Recommendation not applied. Re-run with ALLOW_FIXES=true to update $CONFIG automatically." >> "$REPORT"
+    echo "Recommendation not applied. Re-run with ALLOW_FIXES=true to write configs/star_resource_recommendation.config and use it in Step 6 automatically." >> "$REPORT"
   fi
 }
 
