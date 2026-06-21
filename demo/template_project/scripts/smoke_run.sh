@@ -5,6 +5,7 @@
 #SBATCH --mem=8GB                 # driver memory
 #SBATCH --time=08:00:00           # driver must outlast the smoke test
 #SBATCH -p batch                  # default Phoenix partition for the driver job
+#SBATCH --mail-type=NONE          # validation may retry/resume; keep inbox quiet
 # #SBATCH --account=<account>          # uncomment/set if Phoenix requires an account
 set -euo pipefail
 
