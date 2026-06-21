@@ -1139,6 +1139,7 @@ echo "Upload log: $LOG"</code></pre>
 #SBATCH --mem=8GB                 # driver memory
 #SBATCH --time=08:00:00           # driver must outlast the smoke test
 #SBATCH -p batch                  # default Phoenix partition for the driver job
+#SBATCH --mail-type=NONE          # validation may retry/resume; keep inbox quiet
 # #SBATCH --account=&lt;account&gt;          # uncomment/set if Phoenix requires an account
 set -euo pipefail
 
@@ -1328,6 +1329,7 @@ echo "Smoke test passed." &gt;&gt; "$REPORT"</code></pre>
 #SBATCH --mem=8GB                 # driver memory
 #SBATCH --time=24:00:00           # driver must outlast the one-sample run
 #SBATCH -p batch                  # default Phoenix partition for the driver job
+#SBATCH --mail-type=NONE          # validation may retry/resume; keep inbox quiet
 # #SBATCH --account=&lt;account&gt;          # uncomment/set if Phoenix requires an account
 set -euo pipefail
 
@@ -1797,12 +1799,13 @@ recommend_resources_from_trace</code></pre>
           </div>
           <details class="notes-block slurm-config-block">
               <summary>SLURM job limits (<code>nextflow.config</code>)</summary>
-              <p>Nextflow submits each pipeline step to SLURM as its own job. To avoid overloading the HPC scheduler, the project's <code>nextflow.config</code> sets conservative, beginner-friendly limits:</p>
+              <p>Nextflow submits each pipeline step to SLURM as its own job. To avoid overloading the HPC scheduler or flooding your inbox during validation retries, the project's <code>nextflow.config</code> sets conservative, beginner-friendly limits:</p>
               <ul>
                 <li><code>process.executor = 'slurm'</code> &mdash; send pipeline steps to SLURM instead of running them on the driver node.</li>
                 <li><code>process.maxForks</code> &mdash; how many instances of one step can run at the same time.</li>
                 <li><code>executor.queueSize</code> &mdash; how many jobs Nextflow keeps queued/running in SLURM at once.</li>
                 <li><code>executor.submitRateLimit</code> &mdash; how fast jobs are submitted.</li>
+                <li><code>process.clusterOptions = '--mail-type=NONE'</code> &mdash; keep per-task SLURM start/end emails off during Nextflow resume and retries.</li>
               </ul>
               <pre>// SLURM executor settings for nf-core/rnaseq on the University of Adelaide Phoenix HPC.
 //
@@ -1822,7 +1825,9 @@ executor {
 process {
     executor = 'slurm'
     queue    = 'batch'            // default Phoenix partition
-    // clusterOptions = '--account=ACCOUNT'   // set if your project needs an account
+    clusterOptions = '--mail-type=NONE'       // silence per-task SLURM email from Nextflow retries/resume
+    // If your project needs an account, append it here:
+    // clusterOptions = '--mail-type=NONE --account=ACCOUNT'
 
     // Standard nf-core resource labels (safe starting points for typical genomes).
     withLabel:process_low    { cpus = 2; memory = '8 GB';  time = '4h'  }
@@ -1841,7 +1846,7 @@ process {
     // Phoenix gotcha: ensure SLURM child jobs can find the apptainer binary on PATH.
     // If steps fail with "exit 127: apptainer: No such file or directory", set the
     // module's bin path here (check `module show Apptainer/...` for the exact path):
-    // withName: '.*' { clusterOptions = '--export=ALL,PATH=/apps/.../Apptainer/1.2.5-GCCcore-12.3.0/bin:$PATH' }
+    // withName: '.*' { clusterOptions = '--mail-type=NONE --export=ALL,PATH=/apps/.../Apptainer/1.2.5-GCCcore-12.3.0/bin:$PATH' }
 }
 
 // Apptainer is the container runtime on Phoenix.
@@ -1850,7 +1855,7 @@ apptainer {
     autoMounts = true
     runOptions = '--bind /scratchdata1'   // so containers can see the scratch work dir
 }</pre>
-              <p>Nextflow loads <code>nextflow.config</code> automatically from the project folder, so all run scripts pick it up. If Phoenix requires a partition or account, uncomment and set <code>queue</code> / <code>clusterOptions</code> here.</p>
+              <p>Nextflow loads <code>nextflow.config</code> automatically from the project folder, so all run scripts pick it up. If Phoenix requires a partition or account, set <code>queue</code> / append <code>--account=ACCOUNT</code> to <code>clusterOptions</code> here while keeping <code>--mail-type=NONE</code>.</p>
           </details>
           <p class="step-tip slurm-tip"><strong>Submit with sbatch:</strong> the full run is started with <code>sbatch scripts/run.sh</code>, which sends it to SLURM as a compute-node job. Do not run <code>bash scripts/run.sh</code> on the login node. <code>monitor_run.sh</code> stays a lightweight helper you run directly on the login node (not via <code>sbatch</code>) to check <code>squeue</code> and the logs.</p>
           <div class="script-source">
